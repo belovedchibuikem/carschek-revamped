@@ -1,190 +1,222 @@
 'use client';
 import React, { useState } from 'react';
-import { Search, Plus, Phone, Mail, MoreHorizontal, Car } from 'lucide-react';
-import { CrmContact, CrmStage, CrmContactType } from '@/types/domain';
+import { Plus, Search, Phone, Mail, MoreHorizontal, ChevronDown, Clock, Car, X } from 'lucide-react';
 
-const MOCK_CONTACTS: CrmContact[] = [
-  { id: 'c1', name: 'Adaeze Mensah', type: 'buyer', phone: '+2348012345678', email: 'adaeze@email.com', stage: 'negotiating', lastContact: '2025-04-10', carsLinked: 2, assignedTo: 'Promise Ndem', avatar: 'AM', followUpDate: '2025-04-20', totalDeals: 3, carsBought: 2, carsSold: 0, transactionValue: 10200000, notes: [], communications: [], cars: [], offers: [] },
-  { id: 'c2', name: 'Emeka Obi', type: 'seller', phone: '+2348098765432', email: 'emeka@email.com', stage: 'offer_sent', lastContact: '2025-04-08', carsLinked: 1, assignedTo: 'Adaeze Mensah', avatar: 'EO', totalDeals: 1, carsBought: 0, carsSold: 1, transactionValue: 5000000, notes: [], communications: [], cars: [], offers: [] },
-  { id: 'c3', name: 'Chidi Okafor', type: 'dealer', phone: '+2348055555555', email: 'chidi@dealer.com', stage: 'interested', lastContact: '2025-04-05', carsLinked: 5, assignedTo: 'Promise Ndem', avatar: 'CO', totalDeals: 8, carsBought: 5, carsSold: 3, transactionValue: 42000000, notes: [], communications: [], cars: [], offers: [] },
-  { id: 'c4', name: 'Ngozi Eze', type: 'lead', phone: '+2348011111111', email: 'ngozi@email.com', stage: 'new', lastContact: '2025-04-12', carsLinked: 0, assignedTo: 'Adaeze Mensah', avatar: 'NE', totalDeals: 0, carsBought: 0, carsSold: 0, transactionValue: 0, notes: [], communications: [], cars: [], offers: [] },
-  { id: 'c5', name: 'Tunde Bakare', type: 'buyer', phone: '+2348022222222', email: 'tunde@email.com', stage: 'closed_won', lastContact: '2025-03-28', carsLinked: 3, assignedTo: 'Promise Ndem', avatar: 'TB', totalDeals: 5, carsBought: 3, carsSold: 0, transactionValue: 18500000, notes: [], communications: [], cars: [], offers: [] },
-  { id: 'c6', name: 'Fatima Aliyu', type: 'seller', phone: '+2348033333333', email: 'fatima@email.com', stage: 'contacted', lastContact: '2025-04-11', carsLinked: 1, assignedTo: 'Chidi Okafor', avatar: 'FA', totalDeals: 1, carsBought: 0, carsSold: 1, transactionValue: 8500000, notes: [], communications: [], cars: [], offers: [] },
+const STAGE_STYLES: Record<string, string> = {
+  'New': 'bg-[#1E3A5F]/10 text-[#1E3A5F]',
+  'Contacted': 'bg-blue-50 text-blue-700',
+  'Interested': 'bg-teal-50 text-teal-700',
+  'Offer Sent': 'bg-purple-50 text-purple-700',
+  'Negotiating': 'bg-amber-50 text-amber-700',
+  'Closed Won': 'bg-green-50 text-green-700',
+  'Closed Lost': 'bg-red-50 text-red-600',
+};
+
+const TYPE_STYLES: Record<string, string> = {
+  'Buyer': 'bg-blue-50 text-blue-700',
+  'Seller': 'bg-teal-50 text-teal-700',
+  'Dealer': 'bg-purple-50 text-purple-700',
+  'Lead': 'bg-amber-50 text-amber-700',
+};
+
+const MOCK_CONTACTS = [
+  { id: 1, name: 'Adaeze Mensah', type: 'Buyer', phone: '+2348012345678', email: 'adaeze@example.com', stage: 'Negotiating', lastContact: '2 days ago', carsLinked: 2, assignedTo: 'Promise Ndem', initials: 'AM' },
+  { id: 2, name: 'Emeka Okafor', type: 'Seller', phone: '+2348023456789', email: 'emeka@example.com', stage: 'Interested', lastContact: '5 days ago', carsLinked: 1, assignedTo: 'Adaeze Mensah', initials: 'EO' },
+  { id: 3, name: 'Fatima Bello', type: 'Dealer', phone: '+2348034567890', email: 'fatima@example.com', stage: 'Offer Sent', lastContact: '1 day ago', carsLinked: 5, assignedTo: 'Promise Ndem', initials: 'FB' },
+  { id: 4, name: 'Chukwuemeka Obi', type: 'Lead', phone: '+2348045678901', email: 'chukwu@example.com', stage: 'New', lastContact: '1 week ago', carsLinked: 0, assignedTo: 'Chukwuemeka Obi', initials: 'CO' },
+  { id: 5, name: 'Ngozi Eze', type: 'Buyer', phone: '+2348056789012', email: 'ngozi@example.com', stage: 'Closed Won', lastContact: '3 days ago', carsLinked: 3, assignedTo: 'Adaeze Mensah', initials: 'NE' },
+  { id: 6, name: 'Tunde Adesanya', type: 'Seller', phone: '+2348067890123', email: 'tunde@example.com', stage: 'Contacted', lastContact: '4 days ago', carsLinked: 1, assignedTo: 'Promise Ndem', initials: 'TA' },
 ];
 
-const STAGE_CONFIG: Record<CrmStage, { label: string; cls: string }> = {
-  new: { label: 'New', cls: 'bg-[#1E3A5F] text-white' },
-  contacted: { label: 'Contacted', cls: 'bg-blue-100 text-blue-700 border border-blue-200' },
-  interested: { label: 'Interested', cls: 'bg-teal-100 text-teal-700 border border-teal-200' },
-  offer_sent: { label: 'Offer Sent', cls: 'bg-purple-100 text-purple-700 border border-purple-200' },
-  negotiating: { label: 'Negotiating', cls: 'bg-amber-100 text-amber-700 border border-amber-200' },
-  closed_won: { label: 'Closed Won', cls: 'bg-green-100 text-green-700 border border-green-200' },
-  closed_lost: { label: 'Closed Lost', cls: 'bg-red-100 text-red-500 border border-red-200' },
-};
+const KANBAN_STAGES = ['New Lead', 'Contacted', 'Interested', 'Offer Sent', 'Negotiating', 'Closed Won', 'Closed Lost'];
 
-const TYPE_CONFIG: Record<CrmContactType, { label: string; cls: string }> = {
-  buyer: { label: 'Buyer', cls: 'bg-blue-50 text-blue-700 border border-blue-200' },
-  seller: { label: 'Seller', cls: 'bg-teal-50 text-teal-700 border border-teal-200' },
-  dealer: { label: 'Dealer', cls: 'bg-purple-50 text-purple-700 border border-purple-200' },
-  lead: { label: 'Lead', cls: 'bg-amber-50 text-amber-700 border border-amber-200' },
+const KANBAN_STAGE_MAP: Record<string, string> = {
+  'New': 'New Lead', 'Contacted': 'Contacted', 'Interested': 'Interested',
+  'Offer Sent': 'Offer Sent', 'Negotiating': 'Negotiating',
+  'Closed Won': 'Closed Won', 'Closed Lost': 'Closed Lost',
 };
-
-const KANBAN_STAGES: CrmStage[] = ['new','contacted','interested','offer_sent','negotiating','closed_won','closed_lost'];
 
 type View = 'list' | 'detail' | 'kanban';
 
-function fmt(n: number) { return '₦' + n.toLocaleString('en-NG'); }
-
 export default function CRMModule() {
   const [view, setView] = useState<View>('list');
-  const [contacts] = useState<CrmContact[]>(MOCK_CONTACTS);
-  const [selected, setSelected] = useState<CrmContact | null>(null);
+  const [selectedContact, setSelectedContact] = useState<typeof MOCK_CONTACTS[0] | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [stageFilter, setStageFilter] = useState('');
-  const [detailTab, setDetailTab] = useState('Overview');
+  const [dragOver, setDragOver] = useState<string | null>(null);
+  const [contacts, setContacts] = useState(MOCK_CONTACTS);
+  const [dragging, setDragging] = useState<number | null>(null);
+  const [noteText, setNoteText] = useState('');
+  const [notes, setNotes] = useState<{ text: string; time: string; author: string }[]>([]);
+  const [showLogComm, setShowLogComm] = useState(false);
+  const [commType, setCommType] = useState<'SMS' | 'Email' | 'Call' | 'Note'>('Call');
+  const [commContent, setCommContent] = useState('');
+  const [communications, setCommunications] = useState([
+    { icon: '📱', type: 'SMS', content: 'Sent offer details for CK-41', time: '2 days ago', by: 'Promise Ndem' },
+    { icon: '✉️', type: 'Email', content: 'Follow-up on inspection report', time: '4 days ago', by: 'Adaeze Mensah' },
+    { icon: '📞', type: 'Call', content: 'Discussed pricing — interested at ₦5.1M', time: '1 week ago', by: 'Promise Ndem' },
+  ]);
 
-  const filtered = contacts.filter(c => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email.toLowerCase().includes(q);
-    const matchType = !typeFilter || c.type === typeFilter;
-    const matchStage = !stageFilter || c.stage === stageFilter;
-    return matchSearch && matchType && matchStage;
-  });
+  const COMM_ICONS: Record<string, string> = { SMS: '📱', Email: '✉️', Call: '📞', Note: '📝' };
 
-  const openDetail = (c: CrmContact) => { setSelected(c); setView('detail'); };
+  const addCommunication = () => {
+    if (commContent.trim()) {
+      setCommunications(prev => [{ icon: COMM_ICONS[commType], type: commType, content: commContent, time: 'Just now', by: 'Promise Ndem' }, ...prev]);
+      setCommContent('');
+      setShowLogComm(false);
+    }
+  };
+
+  const filtered = contacts.filter(c =>
+    !search || [c.name, c.phone, c.email].some(v => v.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const handleDrop = (stage: string) => {
+    if (dragging !== null) {
+      const contactStage = Object.entries(KANBAN_STAGE_MAP).find(([, v]) => v === stage)?.[0] || stage;
+      setContacts(prev => prev.map(c => c.id === dragging ? { ...c, stage: contactStage } : c));
+      setDragging(null);
+      setDragOver(null);
+    }
+  };
+
+  const addNote = () => {
+    if (noteText.trim()) {
+      setNotes(prev => [{ text: noteText, time: 'Just now', author: 'Promise Ndem' }, ...prev]);
+      setNoteText('');
+    }
+  };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-heading font-bold text-[#1F2937]">CRM — Contacts</h1>
-          <span className="bg-[#1E3A5F] text-white text-xs font-bold px-2.5 py-1 rounded-full">{contacts.length} contacts</span>
+          <h1 className="text-2xl font-bold text-[#1E3A5F]">CRM — Contacts</h1>
+          <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-sm font-semibold px-2.5 py-0.5 rounded-full">{contacts.length}</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-[#E5E7EB] overflow-hidden">
-            {(['list','kanban'] as const).map(v => (
-              <button key={v} onClick={() => setView(v)} className={`px-4 py-2 text-xs font-semibold capitalize transition-all ${view === v ? 'bg-[#1E3A5F] text-white' : 'bg-white text-[#6B7280] hover:bg-[#F4F6F8]'}`}>{v === 'list' ? 'List' : 'Pipeline'}</button>
+          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+            {(['list', 'kanban'] as View[]).map(v => (
+              <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-xs font-medium capitalize transition-colors ${view === v ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{v}</button>
             ))}
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
-            <Plus size={15} /> Add Contact
+          <button className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">
+            <Plus size={14} /> Add Contact
           </button>
         </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {[
-          { label: 'Total', value: contacts.length, cls: 'text-[#1E3A5F]' },
-          { label: 'Leads', value: contacts.filter(c => c.type === 'lead').length, cls: 'text-amber-600' },
-          { label: 'Active', value: contacts.filter(c => !['closed_won','closed_lost'].includes(c.stage)).length, cls: 'text-teal-600' },
-          { label: 'Closed Won', value: contacts.filter(c => c.stage === 'closed_won').length, cls: 'text-green-600' },
-          { label: 'Cold', value: contacts.filter(c => c.stage === 'closed_lost').length, cls: 'text-[#9CA3AF]' },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-[#E5E7EB] p-3 text-center">
-            <p className="text-xs text-[#9CA3AF] font-medium">{s.label}</p>
-            <p className={`text-xl font-bold mt-0.5 ${s.cls}`}>{s.value}</p>
+        {[['Total', contacts.length, 'text-[#1E3A5F]'], ['Leads', contacts.filter(c => c.type === 'Lead').length, 'text-amber-600'], ['Active', contacts.filter(c => !['Closed Won', 'Closed Lost'].includes(c.stage)).length, 'text-teal-600'], ['Closed Won', contacts.filter(c => c.stage === 'Closed Won').length, 'text-green-600'], ['Cold', contacts.filter(c => c.stage === 'Closed Lost').length, 'text-red-500']].map(([label, count, color]) => (
+          <div key={label as string} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 text-center">
+            <p className={`text-2xl font-bold ${color}`}>{count}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{label}</p>
           </div>
         ))}
       </div>
 
-      {/* LIST VIEW */}
       {view === 'list' && (
         <>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-[220px]">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, phone, email..." className="w-full pl-9 pr-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+          {/* Filter Bar */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-wrap gap-3 items-center">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, phone, email..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
             </div>
-            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none bg-white text-[#374151]">
-              <option value="">All Types</option>
-              {(['buyer','seller','dealer','lead'] as CrmContactType[]).map(t => <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>)}
-            </select>
-            <select value={stageFilter} onChange={e => setStageFilter(e.target.value)} className="px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none bg-white text-[#374151]">
-              <option value="">All Stages</option>
-              {(Object.keys(STAGE_CONFIG) as CrmStage[]).map(s => <option key={s} value={s}>{STAGE_CONFIG[s].label}</option>)}
-            </select>
+            {['Type', 'Stage', 'Assigned To'].map(f => (
+              <button key={f} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">{f} <ChevronDown size={13} /></button>
+            ))}
           </div>
 
-          <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-[#F8FAFC] border-b border-[#E5E7EB]">
-                <tr>
-                  {['Contact','Type','Phone','Email','Stage','Last Contact','Cars','Assigned To','Actions'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F3F4F6]">
-                {filtered.map(contact => (
-                  <tr key={contact.id} className="hover:bg-[#F8FAFC] transition-all cursor-pointer" onClick={() => openDetail(contact)}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{contact.avatar}</div>
-                        <span className="font-semibold text-[#1F2937]">{contact.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3"><span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${TYPE_CONFIG[contact.type].cls}`}>{TYPE_CONFIG[contact.type].label}</span></td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-[#374151]">{contact.phone}</span>
-                        <a href={`tel:${contact.phone}`} onClick={e => e.stopPropagation()} className="text-[#9CA3AF] hover:text-green-600"><Phone size={12} /></a>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-[#374151] truncate max-w-[140px]">{contact.email}</span>
-                        <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} className="text-[#9CA3AF] hover:text-[#1E3A5F]"><Mail size={12} /></a>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3"><span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STAGE_CONFIG[contact.stage].cls}`}>{STAGE_CONFIG[contact.stage].label}</span></td>
-                    <td className="px-4 py-3 text-xs text-[#9CA3AF]">{contact.lastContact}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-[#374151]">{contact.carsLinked}</td>
-                    <td className="px-4 py-3 text-xs text-[#374151]">{contact.assignedTo}</td>
-                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      <button className="p-1.5 rounded-lg hover:bg-[#F4F6F8] text-[#6B7280]"><MoreHorizontal size={15} /></button>
-                    </td>
+          {/* Table */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    {['Contact', 'Type', 'Phone', 'Email', 'Stage', 'Last Contact', 'Cars', 'Assigned To', 'Actions'].map(h => (
+                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filtered.map(contact => (
+                    <tr key={contact.id} className="hover:bg-gray-50/80 transition-colors cursor-pointer" onClick={() => { setSelectedContact(contact); setView('detail'); }}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">{contact.initials}</div>
+                          <span className="font-semibold text-gray-800">{contact.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3"><span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TYPE_STYLES[contact.type]}`}>{contact.type}</span></td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-600">{contact.phone}</span>
+                          <a href={`tel:${contact.phone}`} onClick={e => e.stopPropagation()} className="text-gray-300 hover:text-green-600 transition-colors"><Phone size={12} /></a>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-600 truncate max-w-[140px]">{contact.email}</span>
+                          <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} className="text-gray-300 hover:text-blue-600 transition-colors"><Mail size={12} /></a>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3"><span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STAGE_STYLES[contact.stage]}`}>{contact.stage}</span></td>
+                      <td className="px-4 py-3 text-xs text-gray-500">{contact.lastContact}</td>
+                      <td className="px-4 py-3 text-xs text-gray-600">{contact.carsLinked}</td>
+                      <td className="px-4 py-3 text-xs text-gray-600">{contact.assignedTo}</td>
+                      <td className="px-4 py-3"><button onClick={e => e.stopPropagation()} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400"><MoreHorizontal size={14} /></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
 
-      {/* KANBAN VIEW */}
       {view === 'kanban' && (
         <div className="overflow-x-auto pb-4">
-          <div className="flex gap-4 min-w-max">
+          <div className="flex gap-3 min-w-max">
             {KANBAN_STAGES.map(stage => {
-              const stageContacts = contacts.filter(c => c.stage === stage);
+              const stageContacts = contacts.filter(c => KANBAN_STAGE_MAP[c.stage] === stage);
               return (
-                <div key={stage} className="w-64 flex-shrink-0">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STAGE_CONFIG[stage].cls}`}>{STAGE_CONFIG[stage].label}</span>
-                    <span className="text-xs text-[#9CA3AF] font-semibold">{stageContacts.length}</span>
+                <div
+                  key={stage}
+                  className={`w-60 flex-shrink-0 rounded-xl border-2 transition-all ${dragOver === stage ? 'border-[#1E3A5F]/40 bg-[#1E3A5F]/5' : 'border-gray-100 bg-gray-50/50'}`}
+                  onDragOver={e => { e.preventDefault(); setDragOver(stage); }}
+                  onDrop={() => handleDrop(stage)}
+                  onDragLeave={() => setDragOver(null)}
+                >
+                  <div className="p-3 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-700">{stage}</span>
+                      <span className="text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full font-semibold">{stageContacts.length}</span>
+                    </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="p-2 space-y-2 min-h-[120px]">
                     {stageContacts.map(contact => (
-                      <div key={contact.id} onClick={() => openDetail(contact)} className="bg-white rounded-xl border border-[#E5E7EB] p-3.5 cursor-pointer hover:border-[#1E3A5F]/30 hover:shadow-sm transition-all">
+                      <div
+                        key={contact.id}
+                        draggable
+                        onDragStart={() => setDragging(contact.id)}
+                        onClick={() => { setSelectedContact(contact); setView('detail'); }}
+                        className="bg-white rounded-xl border border-gray-100 p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-all"
+                      >
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-7 h-7 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">{contact.avatar}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-[#1F2937] truncate">{contact.name}</p>
-                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border ${TYPE_CONFIG[contact.type].cls}`}>{TYPE_CONFIG[contact.type].label}</span>
+                          <div className="w-7 h-7 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">{contact.initials}</div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-gray-800 truncate">{contact.name}</p>
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${TYPE_STYLES[contact.type]}`}>{contact.type}</span>
                           </div>
                         </div>
-                        <p className="text-[10px] text-[#9CA3AF] mb-2">Last activity: {contact.lastContact}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <a href={`tel:${contact.phone}`} onClick={e => e.stopPropagation()} className="p-1 rounded bg-[#F4F6F8] text-[#6B7280] hover:text-green-600"><Phone size={11} /></a>
-                            <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} className="p-1 rounded bg-[#F4F6F8] text-[#6B7280] hover:text-[#1E3A5F]"><Mail size={11} /></a>
-                          </div>
-                          {contact.carsLinked > 0 && (
-                            <span className="flex items-center gap-1 text-[10px] text-[#9CA3AF]"><Car size={10} />{contact.carsLinked}</span>
-                          )}
+                        <p className="text-[10px] text-gray-400 flex items-center gap-1"><Clock size={9} /> {contact.lastContact}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <a href={`tel:${contact.phone}`} onClick={e => e.stopPropagation()} className="text-gray-300 hover:text-green-600 transition-colors"><Phone size={11} /></a>
+                          <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} className="text-gray-300 hover:text-blue-600 transition-colors"><Mail size={11} /></a>
+                          {contact.carsLinked > 0 && <span className="text-[10px] text-gray-400 flex items-center gap-0.5"><Car size={9} /> {contact.carsLinked}</span>}
                         </div>
                       </div>
                     ))}
@@ -196,157 +228,176 @@ export default function CRMModule() {
         </div>
       )}
 
-      {/* DETAIL VIEW */}
-      {view === 'detail' && selected && (
-        <div className="space-y-5">
-          <button onClick={() => setView('list')} className="flex items-center gap-2 text-sm text-[#2E75B6] font-semibold hover:underline">
-            ← Back to Contacts
-          </button>
+      {/* Contact Detail */}
+      {view === 'detail' && selectedContact && (
+        <div className="space-y-4">
+          <button onClick={() => setView('list')} className="flex items-center gap-1.5 text-sm text-[#1E3A5F] hover:underline">← Back to Contacts</button>
 
           {/* Header Card */}
-          <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-            <div className="flex items-start gap-4 flex-wrap">
-              <div className="w-16 h-16 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xl font-bold flex-shrink-0">{selected.avatar}</div>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="flex flex-wrap items-start gap-4">
+              <div className="w-16 h-16 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-xl font-bold flex-shrink-0">{selectedContact.initials}</div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h2 className="text-xl font-heading font-bold text-[#1F2937]">{selected.name}</h2>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${TYPE_CONFIG[selected.type].cls}`}>{TYPE_CONFIG[selected.type].label}</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-xl font-bold text-[#1E3A5F]">{selectedContact.name}</h2>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TYPE_STYLES[selectedContact.type]}`}>{selectedContact.type}</span>
                 </div>
                 <div className="flex items-center gap-4 mt-2 flex-wrap">
-                  <a href={`tel:${selected.phone}`} className="flex items-center gap-1.5 text-sm text-[#374151] hover:text-green-600"><Phone size={14} />{selected.phone}</a>
-                  <a href={`mailto:${selected.email}`} className="flex items-center gap-1.5 text-sm text-[#374151] hover:text-[#1E3A5F]"><Mail size={14} />{selected.email}</a>
+                  <a href={`tel:${selectedContact.phone}`} className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-green-600 transition-colors"><Phone size={14} /> {selectedContact.phone}</a>
+                  <a href={`mailto:${selectedContact.email}`} className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors"><Mail size={14} /> {selectedContact.email}</a>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <div>
-                  <label className="block text-xs text-[#9CA3AF] mb-1">Stage</label>
-                  <select defaultValue={selected.stage} className="px-3 py-1.5 border border-[#E5E7EB] rounded-lg text-xs font-semibold bg-white focus:outline-none">
-                    {(Object.keys(STAGE_CONFIG) as CrmStage[]).map(s => <option key={s} value={s}>{STAGE_CONFIG[s].label}</option>)}
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase mb-1">Stage</label>
+                  <select defaultValue={selectedContact.stage} className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none">
+                    {Object.keys(STAGE_STYLES).map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-[#9CA3AF] mb-1">Assigned To</label>
-                  <select defaultValue={selected.assignedTo} className="px-3 py-1.5 border border-[#E5E7EB] rounded-lg text-xs bg-white focus:outline-none">
-                    <option>Promise Ndem</option><option>Adaeze Mensah</option><option>Chidi Okafor</option>
+                  <label className="block text-[10px] font-semibold text-gray-400 uppercase mb-1">Assigned To</label>
+                  <select defaultValue={selectedContact.assignedTo} className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none">
+                    {['Promise Ndem', 'Adaeze Mensah', 'Chukwuemeka Obi'].map(p => <option key={p}>{p}</option>)}
                   </select>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Detail Tabs */}
-          <div className="flex border-b border-[#E5E7EB] overflow-x-auto">
-            {['Overview','Cars','Offers','Communications','Notes'].map(tab => (
-              <button key={tab} onClick={() => setDetailTab(tab)} className={`px-5 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${detailTab === tab ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>{tab}</button>
-            ))}
-          </div>
-
-          {detailTab === 'Overview' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: 'Total Deals', value: selected.totalDeals, cls: 'text-[#1E3A5F]' },
-                  { label: 'Cars Bought', value: selected.carsBought, cls: 'text-blue-600' },
-                  { label: 'Cars Sold', value: selected.carsSold, cls: 'text-teal-600' },
-                  { label: 'Transaction Value', value: fmt(selected.transactionValue), cls: 'text-green-600' },
-                ].map(s => (
-                  <div key={s.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4">
-                    <p className="text-xs text-[#9CA3AF]">{s.label}</p>
-                    <p className={`text-lg font-bold mt-1 ${s.cls}`}>{s.value}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-                <h3 className="font-heading font-bold text-[#1F2937] mb-3">Set Follow-up Reminder</h3>
-                <input type="date" defaultValue={selected.followUpDate} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none mb-3" />
-                <textarea placeholder="Note for follow-up..." rows={3} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none resize-none" />
-                <button className="mt-3 w-full py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-xl hover:bg-[#16304F] transition-all">Set Reminder</button>
-              </div>
+          {/* Tabs */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            <div className="flex border-b border-gray-100 px-4 overflow-x-auto">
+              {['overview', 'cars', 'offers', 'communications', 'notes'].map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-3 text-sm font-medium capitalize whitespace-nowrap transition-colors ${activeTab === tab ? 'text-[#1E3A5F] border-b-2 border-[#1E3A5F]' : 'text-gray-500 hover:text-gray-700'}`}>{tab}</button>
+              ))}
             </div>
-          )}
-
-          {detailTab === 'Communications' && (
-            <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-heading font-bold text-[#1F2937]">Communication Log</h3>
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F]"><Plus size={12} /> Log Communication</button>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { channel: 'email', icon: '✉️', content: 'Sent offer for CK-41 Toyota Camry 2011', at: '2025-04-10 14:32', by: 'Promise Ndem' },
-                  { channel: 'call', icon: '📞', content: 'Discussed pricing — interested in negotiation', at: '2025-04-08 11:15', by: 'Promise Ndem' },
-                  { channel: 'sms', icon: '📱', content: 'Follow-up SMS sent regarding inspection report', at: '2025-04-05 09:00', by: 'System' },
-                  { channel: 'note', icon: '📝', content: 'Client prefers automatic transmission vehicles only', at: '2025-04-01 16:45', by: 'Adaeze Mensah' },
-                ].map((comm, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3.5 bg-[#F8FAFC] rounded-xl">
-                    <span className="text-lg">{comm.icon}</span>
-                    <div className="flex-1">
-                      <p className="text-sm text-[#374151]">{comm.content}</p>
-                      <p className="text-[10px] text-[#9CA3AF] mt-1">{comm.at} • {comm.by}</p>
+            <div className="p-5">
+              {activeTab === 'overview' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[['Total Deals', '3'], ['Cars Bought', '2'], ['Cars Sold', '1'], ['Total Value', '₦15.2M']].map(([l, v]) => (
+                      <div key={l} className="bg-gray-50 rounded-xl p-3 text-center">
+                        <p className="text-lg font-bold text-[#1E3A5F]">{v}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{l}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border border-gray-100 rounded-xl p-4">
+                    <h4 className="text-sm font-bold text-gray-700 mb-3">Set Follow-up Reminder</h4>
+                    <div className="flex gap-3">
+                      <input type="date" className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                      <input type="text" placeholder="Note..." className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                      <button className="px-4 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">Set</button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {detailTab === 'Notes' && (
-            <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-heading font-bold text-[#1F2937]">Notes</h3>
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F]"><Plus size={12} /> Add Note</button>
-              </div>
-              <textarea placeholder="Write a note about this contact..." rows={3} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none resize-none" />
-              <div className="space-y-3">
-                {[
-                  { text: 'Very serious buyer, has budget ready. Prefers SUVs and sedans from 2015 onwards.', author: 'Promise Ndem', at: '2025-04-10' },
-                  { text: 'Called twice this week. Interested in CK-41 but wants a price reduction.', author: 'Adaeze Mensah', at: '2025-04-08' },
-                ].map((note, i) => (
-                  <div key={i} className="p-3.5 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB]">
-                    <p className="text-sm text-[#374151]">{note.text}</p>
-                    <p className="text-[10px] text-[#9CA3AF] mt-2">{note.at} • {note.author}</p>
+                </div>
+              )}
+              {activeTab === 'cars' && (
+                <div className="space-y-3">
+                  <div className="flex justify-end">
+                    <a href="/cars" className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors"><Plus size={14} /> Link a Car</a>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {detailTab === 'Cars' && (
-            <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-heading font-bold text-[#1F2937]">Linked Cars</h3>
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F]"><Plus size={12} /> Link a Car</button>
-              </div>
-              {selected.carsLinked === 0 ? (
-                <p className="text-sm text-[#9CA3AF] text-center py-8">No cars linked to this contact yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {[{ ckId: 'CK-41', title: 'Toyota Camry 2011', role: 'Buyer', price: 5100000, date: '2025-01-15', status: 'sold' }].map((car, i) => (
-                    <div key={i} className="flex items-center justify-between p-3.5 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB]">
+                  {[{ ckId: 'CK-41', name: 'Toyota Camry 2011', role: 'Buyer', price: '₦5,100,000', date: '2025-01-15', status: 'Sold' }].map(car => (
+                    <div key={car.ckId} className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
                       <div className="flex items-center gap-3">
-                        <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">{car.ckId}</span>
+                        <a href={`/cars/${car.ckId}`} className="font-mono text-xs font-bold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md hover:bg-teal-100 transition-colors">{car.ckId}</a>
                         <div>
-                          <p className="text-sm font-semibold text-[#1F2937]">{car.title}</p>
-                          <p className="text-[10px] text-[#9CA3AF]">{car.role} • {car.date}</p>
+                          <a href={`/cars/${car.ckId}`} className="text-sm font-semibold text-gray-800 hover:text-[#1E3A5F] hover:underline transition-colors">{car.name}</a>
+                          <p className="text-xs text-gray-400">{car.role} • {car.date}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-[#1F2937]">{fmt(car.price)}</p>
-                        <span className="text-[10px] font-semibold text-green-600 capitalize">{car.status}</span>
+                        <p className="text-sm font-bold text-gray-700">{car.price}</p>
+                        <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{car.status}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
+              {activeTab === 'communications' && (
+                <div className="space-y-3">
+                  <button onClick={() => setShowLogComm(true)} className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors"><Plus size={14} /> Log Communication</button>
+                  {communications.map((comm, i) => (
+                    <div key={i} className="flex gap-3 p-3 border border-gray-100 rounded-xl">
+                      <span className="text-lg">{comm.icon}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-700">{comm.type}</span>
+                          <span className="text-[10px] text-gray-400">{comm.time} • {comm.by}</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-0.5">{comm.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeTab === 'offers' && (
+                <div className="space-y-3">
+                  <div className="flex justify-end">
+                    <a href="/offers?view=create" className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors"><Plus size={14} /> Create Offer</a>
+                  </div>
+                  <a href="/offers" className="block p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">OFF-001 — Toyota Camry 2011</p>
+                        <p className="text-xs text-gray-400">₦5,100,000 • Valid until 2025-02-15</p>
+                      </div>
+                      <span className="text-xs bg-green-50 text-green-700 font-semibold px-2 py-0.5 rounded-full">Accepted</span>
+                    </div>
+                  </a>
+                </div>
+              )}
+              {activeTab === 'notes' && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Add a note..." rows={2} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 resize-none" />
+                    <button onClick={addNote} className="px-4 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors self-start">Add Note</button>
+                  </div>
+                  {notes.map((note, i) => (
+                    <div key={i} className="p-3 bg-yellow-50 border border-yellow-100 rounded-xl">
+                      <p className="text-sm text-gray-700">{note.text}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">{note.time} • {note.author}</p>
+                    </div>
+                  ))}
+                  {notes.length === 0 && <p className="text-center text-gray-400 text-sm py-6">No notes yet. Add the first note above.</p>}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {detailTab === 'Offers' && (
-            <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4">
-              <h3 className="font-heading font-bold text-[#1F2937]">Offers</h3>
-              <p className="text-sm text-[#9CA3AF] text-center py-8">No offers linked to this contact yet.</p>
+      {/* Log Communication Modal */}
+      {showLogComm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-[#1E3A5F]">Log Communication</h3>
+              <button onClick={() => setShowLogComm(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"><X size={16} /></button>
             </div>
-          )}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-2">Type</label>
+              <div className="flex gap-2">
+                {(['SMS', 'Email', 'Call', 'Note'] as const).map(t => (
+                  <button key={t} onClick={() => setCommType(t)} className={`flex-1 py-2 text-xs font-semibold rounded-lg border-2 transition-all ${commType === t ? 'border-[#1E3A5F] bg-[#1E3A5F]/5 text-[#1E3A5F]' : 'border-gray-200 text-gray-500'}`}>
+                    {COMM_ICONS[t]} {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Content</label>
+              <textarea value={commContent} onChange={e => setCommContent(e.target.value)} rows={3} placeholder="Describe the communication..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Date</label>
+              <input type="datetime-local" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLogComm(false)} className="flex-1 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+              <button onClick={addCommunication} className="flex-1 py-2 bg-[#1E3A5F] text-white rounded-xl text-sm font-bold hover:bg-[#162d4a] transition-colors">Log</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

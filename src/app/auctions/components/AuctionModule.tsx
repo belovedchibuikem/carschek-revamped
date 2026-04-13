@@ -1,118 +1,105 @@
 'use client';
 import React, { useState } from 'react';
-import { Clock, X, Check, Users, Eye } from 'lucide-react';
-import { AuctionRow, AuctionBid } from '@/types/domain';
+import { X, Check, Clock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-const MOCK_AUCTIONS: AuctionRow[] = [
-  { id: 'a1', carId: '3', ckId: 'CK-39', vehicleLabel: 'Mercedes-Benz C300 2018', vin: 'WDD2050421R012345', startingBid: 12000000, highestBid: 13500000, bidCount: 8, reserveMet: true, endsAt: '2025-04-15T18:00:00', startedAt: '2025-04-12T10:00:00', status: 'active', reservePrice: 13000000 },
-  { id: 'a2', carId: '5', ckId: 'CK-37', vehicleLabel: 'Ford Explorer 2019', vin: '1FM5K8D88KGA12345', startingBid: 8500000, highestBid: 8900000, bidCount: 3, reserveMet: false, endsAt: '2025-04-14T12:00:00', startedAt: '2025-04-11T09:00:00', status: 'active', reservePrice: 9500000 },
-  { id: 'a3', carId: '7', ckId: 'CK-35', vehicleLabel: 'Hyundai Tucson 2017', vin: 'KM8J3CA46HU012345', startingBid: 6200000, highestBid: 6200000, bidCount: 0, reserveMet: false, endsAt: '2025-04-13T08:00:00', startedAt: '2025-04-10T08:00:00', status: 'ended_no_sale', reservePrice: 6800000 },
+const MOCK_AUCTIONS = [
+  { id: 'AUC-001', ckId: 'CK-41', vehicle: 'Toyota Camry 2011', startingBid: 5000000, currentBid: 5400000, bidCount: 12, reserveMet: true, endsAt: new Date(Date.now() + 2 * 60 * 60 * 1000), status: 'Active' },
+  { id: 'AUC-002', ckId: 'CK-39', vehicle: 'Mercedes-Benz C300 2018', startingBid: 18000000, currentBid: 19200000, bidCount: 7, reserveMet: true, endsAt: new Date(Date.now() + 26 * 60 * 60 * 1000), status: 'Active' },
+  { id: 'AUC-003', ckId: 'CK-37', vehicle: 'Ford Explorer 2016', startingBid: 9800000, currentBid: 9900000, bidCount: 3, reserveMet: false, endsAt: new Date(Date.now() - 2 * 60 * 60 * 1000), status: 'Ended — No Sale' },
+  { id: 'AUC-004', ckId: 'CK-36', vehicle: 'Lexus RX350 2020', startingBid: 28000000, currentBid: 30500000, bidCount: 18, reserveMet: true, endsAt: new Date(Date.now() - 5 * 60 * 60 * 1000), status: 'Ended — Sale' },
 ];
 
-const MOCK_BIDS: AuctionBid[] = [
-  { id: 'b1', bidder: 'Adaeze Mensah', anonymous: false, amount: 13500000, at: '2025-04-14T15:32:00', isHighest: true },
-  { id: 'b2', bidder: 'Anonymous Bidder #2', anonymous: true, amount: 13200000, at: '2025-04-14T14:10:00', isHighest: false },
-  { id: 'b3', bidder: 'Emeka Obi', anonymous: false, amount: 12800000, at: '2025-04-13T11:45:00', isHighest: false },
-  { id: 'b4', bidder: 'Anonymous Bidder #1', anonymous: true, amount: 12500000, at: '2025-04-13T09:20:00', isHighest: false },
-];
-
-const STATUS_CONFIG = {
-  active: { label: 'Active', cls: 'bg-green-100 text-green-700 border-green-200' },
-  extended: { label: 'Extended', cls: 'bg-blue-100 text-blue-700 border-blue-200' },
-  ended_no_sale: { label: 'Ended — No Sale', cls: 'bg-gray-100 text-gray-500 border-gray-200' },
-  ended_sale: { label: 'Ended — Sale', cls: 'bg-[#1E3A5F] text-white border-[#1E3A5F]' },
+const MOCK_BIDS: Record<string, { bidder: string; amount: number; time: string }[]> = {
+  'AUC-001': [
+    { bidder: 'Emeka Okafor', amount: 5400000, time: '14 mins ago' },
+    { bidder: 'Anonymous Bidder #3', amount: 5350000, time: '28 mins ago' },
+    { bidder: 'Fatima Bello', amount: 5200000, time: '1 hr ago' },
+    { bidder: 'Anonymous Bidder #1', amount: 5100000, time: '2 hrs ago' },
+    { bidder: 'Chukwuemeka Obi', amount: 5050000, time: '3 hrs ago' },
+  ],
 };
 
-function getTimeRemaining(endsAt: string) {
-  const diff = new Date(endsAt).getTime() - Date.now();
-  if (diff <= 0) return { label: 'ENDED', cls: 'bg-gray-100 text-gray-500 border-gray-200' };
+function getTimeRemaining(endsAt: Date) {
+  const diff = endsAt.getTime() - Date.now();
+  if (diff <= 0) return { label: 'ENDED', color: 'bg-gray-100 text-gray-500' };
   const hours = Math.floor(diff / 3600000);
   const mins = Math.floor((diff % 3600000) / 60000);
-  if (hours > 24) return { label: `${Math.floor(hours / 24)}d ${hours % 24}h`, cls: 'bg-green-100 text-green-700 border-green-200' };
-  if (hours >= 1) return { label: `${hours}h ${mins}m`, cls: 'bg-amber-100 text-amber-700 border-amber-200' };
-  return { label: `${mins}m`, cls: 'bg-red-100 text-red-700 border-red-200' };
+  if (hours < 1) return { label: `${mins}m left`, color: 'bg-red-50 text-red-600' };
+  if (hours < 24) return { label: `${hours}h ${mins}m left`, color: 'bg-amber-50 text-amber-600' };
+  return { label: `${Math.floor(hours / 24)}d ${hours % 24}h left`, color: 'bg-green-50 text-green-700' };
 }
 
-function fmt(n: number) { return '₦' + n.toLocaleString('en-NG'); }
+const STATUS_STYLE: Record<string, string> = {
+  'Active': 'bg-green-50 text-green-700',
+  'Extended': 'bg-blue-50 text-blue-700',
+  'Ended — No Sale': 'bg-gray-100 text-gray-500',
+  'Ended — Sale': 'bg-[#1E3A5F]/10 text-[#1E3A5F]',
+};
 
 export default function AuctionModule() {
-  const [bidPanel, setBidPanel] = useState<AuctionRow | null>(null);
-  const [closeModal, setCloseModal] = useState<AuctionRow | null>(null);
+  const router = useRouter();
+  const [selectedAuction, setSelectedAuction] = useState<string | null>(null);
+  const [showCloseFlow, setShowCloseFlow] = useState<string | null>(null);
+
+  const selectedAuctionData = MOCK_AUCTIONS.find(a => a.id === selectedAuction);
+  const bids = selectedAuction ? (MOCK_BIDS[selectedAuction] || []) : [];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Auctions</h1>
-          <span className="bg-[#1E3A5F] text-white text-xs font-bold px-2.5 py-1 rounded-full">{MOCK_AUCTIONS.length} auctions</span>
+          <h1 className="text-2xl font-bold text-[#1E3A5F]">Auctions</h1>
+          <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-sm font-semibold px-2.5 py-0.5 rounded-full">{MOCK_AUCTIONS.length} auctions</span>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Active', value: MOCK_AUCTIONS.filter(a => a.status === 'active').length, cls: 'text-green-600' },
-          { label: 'Total Bids', value: MOCK_AUCTIONS.reduce((s, a) => s + a.bidCount, 0), cls: 'text-[#1E3A5F]' },
-          { label: 'Reserve Met', value: MOCK_AUCTIONS.filter(a => a.reserveMet).length, cls: 'text-teal-600' },
-          { label: 'Ended', value: MOCK_AUCTIONS.filter(a => a.status.startsWith('ended')).length, cls: 'text-[#6B7280]' },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4">
-            <p className="text-xs text-[#9CA3AF] font-medium">{s.label}</p>
-            <p className={`text-2xl font-bold mt-1 ${s.cls}`}>{s.value}</p>
-          </div>
-        ))}
-      </div>
-
       {/* Table */}
-      <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-[#F8FAFC] border-b border-[#E5E7EB]">
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                {['CK ID','Vehicle','Starting Bid','Highest Bid','Bids','Reserve Met','Time Remaining','Status','Actions'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">{h}</th>
+                {['CK ID', 'Vehicle', 'Starting Bid', 'Current Highest Bid', 'Bid Count', 'Reserve Met', 'Time Remaining', 'Status', 'Actions'].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F3F4F6]">
+            <tbody className="divide-y divide-gray-50">
               {MOCK_AUCTIONS.map(auction => {
                 const time = getTimeRemaining(auction.endsAt);
                 return (
-                  <tr key={auction.id} className="hover:bg-[#F8FAFC] transition-all">
+                  <tr key={auction.id} className="hover:bg-gray-50/80 transition-colors">
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">{auction.ckId}</span>
+                      <button
+                        onClick={() => router.push(`/cars/${auction.ckId}`)}
+                        className="font-mono text-xs font-bold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md hover:bg-teal-100 transition-colors"
+                      >
+                        {auction.ckId}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-800">{auction.vehicle}</td>
+                    <td className="px-4 py-3 text-gray-700">₦{auction.startingBid.toLocaleString()}</td>
+                    <td className="px-4 py-3 font-bold text-green-700">₦{auction.currentBid.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-gray-600">{auction.bidCount}</td>
+                    <td className="px-4 py-3">
+                      {auction.reserveMet ? <Check size={16} className="text-green-600" /> : <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-[#1F2937] text-sm">{auction.vehicleLabel}</p>
-                      <p className="text-[10px] text-[#9CA3AF] font-mono">{auction.vin.slice(0, 12)}…</p>
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-[#1F2937]">{fmt(auction.startingBid)}</td>
-                    <td className="px-4 py-3">
-                      <span className="font-bold text-[#1F2937]">{fmt(auction.highestBid)}</span>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${time.color}`}>{time.label}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="flex items-center gap-1 text-sm font-semibold text-[#374151]"><Users size={13} className="text-[#9CA3AF]" />{auction.bidCount}</span>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${STATUS_STYLE[auction.status]}`}>{auction.status}</span>
                     </td>
                     <td className="px-4 py-3">
-                      {auction.reserveMet ? <Check size={16} className="text-green-600" /> : <span className="text-[#D1D5DB]">—</span>}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${time.cls}`}>
-                        <Clock size={10} /> {time.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${STATUS_CONFIG[auction.status].cls}`}>
-                        {STATUS_CONFIG[auction.status].label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => setBidPanel(auction)} className="px-2.5 py-1.5 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F] transition-all flex items-center gap-1">
-                          <Eye size={11} /> Bids
-                        </button>
-                        <button onClick={() => setCloseModal(auction)} className="px-2.5 py-1.5 border border-[#E5E7EB] text-xs font-semibold text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-all">Close</button>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => setSelectedAuction(auction.id)} className="text-xs px-2 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-md hover:bg-[#1E3A5F]/20 transition-colors font-medium">View Bids</button>
+                        <button className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors">Extend</button>
+                        {auction.status === 'Active' && (
+                          <button onClick={() => setShowCloseFlow(auction.id)} className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors">Close</button>
+                        )}
+                        <button onClick={() => router.push(`/cars/${auction.ckId}`)} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors">View Car</button>
                       </div>
                     </td>
                   </tr>
@@ -123,69 +110,74 @@ export default function AuctionModule() {
         </div>
       </div>
 
-      {/* Bid History Panel */}
-      {bidPanel && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setBidPanel(null)} />
-          <div className="relative bg-white w-full max-w-md h-full shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between p-5 border-b border-[#E5E7EB]">
-              <div>
-                <h2 className="font-heading font-bold text-[#1F2937]">Bid History</h2>
-                <p className="text-sm text-[#6B7280]">{bidPanel.vehicleLabel} — {bidPanel.ckId}</p>
+      {/* Bid History Slide Panel */}
+      {selectedAuction && selectedAuctionData && (
+        <>
+          <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setSelectedAuction(null)} />
+          <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
+            <div className="p-5 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="font-bold text-[#1E3A5F] text-lg">Bid History</h2>
+                <button onClick={() => setSelectedAuction(null)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"><X size={18} /></button>
               </div>
-              <button onClick={() => setBidPanel(null)} className="p-2 rounded-lg hover:bg-[#F4F6F8] text-[#6B7280]"><X size={18} /></button>
-            </div>
-            <div className="p-5 border-b border-[#E5E7EB]">
-              <p className="text-xs text-[#9CA3AF] font-medium">Current Highest Bid</p>
-              <p className="text-3xl font-bold text-green-600 mt-1">{fmt(bidPanel.highestBid)}</p>
-              <p className="text-xs text-[#9CA3AF] mt-1">{bidPanel.bidCount} total bids</p>
+              <p className="text-sm text-gray-600">{selectedAuctionData.vehicle} — {selectedAuctionData.ckId}</p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="text-xs text-gray-500">Current Highest Bid:</span>
+                <span className="text-xl font-bold text-green-600">₦{selectedAuctionData.currentBid.toLocaleString()}</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">{selectedAuctionData.bidCount} total bids</p>
             </div>
             <div className="flex-1 overflow-y-auto p-5 space-y-3">
-              {MOCK_BIDS.map(bid => (
-                <div key={bid.id} className={`flex items-center justify-between p-3.5 rounded-xl border ${bid.isHighest ? 'bg-green-50 border-green-200' : 'bg-[#F8FAFC] border-[#E5E7EB]'}`}>
+              {bids.length === 0 ? (
+                <p className="text-center text-gray-400 text-sm py-8">No bids yet</p>
+              ) : bids.map((bid, i) => (
+                <div key={i} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${i === 0 ? 'border-green-200 bg-green-50' : 'border-gray-100 bg-gray-50/50'}`}>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-[#1F2937]">{bid.bidder}</p>
-                      {bid.isHighest && <span className="text-[10px] font-bold px-2 py-0.5 bg-green-600 text-white rounded-full">Highest Bid</span>}
+                      <span className="text-sm font-semibold text-gray-800">{bid.bidder}</span>
+                      {i === 0 && <span className="text-[10px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded-full">Highest Bid</span>}
                     </div>
-                    <p className="text-[10px] text-[#9CA3AF] mt-0.5">{new Date(bid.at).toLocaleString()}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><Clock size={10} /> {bid.time}</p>
                   </div>
-                  <span className={`font-bold text-sm ${bid.isHighest ? 'text-green-700' : 'text-[#1F2937]'}`}>{fmt(bid.amount)}</span>
+                  <span className={`font-bold ${i === 0 ? 'text-green-700 text-base' : 'text-gray-700 text-sm'}`}>₦{bid.amount.toLocaleString()}</span>
                 </div>
               ))}
             </div>
-            {bidPanel.status === 'ended_sale' && (
-              <div className="p-5 border-t border-[#E5E7EB]">
-                <button className="w-full py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-all">Create Deal</button>
+            {selectedAuctionData.status.startsWith('Ended') && (
+              <div className="p-5 border-t border-gray-100">
+                {selectedAuctionData.reserveMet ? (
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-gray-700">Auction Closed — Winner: <span className="text-green-700">{bids[0]?.bidder}</span> at ₦{selectedAuctionData.currentBid.toLocaleString()}</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setSelectedAuction(null); router.push('/deal-pipeline'); }} className="flex-1 py-2 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-colors">Yes — Create Deal</button>
+                      <button onClick={() => setSelectedAuction(null)} className="flex-1 py-2 border border-gray-200 text-gray-600 text-sm rounded-xl hover:bg-gray-50 transition-colors">No — Close</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-amber-700 font-semibold">Reserve not met. Highest bid: ₦{selectedAuctionData.currentBid.toLocaleString()}</p>
+                    <div className="flex gap-2">
+                      <button className="flex-1 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl">Extend Auction</button>
+                      <button className="flex-1 py-2 bg-amber-500 text-white text-xs font-bold rounded-xl">Accept Highest Bid</button>
+                      <button className="flex-1 py-2 border border-gray-200 text-gray-600 text-xs rounded-xl">Close without sale</button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
 
-      {/* Close Auction Modal */}
-      {closeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
-            <h2 className="text-lg font-heading font-bold text-[#1F2937]">Close Auction — {closeModal.ckId}</h2>
-            {closeModal.reserveMet ? (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
-                <p className="text-sm font-semibold text-green-800">Reserve met! Highest bid: {fmt(closeModal.highestBid)}</p>
-                <p className="text-sm text-green-700 mt-1">Winner: Adaeze Mensah at {fmt(closeModal.highestBid)}</p>
-              </div>
-            ) : (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                <p className="text-sm font-semibold text-amber-800">Reserve not met. Highest bid: {fmt(closeModal.highestBid)}</p>
-                <p className="text-sm text-amber-700 mt-1">Reserve price: {fmt(closeModal.reservePrice ?? 0)}</p>
-              </div>
-            )}
+      {/* Auction Close Flow Modal */}
+      {showCloseFlow && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h3 className="font-bold text-[#1E3A5F] text-lg mb-2">Close Auction Early</h3>
+            <p className="text-sm text-gray-500 mb-5">Are you sure you want to close this auction before it ends?</p>
             <div className="flex gap-3">
-              <button onClick={() => setCloseModal(null)} className="flex-1 py-2.5 border border-[#E5E7EB] text-sm font-semibold text-[#374151] rounded-xl hover:bg-[#F4F6F8]">Cancel</button>
-              {closeModal.reserveMet ? (
-                <button className="flex-1 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700">Create Deal</button>
-              ) : (
-                <button className="flex-1 py-2.5 bg-[#1E3A5F] text-white text-sm font-bold rounded-xl hover:bg-[#16304F]">Close without Sale</button>
-              )}
+              <button onClick={() => setShowCloseFlow(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+              <button onClick={() => setShowCloseFlow(null)} className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-colors">Close Auction</button>
             </div>
           </div>
         </div>

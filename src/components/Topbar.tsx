@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Search, Bell, Menu, Wifi, WifiOff, ChevronDown, X } from 'lucide-react';
+import { Search, Bell, Menu, Wifi, WifiOff, ChevronDown, X, LogOut, User, Settings } from 'lucide-react';
 
 interface TopbarProps {
   onMenuToggle: () => void;
@@ -11,6 +11,12 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen }: TopbarProps)
   const [online] = useState(true);
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    setUserMenuOpen(false);
+    window.location.href = '/authentication-screen';
+  };
 
   return (
     <header className="h-16 bg-white border-b border-[#E5E7EB] flex items-center px-3 sm:px-6 gap-2 sm:gap-4 flex-shrink-0 z-30 relative">
@@ -59,18 +65,17 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen }: TopbarProps)
       )}
 
       <div className="flex items-center gap-1 sm:gap-3 ml-auto">
-        {/* Online status — hidden on smallest screens */}
+        {/* Online status */}
         <div className={`hidden sm:flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${online ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
           {online ? <Wifi size={12} /> : <WifiOff size={12} />}
           <span>{online ? 'Online' : 'Offline'}</span>
         </div>
-        {/* Mobile online dot */}
         <div className={`sm:hidden w-2.5 h-2.5 rounded-full flex-shrink-0 ${online ? 'bg-green-500' : 'bg-red-500'}`} />
 
         {/* Notifications */}
         <div className="relative">
           <button
-            onClick={() => setNotifOpen(o => !o)}
+            onClick={() => { setNotifOpen(o => !o); setUserMenuOpen(false); }}
             className="relative min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-[#F4F6F8] transition-colors"
             aria-label="Notifications"
           >
@@ -79,7 +84,6 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen }: TopbarProps)
           </button>
           {notifOpen && (
             <>
-              {/* Mobile backdrop */}
               <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setNotifOpen(false)} />
               <div className="absolute right-0 top-full mt-2 w-[calc(100vw-24px)] sm:w-80 max-w-sm bg-white rounded-xl shadow-xl border border-[#E5E7EB] z-50 animate-fade-in">
                 <div className="px-4 py-3 border-b border-[#E5E7EB] flex items-center justify-between">
@@ -111,14 +115,48 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen }: TopbarProps)
           )}
         </div>
 
-        {/* User */}
-        <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-[#E5E7EB] cursor-pointer group min-h-[44px]">
-          <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">PN</div>
-          <div className="hidden sm:block">
-            <p className="text-xs font-semibold text-[#1F2937]">Promise Ndem</p>
-            <p className="text-[10px] text-[#6B7280]">Super Admin</p>
-          </div>
-          <ChevronDown size={14} className="hidden sm:block text-[#6B7280] group-hover:text-[#1F2937] transition-colors" />
+        {/* User menu */}
+        <div className="relative">
+          <button
+            onClick={() => { setUserMenuOpen(o => !o); setNotifOpen(false); }}
+            className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-[#E5E7EB] cursor-pointer min-h-[44px] hover:bg-[#F4F6F8] rounded-lg px-2 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">PN</div>
+            <div className="hidden sm:block">
+              <p className="text-xs font-semibold text-[#1F2937]">Promise Ndem</p>
+              <p className="text-[10px] text-[#6B7280]">Super Admin</p>
+            </div>
+            <ChevronDown size={14} className={`hidden sm:block text-[#6B7280] transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {userMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-[#E5E7EB] z-50 animate-fade-in overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#E5E7EB] bg-[#F9FAFB]">
+                  <p className="text-sm font-bold text-[#1F2937]">Promise Ndem</p>
+                  <p className="text-xs text-[#6B7280]">promise@carschek.com</p>
+                  <span className="inline-block mt-1 px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold rounded-full border border-amber-300">Super Admin</span>
+                </div>
+                <div className="py-1">
+                  <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#1F2937] hover:bg-[#F4F6F8] transition-colors min-h-[44px]">
+                    <User size={15} className="text-[#6B7280]" /> My Profile
+                  </button>
+                  <a href="/settings" className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#1F2937] hover:bg-[#F4F6F8] transition-colors min-h-[44px]">
+                    <Settings size={15} className="text-[#6B7280]" /> Settings
+                  </a>
+                </div>
+                <div className="border-t border-[#E5E7EB] py-1">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#C0392B] hover:bg-red-50 transition-colors min-h-[44px] font-medium"
+                  >
+                    <LogOut size={15} /> Sign Out
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>

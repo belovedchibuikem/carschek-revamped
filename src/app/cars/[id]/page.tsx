@@ -1,12 +1,13 @@
 'use client';
 import React from 'react';
 import AppLayout from '@/components/AppLayout';
-import CarDetailPage from '../components/CarDetailPage';
+import CarDetailModule from '../components/CarDetailModule';
 
-export default function CarDetailRoute() {
+export default function CarDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   return (
     <AppLayout currentPath="/cars">
-      <CarDetailPage />
+      <CarDetailModule carId={id} />
     </AppLayout>
   );
 }

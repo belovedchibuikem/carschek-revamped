@@ -1,9 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Car, User, Receipt, FileText, Check, ChevronRight, ChevronLeft, AlertTriangle, Upload, X, CheckCircle } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
-
+import { Car, User, Receipt, FileText, Check, AlertTriangle, Upload, X, ChevronRight, ChevronLeft } from 'lucide-react';
 
 const STEPS = [
   { label: 'Vehicle Details', icon: Car },
@@ -12,103 +9,74 @@ const STEPS = [
   { label: 'Documents', icon: FileText },
 ];
 
-const BRANDS = ['Toyota', 'Honda', 'Mercedes-Benz', 'Ford', 'Lexus', 'Hyundai', 'BMW', 'Audi', 'Kia', 'Nissan'];
-const NIGERIAN_STATES = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'];
-const COLOURS = ['White','Black','Silver','Grey','Blue','Red','Green','Brown','Gold','Beige','Orange','Yellow','Purple','Maroon','Navy','Pearl White'];
-const DOCUMENTS = [
-  { key: 'custom_clearance', name: 'Custom Clearance', required: true },
-  { key: 'insurance_clearance', name: 'Insurance Clearance', required: true },
-  { key: 'means_of_id', name: 'Means of Identification', required: true },
-  { key: 'number_plate', name: 'Number Plate', required: true },
-  { key: 'road_worthiness', name: 'Road Worthiness', required: true },
-  { key: 'proof_of_ownership', name: 'Proof of Ownership', required: true },
-  { key: 'plate_allocation', name: 'Plate Number Allocation', required: false },
-  { key: 'purchase_receipt', name: 'Purchase Receipt', required: false },
+const COLOURS = [
+  { name: 'White', hex: '#FFFFFF' }, { name: 'Black', hex: '#1a1a1a' }, { name: 'Silver', hex: '#C0C0C0' },
+  { name: 'Grey', hex: '#808080' }, { name: 'Red', hex: '#DC2626' }, { name: 'Blue', hex: '#2563EB' },
+  { name: 'Navy', hex: '#1E3A5F' }, { name: 'Green', hex: '#16A34A' }, { name: 'Yellow', hex: '#EAB308' },
+  { name: 'Orange', hex: '#EA580C' }, { name: 'Brown', hex: '#92400E' }, { name: 'Beige', hex: '#D4B896' },
+  { name: 'Gold', hex: '#B8860B' }, { name: 'Maroon', hex: '#7F1D1D' }, { name: 'Purple', hex: '#7C3AED' }, { name: 'Pearl', hex: '#F0EAD6' },
 ];
 
-interface DocUpload { file: File | null; comment: string; }
+const NIGERIAN_STATES = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'];
+
+const DOCUMENTS = [
+  { name: 'Custom Clearance', required: true },
+  { name: 'Insurance Clearance', required: true },
+  { name: 'Means of Identification', required: true },
+  { name: 'Number Plate', required: true },
+  { name: 'Road Worthiness', required: true },
+  { name: 'Proof of Ownership', required: true },
+  { name: 'Plate Number Allocation', required: false },
+  { name: 'Purchase Receipt', required: false },
+];
 
 export default function CarRegistrationWizard() {
-  const router = useRouter();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
-  const [duplicateAlert, setDuplicateAlert] = useState(false);
+  const [vinDuplicate, setVinDuplicate] = useState(false);
+  const [vinChecking, setVinChecking] = useState(false);
+  const [selectedColour, setSelectedColour] = useState('Silver');
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, boolean>>({});
 
-  // Step 1
-  const [brand, setBrand] = useState('');
-  const [model, setModel] = useState('');
-  const [year, setYear] = useState('');
-  const [transmission, setTransmission] = useState('');
-  const [bodyType, setBodyType] = useState('');
-  const [colour, setColour] = useState('');
-  const [mileage, setMileage] = useState('');
-  const [vin, setVin] = useState('');
-  const [plate, setPlate] = useState('');
-  const [engineNo, setEngineNo] = useState('');
-  const [regCity, setRegCity] = useState('');
-  const [regState, setRegState] = useState('');
-
-  // Step 2
-  const [contactType, setContactType] = useState('individual');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [contactCity, setContactCity] = useState('');
-  const [contactState, setContactState] = useState('');
-
-  // Step 3
-  const [purchaseChannel, setPurchaseChannel] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
-  const [purchasePrice, setPurchasePrice] = useState('');
-  const [location, setLocation] = useState('');
-  const [comment, setComment] = useState('');
-
-  // Step 4
-  const [docs, setDocs] = useState<Record<string, DocUpload>>(
-    Object.fromEntries(DOCUMENTS.map(d => [d.key, { file: null, comment: '' }]))
-  );
-
-  const uploadedCount = Object.values(docs).filter(d => d.file).length;
+  const [form, setForm] = useState({
+    brand: '', model: '', year: '', transmission: 'Automatic', body: 'Sedan',
+    mileage: '', vin: '', plate: '', engineNumber: '', city: '', state: '',
+    contactType: 'Individual', salutation: 'Mr', firstName: '', lastName: '',
+    company: '', email: '', phone: '', address: '', contactCity: '', contactState: '',
+    purchaseChannel: '', purchaseDate: '', salesPerson: '', agent: '', location: '',
+    purchasePrice: '', comment: '',
+  });
 
   const handleVinBlur = () => {
-    if (vin.length === 17 && vin.toUpperCase().startsWith('JTDBE')) {
-      setDuplicateAlert(true);
+    if (form.vin.length >= 10) {
+      setVinChecking(true);
+      setTimeout(() => {
+        setVinChecking(false);
+        setVinDuplicate(form.vin === 'JT2BF22K1W0123456');
+      }, 1200);
     }
   };
 
-  const handleDocUpload = (key: string, file: File | null) => {
-    setDocs(d => ({ ...d, [key]: { ...d[key], file } }));
-  };
-
-  const handleSubmit = () => {
-    setSubmitted(true);
-  };
+  const toggleDoc = (name: string) => setUploadedDocs(prev => ({ ...prev, [name]: !prev[name] }));
 
   if (submitted) {
     return (
-      <div className="max-w-lg mx-auto py-20 text-center space-y-6">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle size={40} className="text-green-600" />
+      <div className="max-w-lg mx-auto mt-16 text-center space-y-6">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto animate-bounce">
+          <Check size={36} className="text-green-600" />
         </div>
         <div>
-          <h2 className="text-2xl font-heading font-bold text-[#1F2937]">Car Registered!</h2>
-          <p className="text-[#6B7280] mt-1 text-lg font-semibold">CK-42</p>
+          <h2 className="text-2xl font-bold text-[#1E3A5F]">Car Registered!</h2>
+          <p className="text-gray-500 mt-1">CK-42 has been created successfully</p>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <button onClick={() => router.push('/cars/1')} className="flex flex-col items-center gap-2 p-4 bg-white border border-[#E5E7EB] rounded-xl hover:border-[#1E3A5F] hover:bg-[#F8FAFC] transition-all">
-            <Car size={20} className="text-[#1E3A5F]" />
-            <span className="text-xs font-semibold text-[#374151]">View Car Details</span>
-          </button>
-          <button className="flex flex-col items-center gap-2 p-4 bg-white border border-[#E5E7EB] rounded-xl hover:border-[#1E3A5F] hover:bg-[#F8FAFC] transition-all">
-            <FileText size={20} className="text-purple-600" />
-            <span className="text-xs font-semibold text-[#374151]">Link Inspection</span>
-          </button>
-          <button onClick={() => { setSubmitted(false); setStep(0); setBrand(''); setModel(''); setVin(''); setPlate(''); }} className="flex flex-col items-center gap-2 p-4 bg-white border border-[#E5E7EB] rounded-xl hover:border-[#1E3A5F] hover:bg-[#F8FAFC] transition-all">
-            <Plus size={20} className="text-teal-600" />
-            <span className="text-xs font-semibold text-[#374151]">Register Another</span>
-          </button>
+        <div className="grid grid-cols-3 gap-3 mt-6">
+          {[
+            { label: 'View Car Details', href: '/cars/CK-42', color: 'bg-[#1E3A5F] text-white' },
+            { label: 'Link Inspection', href: '/inspection-orders-management', color: 'bg-purple-600 text-white' },
+            { label: 'Register Another', href: '/cars/register', color: 'bg-gray-100 text-gray-700' },
+          ].map(a => (
+            <a key={a.label} href={a.href} className={`${a.color} rounded-xl p-4 text-sm font-semibold text-center hover:opacity-90 transition-opacity`}>{a.label}</a>
+          ))}
         </div>
       </div>
     );
@@ -117,23 +85,23 @@ export default function CarRegistrationWizard() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Wizard Header */}
-      <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-        <h1 className="text-xl font-heading font-bold text-[#1F2937] mb-6">Register New Car</h1>
-        <div className="flex items-center">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <h1 className="text-xl font-bold text-[#1E3A5F] mb-6">Register New Car</h1>
+        <div className="flex items-center gap-0">
           {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            const done = i < step;
-            const active = i === step;
+            const idx = i + 1;
+            const done = step > idx;
+            const active = step === idx;
             return (
-              <React.Fragment key={i}>
+              <React.Fragment key={s.label}>
                 <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${done ? 'bg-green-500 border-green-500' : active ? 'bg-[#1E3A5F] border-[#1E3A5F]' : 'bg-white border-[#D1D5DB]'}`}>
-                    {done ? <Check size={16} className="text-white" /> : <Icon size={16} className={active ? 'text-white' : 'text-[#9CA3AF]'} />}
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${done ? 'bg-green-500 text-white' : active ? 'bg-[#1E3A5F] text-white' : 'bg-gray-100 text-gray-400'}`}>
+                    {done ? <Check size={16} /> : idx}
                   </div>
-                  <span className={`text-xs font-medium whitespace-nowrap ${active ? 'text-[#1E3A5F]' : done ? 'text-green-600' : 'text-[#9CA3AF]'}`}>{s.label}</span>
+                  <span className={`text-[10px] font-medium whitespace-nowrap ${active ? 'text-[#1E3A5F]' : done ? 'text-green-600' : 'text-gray-400'}`}>{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`flex-1 h-0.5 mx-2 mb-5 transition-all ${i < step ? 'bg-green-400' : 'bg-[#E5E7EB]'}`} />
+                  <div className={`flex-1 h-0.5 mx-2 mb-4 transition-all ${step > idx ? 'bg-green-400' : 'bg-gray-100'}`} />
                 )}
               </React.Fragment>
             );
@@ -142,99 +110,104 @@ export default function CarRegistrationWizard() {
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-        {/* STEP 1 */}
-        {step === 0 && (
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        {step === 1 && (
           <div className="space-y-5">
-            <h2 className="text-lg font-heading font-bold text-[#1F2937]">Vehicle Details</h2>
-            {duplicateAlert && (
-              <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                <AlertTriangle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-amber-800">⚠ Potential Duplicate Detected</p>
-                  <p className="text-sm text-amber-700 mt-0.5">A car with this VIN already exists: <strong>CK-41 — Toyota Camry 2011</strong></p>
-                  <div className="flex gap-2 mt-3">
-                    <button className="px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700">View Existing Car</button>
-                    <button onClick={() => setDuplicateAlert(false)} className="px-3 py-1.5 border border-amber-300 text-amber-700 text-xs font-semibold rounded-lg hover:bg-amber-100">Continue Anyway</button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <h2 className="text-lg font-bold text-[#1E3A5F]">Step 1 — Vehicle Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Brand *</label>
-                  <select value={brand} onChange={e => setBrand(e.target.value)} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] bg-white">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Brand *</label>
+                  <select value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
                     <option value="">Select brand...</option>
-                    {BRANDS.map(b => <option key={b}>{b}</option>)}
+                    {['Toyota', 'Honda', 'Mercedes-Benz', 'Ford', 'Lexus', 'Hyundai', 'Kia', 'BMW', 'Audi', 'Nissan'].map(b => <option key={b}>{b}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Car Model *</label>
-                  <select value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] bg-white">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Car Model *</label>
+                  <select value={form.model} onChange={e => setForm(f => ({ ...f, model: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
                     <option value="">Select model...</option>
-                    {brand === 'Toyota' && ['Camry','Corolla','Highlander','RAV4','Prado'].map(m => <option key={m}>{m}</option>)}
-                    {brand === 'Honda' && ['Accord','Civic','CR-V','Pilot','HR-V'].map(m => <option key={m}>{m}</option>)}
-                    {!brand && <option disabled>Select a brand first</option>}
+                    {['Camry', 'Corolla', 'Accord', 'Civic', 'C300', 'Explorer', 'RX350', 'Tucson'].map(m => <option key={m}>{m}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Year *</label>
-                  <select value={year} onChange={e => setYear(e.target.value)} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] bg-white">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Year *</label>
+                  <select value={form.year} onChange={e => setForm(f => ({ ...f, year: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
                     <option value="">Select year...</option>
                     {Array.from({ length: 35 }, (_, i) => 2024 - i).map(y => <option key={y}>{y}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Transmission *</label>
-                  <div className="flex rounded-lg border border-[#E5E7EB] overflow-hidden">
-                    {['Automatic','Manual','CVT'].map(t => (
-                      <button key={t} onClick={() => setTransmission(t)} className={`flex-1 py-2 text-sm font-medium transition-all ${transmission === t ? 'bg-[#1E3A5F] text-white' : 'bg-white text-[#6B7280] hover:bg-[#F4F6F8]'}`}>{t}</button>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Transmission *</label>
+                  <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                    {['Automatic', 'Manual', 'CVT'].map(t => (
+                      <button key={t} onClick={() => setForm(f => ({ ...f, transmission: t }))} className={`flex-1 py-2 text-xs font-medium transition-colors ${form.transmission === t ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{t}</button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Body Type</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['Sedan','SUV','Hatchback','Pickup','Van','Other'].map(t => (
-                      <button key={t} onClick={() => setBodyType(t)} className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${bodyType === t ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#1E3A5F]'}`}>{t}</button>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Body Type</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['Sedan', 'SUV', 'Hatchback', 'Pickup', 'Van', 'Other'].map(b => (
+                      <button key={b} onClick={() => setForm(f => ({ ...f, body: b }))} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${form.body === b ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{b}</button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Colour *</label>
-                  <div className="flex flex-wrap gap-2">
+                  <label className="block text-xs font-semibold text-gray-600 mb-2">Colour *</label>
+                  <div className="grid grid-cols-8 gap-1.5">
                     {COLOURS.map(c => (
-                      <button key={c} onClick={() => setColour(c)} className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${colour === c ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#1E3A5F]'}`}>{c}</button>
+                      <button key={c.name} title={c.name} onClick={() => setSelectedColour(c.name)} className={`w-7 h-7 rounded-full border-2 transition-all ${selectedColour === c.name ? 'border-[#1E3A5F] scale-110' : 'border-transparent hover:border-gray-300'}`} style={{ backgroundColor: c.hex }} />
                     ))}
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Selected: {selectedColour}</p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Mileage (km) *</label>
-                  <input value={mileage} onChange={e => setMileage(e.target.value)} placeholder="e.g. 45,000" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Mileage (km) *</label>
+                  <input type="number" value={form.mileage} onChange={e => setForm(f => ({ ...f, mileage: e.target.value }))} placeholder="e.g. 85000" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">VIN * <span className="text-[#9CA3AF] font-normal">(17 characters)</span></label>
-                  <input value={vin} onChange={e => setVin(e.target.value.toUpperCase())} onBlur={handleVinBlur} placeholder="e.g. JTDBE32K913012345" maxLength={17} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
-                  <p className="text-[10px] text-[#9CA3AF] mt-1">{vin.length}/17 characters</p>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">VIN * <span className="font-normal text-gray-400">(17 characters)</span></label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={form.vin}
+                      onChange={e => setForm(f => ({ ...f, vin: e.target.value.toUpperCase() }))}
+                      onBlur={handleVinBlur}
+                      maxLength={17}
+                      placeholder="e.g. JT2BF22K1W0123456"
+                      className={`w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 ${vinDuplicate ? 'border-amber-400' : 'border-gray-200'}`}
+                    />
+                    {vinChecking && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 animate-pulse">Checking…</span>}
+                  </div>
+                  {vinDuplicate && (
+                    <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <p className="text-xs font-semibold text-amber-700 flex items-center gap-1.5"><AlertTriangle size={13} /> Potential Duplicate Detected</p>
+                      <p className="text-xs text-amber-600 mt-0.5">A car with this VIN already exists: CK-41 — Toyota Camry 2011</p>
+                      <div className="flex gap-2 mt-2">
+                        <a href="/cars/CK-41" className="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-md hover:bg-amber-200 transition-colors">View Existing Car</a>
+                        <button onClick={() => setVinDuplicate(false)} className="text-xs px-2 py-1 bg-white border border-amber-200 text-amber-600 rounded-md hover:bg-amber-50 transition-colors">Continue Anyway</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Licence Plate *</label>
-                  <input value={plate} onChange={e => setPlate(e.target.value.toUpperCase())} placeholder="e.g. LSD260JE" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Licence Plate *</label>
+                  <input type="text" value={form.plate} onChange={e => setForm(f => ({ ...f, plate: e.target.value.toUpperCase() }))} placeholder="e.g. LSD260JE" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Engine Number</label>
-                  <input value={engineNo} onChange={e => setEngineNo(e.target.value)} placeholder="Engine number" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Engine Number</label>
+                  <input type="text" value={form.engineNumber} onChange={e => setForm(f => ({ ...f, engineNumber: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Registered City</label>
-                  <input value={regCity} onChange={e => setRegCity(e.target.value)} placeholder="City" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Registered City</label>
+                  <input type="text" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Registered State</label>
-                  <select value={regState} onChange={e => setRegState(e.target.value)} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] bg-white">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Registered State</label>
+                  <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
                     <option value="">Select state...</option>
                     {NIGERIAN_STATES.map(s => <option key={s}>{s}</option>)}
                   </select>
@@ -244,49 +217,60 @@ export default function CarRegistrationWizard() {
           </div>
         )}
 
-        {/* STEP 2 */}
-        {step === 1 && (
+        {step === 2 && (
           <div className="space-y-5">
-            <h2 className="text-lg font-heading font-bold text-[#1F2937]">Seller Contact</h2>
+            <h2 className="text-lg font-bold text-[#1E3A5F]">Step 2 — Seller Contact</h2>
             <div>
-              <label className="block text-sm font-semibold text-[#374151] mb-2">Contact Type *</label>
-              <div className="grid grid-cols-3 gap-3">
-                {['individual','dealer','corporate'].map(t => (
-                  <button key={t} onClick={() => setContactType(t)} className={`p-4 rounded-xl border-2 text-sm font-semibold capitalize transition-all ${contactType === t ? 'border-[#1E3A5F] bg-[#EFF6FF] text-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#1E3A5F]/40'}`}>{t}</button>
+              <label className="block text-xs font-semibold text-gray-600 mb-2">Contact Type *</label>
+              <div className="flex gap-3">
+                {['Individual', 'Dealer', 'Corporate'].map(t => (
+                  <button key={t} onClick={() => setForm(f => ({ ...f, contactType: t }))} className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${form.contactType === t ? 'border-[#1E3A5F] bg-[#1E3A5F]/5 text-[#1E3A5F]' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>{t}</button>
                 ))}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-[#374151] mb-1.5">First Name *</label>
-                <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First name" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Salutation</label>
+                <select value={form.salutation} onChange={e => setForm(f => ({ ...f, salutation: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
+                  {['Mr', 'Mrs', 'Dr', 'Engr', 'Other'].map(s => <option key={s}>{s}</option>)}
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#374151] mb-1.5">Last Name *</label>
-                <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Last name" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                <label className="block text-xs font-semibold text-gray-600 mb-1">First Name *</label>
+                <input type="text" value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#374151] mb-1.5">Email *</label>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Last Name *</label>
+                <input type="text" value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+              </div>
+              {(form.contactType === 'Dealer' || form.contactType === 'Corporate') && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Company</label>
+                  <input type="text" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Email *</label>
+                <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#374151] mb-1.5">Phone *</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Phone * <span className="font-normal text-gray-400">(+234)</span></label>
                 <div className="flex">
-                  <span className="flex items-center px-3 bg-[#F4F6F8] border border-r-0 border-[#E5E7EB] rounded-l-lg text-sm text-[#6B7280]">+234</span>
-                  <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="8012345678" maxLength={10} className="flex-1 px-3 py-2.5 border border-[#E5E7EB] rounded-r-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                  <span className="px-3 py-2 bg-gray-50 border border-r-0 border-gray-200 rounded-l-lg text-sm text-gray-500">+234</span>
+                  <input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} maxLength={10} className="flex-1 border border-gray-200 rounded-r-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-[#374151] mb-1.5">Address</label>
-                <input value={address} onChange={e => setAddress(e.target.value)} placeholder="Street address" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Address</label>
+                <input type="text" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#374151] mb-1.5">City</label>
-                <input value={contactCity} onChange={e => setContactCity(e.target.value)} placeholder="City" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                <label className="block text-xs font-semibold text-gray-600 mb-1">City</label>
+                <input type="text" value={form.contactCity} onChange={e => setForm(f => ({ ...f, contactCity: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#374151] mb-1.5">State</label>
-                <select value={contactState} onChange={e => setContactState(e.target.value)} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] bg-white">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">State</label>
+                <select value={form.contactState} onChange={e => setForm(f => ({ ...f, contactState: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
                   <option value="">Select state...</option>
                   {NIGERIAN_STATES.map(s => <option key={s}>{s}</option>)}
                 </select>
@@ -295,140 +279,119 @@ export default function CarRegistrationWizard() {
           </div>
         )}
 
-        {/* STEP 3 */}
-        {step === 2 && (
+        {step === 3 && (
           <div className="space-y-5">
-            <h2 className="text-lg font-heading font-bold text-[#1F2937]">Purchase Details</h2>
+            <h2 className="text-lg font-bold text-[#1E3A5F]">Step 3 — Purchase Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Purchase Channel *</label>
-                  <select value={purchaseChannel} onChange={e => setPurchaseChannel(e.target.value)} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] bg-white">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Purchase Channel *</label>
+                  <select value={form.purchaseChannel} onChange={e => setForm(f => ({ ...f, purchaseChannel: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
                     <option value="">Select channel...</option>
-                    {['Auction','Market Place','Offline','B2B','Other'].map(c => <option key={c}>{c}</option>)}
+                    {['Auction', 'Market Place', 'Offline', 'B2B', 'Other'].map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Purchase Date *</label>
-                  <input type="date" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} max={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Purchase Date *</label>
+                  <input type="date" value={form.purchaseDate} onChange={e => setForm(f => ({ ...f, purchaseDate: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Sales Person *</label>
-                  <select className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] bg-white">
-                    <option>Promise Ndem</option>
-                    <option>Adaeze Mensah</option>
-                    <option>Chidi Okafor</option>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Sales Person *</label>
+                  <select value={form.salesPerson} onChange={e => setForm(f => ({ ...f, salesPerson: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
+                    <option value="">Select person...</option>
+                    {['Promise Ndem', 'Adaeze Mensah', 'Chukwuemeka Obi', 'Fatima Bello'].map(p => <option key={p}>{p}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Location *</label>
-                  <select value={location} onChange={e => setLocation(e.target.value)} className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] bg-white">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Partner / Agent</label>
+                  <input type="text" value={form.agent} onChange={e => setForm(f => ({ ...f, agent: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Location *</label>
+                  <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
                     <option value="">Select location...</option>
-                    {['Lagos','Abuja','Port Harcourt','Other'].map(l => <option key={l}>{l}</option>)}
+                    {['Lagos', 'Abuja', 'Port Harcourt', 'Other'].map(l => <option key={l}>{l}</option>)}
                   </select>
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Purchase Price (₦) *</label>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Purchase Price (₦) *</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] font-semibold text-sm">₦</span>
-                    <input value={purchasePrice} onChange={e => setPurchasePrice(e.target.value)} placeholder="5,000,000" className="w-full pl-8 pr-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-semibold">₦</span>
+                    <input type="number" value={form.purchasePrice} onChange={e => setForm(f => ({ ...f, purchasePrice: e.target.value }))} placeholder="0" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Partner / Agent</label>
-                  <input placeholder="Agent name (optional)" className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#374151] mb-1.5">Comment</label>
-                  <textarea value={comment} onChange={e => setComment(e.target.value)} rows={4} placeholder="Any additional notes..." className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] resize-none" />
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Comment</label>
+                  <textarea value={form.comment} onChange={e => setForm(f => ({ ...f, comment: e.target.value }))} rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 resize-none" />
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* STEP 4 */}
-        {step === 3 && (
+        {step === 4 && (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-heading font-bold text-[#1F2937]">Upload Documents</h2>
-              <span className="text-sm text-[#6B7280]">{uploadedCount} of {DOCUMENTS.length} uploaded</span>
+              <h2 className="text-lg font-bold text-[#1E3A5F]">Step 4 — Documents</h2>
+              <span className="text-sm text-gray-500">Upload Mandatory Documents</span>
             </div>
-            <div className="w-full bg-[#F4F6F8] rounded-full h-2">
-              <div className="bg-[#1E3A5F] h-2 rounded-full transition-all" style={{ width: `${(uploadedCount / DOCUMENTS.length) * 100}%` }} />
+            <div className="w-full bg-gray-100 rounded-full h-2">
+              <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${(Object.values(uploadedDocs).filter(Boolean).length / DOCUMENTS.length) * 100}%` }} />
             </div>
+            <p className="text-xs text-gray-500">{Object.values(uploadedDocs).filter(Boolean).length} / {DOCUMENTS.length} documents uploaded</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {DOCUMENTS.map(doc => {
-                const d = docs[doc.key];
-                return (
-                  <div key={doc.key} className="border border-[#E5E7EB] rounded-xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-[#1F2937]">{doc.name}</span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${doc.required ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'}`}>{doc.required ? 'Required' : 'Optional'}</span>
-                    </div>
-                    {d.file ? (
-                      <div className="flex items-center justify-between p-2.5 bg-green-50 border border-green-200 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle size={14} className="text-green-600" />
-                          <span className="text-xs font-medium text-green-700 truncate max-w-[140px]">{d.file.name}</span>
-                        </div>
-                        <button onClick={() => handleDocUpload(doc.key, null)} className="text-[#9CA3AF] hover:text-red-500"><X size={14} /></button>
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center gap-2 p-4 border-2 border-dashed border-[#D1D5DB] rounded-lg cursor-pointer hover:border-[#1E3A5F] hover:bg-[#F8FAFC] transition-all">
-                        <Upload size={18} className="text-[#9CA3AF]" />
-                        <span className="text-xs text-[#6B7280]">Drag & drop or <span className="text-[#1E3A5F] font-semibold">Select File</span></span>
-                        <input type="file" className="hidden" onChange={e => handleDocUpload(doc.key, e.target.files?.[0] ?? null)} />
-                      </label>
-                    )}
-                    <textarea
-                      value={d.comment}
-                      onChange={e => setDocs(prev => ({ ...prev, [doc.key]: { ...prev[doc.key], comment: e.target.value } }))}
-                      placeholder="Add note about this document..."
-                      rows={2}
-                      className="w-full px-2.5 py-2 border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#1E3A5F]/20 resize-none text-[#6B7280]"
-                    />
+              {DOCUMENTS.map(doc => (
+                <div key={doc.name} className="border border-gray-100 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-800">{doc.name}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${doc.required ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'}`}>{doc.required ? 'Required' : 'Optional'}</span>
                   </div>
-                );
-              })}
+                  <textarea placeholder="Add note about this document..." rows={2} className="w-full border border-gray-100 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1E3A5F]/20 resize-none bg-gray-50" />
+                  {uploadedDocs[doc.name] ? (
+                    <div className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <FileText size={14} className="text-green-600" />
+                        <span className="text-xs text-green-700 font-medium">{doc.name.replace(/ /g, '_')}.pdf</span>
+                        <span className="text-[10px] text-green-600">Uploaded ✓</span>
+                      </div>
+                      <button onClick={() => toggleDoc(doc.name)} className="text-gray-400 hover:text-red-500 transition-colors"><X size={13} /></button>
+                    </div>
+                  ) : (
+                    <button onClick={() => toggleDoc(doc.name)} className="w-full border-2 border-dashed border-gray-200 rounded-lg py-4 text-xs text-gray-400 hover:border-[#1E3A5F]/30 hover:text-[#1E3A5F] transition-all flex flex-col items-center gap-1.5">
+                      <Upload size={16} />
+                      <span>Drag & drop or <span className="text-[#1E3A5F] font-medium">Select File(s)</span></span>
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Wizard Footer */}
-      <div className="sticky bottom-0 bg-white border-t border-[#E5E7EB] rounded-xl px-6 py-4 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-[#6B7280] font-medium">Step {step + 1} of {STEPS.length}</span>
-          <button className="text-sm text-[#2E75B6] hover:underline font-medium">Save as Draft</button>
-        </div>
+      {/* Sticky Footer */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-100 rounded-xl shadow-lg px-6 py-4 flex items-center justify-between gap-4">
+        <span className="text-sm text-gray-500 font-medium">Step {step} of {STEPS.length}</span>
         <div className="flex items-center gap-3">
-          {step > 0 && (
-            <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-2 px-4 py-2.5 border border-[#E5E7EB] text-sm font-semibold text-[#374151] rounded-lg hover:bg-[#F4F6F8] transition-all">
+          {step > 1 && (
+            <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
               <ChevronLeft size={15} /> Back
             </button>
           )}
-          {step < STEPS.length - 1 ? (
-            <button onClick={() => setStep(s => s + 1)} className="flex items-center gap-2 px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98]">
+          <button className="text-sm text-[#1E3A5F] hover:underline transition-colors">Save as Draft</button>
+          {step < 4 ? (
+            <button onClick={() => setStep(s => s + 1)} className="flex items-center gap-1.5 px-5 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">
               Next <ChevronRight size={15} />
             </button>
           ) : (
-            <button onClick={handleSubmit} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition-all active:scale-[0.98]">
-              <CheckCircle size={15} /> Submit & Register Car
+            <button onClick={() => setSubmitted(true)} className="flex items-center gap-1.5 px-6 py-2.5 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-colors">
+              <Check size={15} /> Submit & Register Car
             </button>
           )}
         </div>
       </div>
     </div>
-  );
-}
-
-function Plus({ size, className }: { size: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
   );
 }
