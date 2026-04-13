@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { LayoutDashboard, ClipboardList, Users, FileText, UserCircle, Car, Handshake, DollarSign, Bell, Settings, ChevronLeft, ChevronRight, LogOut, Palette, Smartphone, FileBarChart, BarChart2, WifiOff, Zap, Navigation, Receipt, X } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Users, FileText, UserCircle, Car, Handshake, DollarSign, Bell, Settings, ChevronLeft, ChevronRight, LogOut, Palette, Smartphone, FileBarChart, BarChart2, WifiOff, Zap, Navigation, Receipt, X, ShoppingCart, Database, MessageSquare, Tag, Send } from 'lucide-react';
 
 const NAV_GROUPS = [
   {
@@ -15,10 +15,20 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: 'Cars',
+    items: [
+      { icon: Car, label: 'Cars', path: '/cars', badge: '33' },
+      { icon: ShoppingCart, label: 'Auctions', path: '/auctions', badge: null },
+      { icon: Send, label: 'Offers', path: '/offers', badge: null },
+      { icon: Database, label: 'Reference Data', path: '/reference-data', badge: null },
+    ],
+  },
+  {
     label: 'CRM',
     items: [
+      { icon: MessageSquare, label: 'CRM', path: '/crm', badge: null },
       { icon: UserCircle, label: 'Customers', path: '/customer-management', badge: null },
-      { icon: Car, label: 'Listings', path: '/vehicle-listings', badge: null },
+      { icon: Tag, label: 'Listings', path: '/vehicle-listings', badge: null },
       { icon: Handshake, label: 'Deals', path: '/deal-pipeline', badge: '3' },
     ],
   },
