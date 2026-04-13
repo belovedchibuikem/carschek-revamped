@@ -30,6 +30,75 @@ const PERMISSION_MODULES = [
     ],
   },
   {
+    module: 'CARS',
+    permissions: [
+      { key: 'cars.view', label: 'View' },
+      { key: 'cars.create', label: 'Register Car' },
+      { key: 'cars.edit', label: 'Edit' },
+      { key: 'cars.grade', label: 'Grade Car' },
+      { key: 'cars.delete', label: 'Delete' },
+      { key: 'cars.export', label: 'Export' },
+    ],
+  },
+  {
+    module: 'AUCTIONS',
+    permissions: [
+      { key: 'auctions.view', label: 'View' },
+      { key: 'auctions.create', label: 'Start Auction' },
+      { key: 'auctions.manage', label: 'Manage Bids' },
+      { key: 'auctions.close', label: 'Close / Cancel' },
+    ],
+  },
+  {
+    module: 'CRM',
+    permissions: [
+      { key: 'crm.view', label: 'View Contacts' },
+      { key: 'crm.create', label: 'Add Contact' },
+      { key: 'crm.edit', label: 'Edit Contact' },
+      { key: 'crm.log_comm', label: 'Log Communication' },
+      { key: 'crm.delete', label: 'Delete Contact' },
+    ],
+  },
+  {
+    module: 'OFFERS',
+    permissions: [
+      { key: 'offers.view', label: 'View' },
+      { key: 'offers.create', label: 'Create Offer' },
+      { key: 'offers.send', label: 'Send Offer' },
+      { key: 'offers.record_response', label: 'Record Response' },
+      { key: 'offers.delete', label: 'Delete' },
+    ],
+  },
+  {
+    module: 'REFERENCE DATA',
+    permissions: [
+      { key: 'refdata.view', label: 'View' },
+      { key: 'refdata.create', label: 'Add Brand / Model / Year' },
+      { key: 'refdata.edit', label: 'Edit' },
+      { key: 'refdata.delete', label: 'Delete' },
+    ],
+  },
+  {
+    module: 'INVOICES',
+    permissions: [
+      { key: 'invoices.view', label: 'View' },
+      { key: 'invoices.create', label: 'Create' },
+      { key: 'invoices.send', label: 'Send' },
+      { key: 'invoices.mark_paid', label: 'Mark as Paid' },
+      { key: 'invoices.delete', label: 'Delete' },
+    ],
+  },
+  {
+    module: 'DOCUMENT COMPLIANCE',
+    permissions: [
+      { key: 'docs.view', label: 'View Documents' },
+      { key: 'docs.upload', label: 'Upload' },
+      { key: 'docs.approve', label: 'Approve' },
+      { key: 'docs.reject', label: 'Reject' },
+      { key: 'docs.request_reupload', label: 'Request Re-upload' },
+    ],
+  },
+  {
     module: 'CUSTOMERS',
     permissions: [
       { key: 'customers.view', label: 'View' },
@@ -73,35 +142,115 @@ const DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     PERMISSION_MODULES.flatMap(m => m.permissions.map(p => [p.key, true]))
   ),
   'Ops Manager': {
+    // Orders
     'orders.view': true, 'orders.create': true, 'orders.edit': true, 'orders.assign': true, 'orders.cancel': true, 'orders.export': true,
+    // Reports
     'reports.view': true, 'reports.approve': true, 'reports.reject': true, 'reports.edit': true, 'reports.resend': true,
+    // Cars
+    'cars.view': true, 'cars.create': true, 'cars.edit': true, 'cars.grade': true, 'cars.delete': false, 'cars.export': true,
+    // Auctions
+    'auctions.view': true, 'auctions.create': true, 'auctions.manage': true, 'auctions.close': true,
+    // CRM
+    'crm.view': true, 'crm.create': true, 'crm.edit': true, 'crm.log_comm': true, 'crm.delete': false,
+    // Offers
+    'offers.view': true, 'offers.create': true, 'offers.send': true, 'offers.record_response': true, 'offers.delete': false,
+    // Reference Data
+    'refdata.view': true, 'refdata.create': true, 'refdata.edit': true, 'refdata.delete': false,
+    // Invoices
+    'invoices.view': true, 'invoices.create': true, 'invoices.send': true, 'invoices.mark_paid': true, 'invoices.delete': false,
+    // Document Compliance
+    'docs.view': true, 'docs.upload': true, 'docs.approve': true, 'docs.reject': true, 'docs.request_reupload': true,
+    // Customers
     'customers.view': true, 'customers.edit': true, 'customers.suspend': false, 'customers.export': true, 'customers.delete': false,
-    'finance.view_revenue': true, 'finance.process_payouts': false, 'finance.issue_refunds': false, 'finance.create_invoices': false,
+    // Finance
+    'finance.view_revenue': true, 'finance.process_payouts': true, 'finance.issue_refunds': true, 'finance.create_invoices': true,
+    // Inspectors
     'inspectors.view': true, 'inspectors.create': true, 'inspectors.edit': true, 'inspectors.deactivate': false,
+    // Settings
     'settings.view': true, 'settings.edit': false,
   },
   'Inspector': {
+    // Orders
     'orders.view': true, 'orders.create': false, 'orders.edit': false, 'orders.assign': false, 'orders.cancel': false, 'orders.export': false,
+    // Reports
     'reports.view': true, 'reports.approve': false, 'reports.reject': false, 'reports.edit': true, 'reports.resend': false,
+    // Cars
+    'cars.view': true, 'cars.create': false, 'cars.edit': false, 'cars.grade': true, 'cars.delete': false, 'cars.export': false,
+    // Auctions
+    'auctions.view': true, 'auctions.create': false, 'auctions.manage': false, 'auctions.close': false,
+    // CRM
+    'crm.view': true, 'crm.create': false, 'crm.edit': false, 'crm.log_comm': false, 'crm.delete': false,
+    // Offers
+    'offers.view': false, 'offers.create': false, 'offers.send': false, 'offers.record_response': false, 'offers.delete': false,
+    // Reference Data
+    'refdata.view': true, 'refdata.create': false, 'refdata.edit': false, 'refdata.delete': false,
+    // Invoices
+    'invoices.view': false, 'invoices.create': false, 'invoices.send': false, 'invoices.mark_paid': false, 'invoices.delete': false,
+    // Document Compliance
+    'docs.view': true, 'docs.upload': true, 'docs.approve': false, 'docs.reject': false, 'docs.request_reupload': false,
+    // Customers
     'customers.view': true, 'customers.edit': false, 'customers.suspend': false, 'customers.export': false, 'customers.delete': false,
+    // Finance
     'finance.view_revenue': false, 'finance.process_payouts': false, 'finance.issue_refunds': false, 'finance.create_invoices': false,
+    // Inspectors
     'inspectors.view': true, 'inspectors.create': false, 'inspectors.edit': false, 'inspectors.deactivate': false,
+    // Settings
     'settings.view': false, 'settings.edit': false,
   },
   'Finance': {
+    // Orders
     'orders.view': true, 'orders.create': false, 'orders.edit': false, 'orders.assign': false, 'orders.cancel': false, 'orders.export': true,
+    // Reports
     'reports.view': true, 'reports.approve': false, 'reports.reject': false, 'reports.edit': false, 'reports.resend': false,
+    // Cars
+    'cars.view': true, 'cars.create': false, 'cars.edit': false, 'cars.grade': false, 'cars.delete': false, 'cars.export': true,
+    // Auctions
+    'auctions.view': true, 'auctions.create': false, 'auctions.manage': false, 'auctions.close': false,
+    // CRM
+    'crm.view': true, 'crm.create': false, 'crm.edit': false, 'crm.log_comm': false, 'crm.delete': false,
+    // Offers
+    'offers.view': true, 'offers.create': false, 'offers.send': false, 'offers.record_response': false, 'offers.delete': false,
+    // Reference Data
+    'refdata.view': true, 'refdata.create': false, 'refdata.edit': false, 'refdata.delete': false,
+    // Invoices
+    'invoices.view': true, 'invoices.create': true, 'invoices.send': true, 'invoices.mark_paid': true, 'invoices.delete': false,
+    // Document Compliance
+    'docs.view': true, 'docs.upload': false, 'docs.approve': false, 'docs.reject': false, 'docs.request_reupload': false,
+    // Customers
     'customers.view': true, 'customers.edit': false, 'customers.suspend': false, 'customers.export': true, 'customers.delete': false,
+    // Finance
     'finance.view_revenue': true, 'finance.process_payouts': true, 'finance.issue_refunds': true, 'finance.create_invoices': true,
+    // Inspectors
     'inspectors.view': true, 'inspectors.create': false, 'inspectors.edit': false, 'inspectors.deactivate': false,
+    // Settings
     'settings.view': true, 'settings.edit': false,
   },
   'Support': {
+    // Orders
     'orders.view': true, 'orders.create': false, 'orders.edit': false, 'orders.assign': false, 'orders.cancel': false, 'orders.export': false,
+    // Reports
     'reports.view': true, 'reports.approve': false, 'reports.reject': false, 'reports.edit': false, 'reports.resend': true,
+    // Cars
+    'cars.view': true, 'cars.create': false, 'cars.edit': false, 'cars.grade': false, 'cars.delete': false, 'cars.export': false,
+    // Auctions
+    'auctions.view': true, 'auctions.create': false, 'auctions.manage': false, 'auctions.close': false,
+    // CRM
+    'crm.view': true, 'crm.create': true, 'crm.edit': true, 'crm.log_comm': true, 'crm.delete': false,
+    // Offers
+    'offers.view': true, 'offers.create': false, 'offers.send': false, 'offers.record_response': true, 'offers.delete': false,
+    // Reference Data
+    'refdata.view': true, 'refdata.create': false, 'refdata.edit': false, 'refdata.delete': false,
+    // Invoices
+    'invoices.view': true, 'invoices.create': false, 'invoices.send': false, 'invoices.mark_paid': false, 'invoices.delete': false,
+    // Document Compliance
+    'docs.view': true, 'docs.upload': false, 'docs.approve': false, 'docs.reject': false, 'docs.request_reupload': true,
+    // Customers
     'customers.view': true, 'customers.edit': true, 'customers.suspend': false, 'customers.export': false, 'customers.delete': false,
+    // Finance
     'finance.view_revenue': false, 'finance.process_payouts': false, 'finance.issue_refunds': false, 'finance.create_invoices': false,
+    // Inspectors
     'inspectors.view': true, 'inspectors.create': false, 'inspectors.edit': false, 'inspectors.deactivate': false,
+    // Settings
     'settings.view': false, 'settings.edit': false,
   },
 };
@@ -1464,7 +1613,7 @@ function BillingPage() {
               <p className="text-xl font-bold">312 <span className="text-sm font-normal text-blue-200">/ 500</span></p>
             </div>
             <div className="w-full bg-white/20 rounded-full h-1.5">
-              <div className="bg-white rounded-full h-1.5" style={{ width: '62.4%' }} />
+              <div className={`rounded-full h-1.5 transition-all ${(312 / 500) > 0.8 ? 'bg-amber-500' : 'bg-[#1E3A5F]'}`} style={{ width: `${Math.min((312 / 500) * 100, 100)}%` }} />
             </div>
             <p className="text-[10px] text-blue-200 mt-1">62.4% used</p>
           </div>
@@ -2155,8 +2304,8 @@ export default function SettingsPage() {
               <h1 className="text-base font-bold text-[#1F2937]">Settings</h1>
               <p className="text-xs text-[#6B7280] mt-0.5">Super Admin only</p>
             </div>
-            <button onClick={() => setMobileNavOpen(false)} className="md:hidden min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg hover:bg-gray-100">
-              <X size={18} className="text-[#6B7280]" />
+            <button onClick={() => setMobileNavOpen(true)} className="md:hidden min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg border border-[#E5E7EB] hover:bg-gray-100">
+              <ChevronDown size={18} className="text-[#6B7280]" />
             </button>
           </div>
           <nav className="py-3">

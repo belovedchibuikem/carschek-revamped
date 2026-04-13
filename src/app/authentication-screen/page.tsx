@@ -430,10 +430,10 @@ export default function AuthenticationScreen() {
                 ))}
               </div>
               <a
-                href="/admin-dashboard"
+                href={welcomeRole === 'inspector' ? '/inspector-pwa' : '/admin-dashboard'}
                 className="block w-full py-2.5 bg-[#1E3A5F] hover:bg-[#16304F] text-white font-semibold text-sm rounded-lg transition-all duration-150 active:scale-[0.99] text-center"
               >
-                Go to Dashboard →
+                {welcomeRole === 'inspector' ? 'Go to Inspector App →' : 'Go to Dashboard →'}
               </a>
             </div>
           )}

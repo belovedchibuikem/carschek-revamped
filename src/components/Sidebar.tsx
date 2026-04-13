@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { LayoutDashboard, ClipboardList, Users, FileText, UserCircle, Car, Handshake, DollarSign, Bell, Settings, ChevronLeft, ChevronRight, LogOut, Palette, Smartphone, FileBarChart, BarChart2, WifiOff, Zap, Navigation, Receipt, X } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Users, FileText, UserCircle, Car, Handshake, DollarSign, Bell, Settings, ChevronLeft, ChevronRight, LogOut, Palette, Smartphone, FileBarChart, BarChart2, WifiOff, Zap, Navigation, Receipt, X, Gavel, Database, Users2, Tag, TabletSmartphone } from 'lucide-react';
 
 const NAV_GROUPS = [
   {
@@ -15,8 +15,18 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: 'Cars',
+    items: [
+      { icon: Car, label: 'Cars', path: '/cars', badge: '33' },
+      { icon: Gavel, label: 'Auctions', path: '/auctions', badge: null },
+      { icon: Tag, label: 'Offers', path: '/offers', badge: null },
+      { icon: Database, label: 'Reference Data', path: '/reference-data', badge: null },
+    ],
+  },
+  {
     label: 'CRM',
     items: [
+      { icon: Users2, label: 'CRM Contacts', path: '/crm', badge: null },
       { icon: UserCircle, label: 'Customers', path: '/customer-management', badge: null },
       { icon: Car, label: 'Listings', path: '/vehicle-listings', badge: null },
       { icon: Handshake, label: 'Deals', path: '/deal-pipeline', badge: '3' },
@@ -40,6 +50,7 @@ const NAV_GROUPS = [
   {
     label: 'Inspector App',
     items: [
+      { icon: TabletSmartphone, label: 'Inspector Mobile App', path: '/inspector-app', badge: 'NEW' },
       { icon: Smartphone, label: 'Inspector PWA', path: '/inspector-pwa', badge: null },
       { icon: WifiOff, label: 'Offline & PWA', path: '/offline-pwa', badge: null },
       { icon: Zap, label: 'AI Inspector Tools', path: '/ai-inspector-tools', badge: null },
@@ -147,7 +158,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
         >
           {collapsed ? <ChevronRight size={16} /> : <><ChevronLeft size={16} /><span>Collapse</span></>}
         </button>
-        <div className={`mt-2 flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all min-h-[48px] ${collapsed ? 'justify-center' : ''}`}>
+        <div className={`mt-2 flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 transition-all min-h-[48px] ${collapsed ? 'justify-center' : ''}`}>
           <div className="w-8 h-8 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             PN
           </div>
@@ -157,7 +168,13 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
               <p className="text-[10px] text-white/50 truncate">Super Admin</p>
             </div>
           )}
-          {!collapsed && <LogOut size={14} className="text-white/40 flex-shrink-0" />}
+          {!collapsed && (
+            <a href="/authentication-screen" title="Sign Out"
+              className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0"
+              onClick={(e) => { e.preventDefault(); window.location.href = '/authentication-screen'; }}>
+              <LogOut size={14} className="text-white/60 hover:text-white" />
+            </a>
+          )}
         </div>
       </div>
     </aside>

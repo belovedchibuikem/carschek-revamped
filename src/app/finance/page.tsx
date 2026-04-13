@@ -8,12 +8,12 @@ import Icon from '@/components/ui/AppIcon';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const revenueByService = [
-  { month: 'Nov', inspection: 3200000, commission: 800000, loan: 400000, reinspection: 200000 },
-  { month: 'Dec', inspection: 3800000, commission: 950000, loan: 480000, reinspection: 240000 },
-  { month: 'Jan', inspection: 4100000, commission: 1020000, loan: 510000, reinspection: 260000 },
-  { month: 'Feb', inspection: 3600000, commission: 900000, loan: 450000, reinspection: 220000 },
-  { month: 'Mar', inspection: 4400000, commission: 1100000, loan: 550000, reinspection: 280000 },
-  { month: 'Apr', inspection: 4800000, commission: 1200000, loan: 600000, reinspection: 300000 },
+  { month: 'Nov', inspection: 3200000, commission: 800000, auction: 620000, carSales: 1800000, offers: 180000 },
+  { month: 'Dec', inspection: 3800000, commission: 950000, auction: 740000, carSales: 2200000, offers: 210000 },
+  { month: 'Jan', inspection: 4100000, commission: 1020000, auction: 890000, carSales: 2600000, offers: 240000 },
+  { month: 'Feb', inspection: 3600000, commission: 900000, auction: 710000, carSales: 2100000, offers: 195000 },
+  { month: 'Mar', inspection: 4400000, commission: 1100000, auction: 980000, carSales: 3100000, offers: 270000 },
+  { month: 'Apr', inspection: 4800000, commission: 1200000, auction: 1150000, carSales: 3800000, offers: 310000 },
 ];
 
 const dailyRevenue = [
@@ -32,12 +32,19 @@ const revenueByZone = [
   { zone: 'Others', amount: 850000 },
 ];
 
+const carSalesMetrics = [
+  { label: 'Cars Acquired', value: '33', trend: '+8 this month', color: 'text-[#1E3A5F]' },
+  { label: 'Cars Sold', value: '21', trend: '+5 this month', color: 'text-[#1A7A4A]' },
+  { label: 'Active Auctions', value: '4', trend: '2 ending soon', color: 'text-[#D35400]' },
+  { label: 'Offers Sent', value: '12', trend: '5 accepted', color: 'text-[#2E75B6]' },
+];
+
 const payments = [
   { id: 'PAY-001', date: '2026-04-10', customer: 'Adaeze Mensah', service: 'Inspection', amount: 45000, method: 'Paystack', reference: 'PSK-8821-XZ', paystackStatus: 'success', carschekStatus: 'Confirmed', webhook: '{"event":"charge.success","data":{"reference":"PSK-8821-XZ","amount":4500000,"currency":"NGN","status":"success"}}' },
   { id: 'PAY-002', date: '2026-04-10', customer: 'Emeka Okafor', service: 'Re-inspection', amount: 25000, method: 'Flutterwave', reference: 'FLW-9934-AB', paystackStatus: 'failed', carschekStatus: 'Failed', webhook: '{"event":"charge.failed","data":{"reference":"FLW-9934-AB","amount":2500000,"currency":"NGN","status":"failed"}}' },
-  { id: 'PAY-003', date: '2026-04-09', customer: 'Chidi Nwosu', service: 'Sales Commission', amount: 250000, method: 'Paystack', reference: 'PSK-7712-CD', paystackStatus: 'success', carschekStatus: 'Confirmed', webhook: '{"event":"charge.success","data":{"reference":"PSK-7712-CD","amount":25000000,"currency":"NGN","status":"success"}}' },
-  { id: 'PAY-004', date: '2026-04-09', customer: 'Fatima Bello', service: 'Inspection', amount: 45000, method: 'Paystack', reference: 'PSK-6601-EF', paystackStatus: 'pending', carschekStatus: 'Pending', webhook: '{"event":"charge.pending","data":{"reference":"PSK-6601-EF","amount":4500000,"currency":"NGN","status":"pending"}}' },
-  { id: 'PAY-005', date: '2026-04-08', customer: 'Tunde Adeyemi', service: 'Loan Referral', amount: 120000, method: 'Flutterwave', reference: 'FLW-5590-GH', paystackStatus: 'success', carschekStatus: 'Refunded', webhook: '{"event":"charge.success","data":{"reference":"FLW-5590-GH","amount":12000000,"currency":"NGN","status":"success"}}' },
+  { id: 'PAY-003', date: '2026-04-09', customer: 'Chidi Nwosu', service: 'Car Sale — CK-38 Toyota Camry', amount: 5100000, method: 'Paystack', reference: 'PSK-7712-CD', paystackStatus: 'success', carschekStatus: 'Confirmed', webhook: '{"event":"charge.success","data":{"reference":"PSK-7712-CD","amount":510000000,"currency":"NGN","status":"success"}}' },
+  { id: 'PAY-004', date: '2026-04-09', customer: 'Fatima Bello', service: 'Auction Winning Bid — CK-41', amount: 5400000, method: 'Paystack', reference: 'PSK-6601-EF', paystackStatus: 'pending', carschekStatus: 'Pending', webhook: '{"event":"charge.pending","data":{"reference":"PSK-6601-EF","amount":540000000,"currency":"NGN","status":"pending"}}' },
+  { id: 'PAY-005', date: '2026-04-08', customer: 'Tunde Adeyemi', service: 'Platform Fee — Auction CK-39', amount: 120000, method: 'Flutterwave', reference: 'FLW-5590-GH', paystackStatus: 'success', carschekStatus: 'Refunded', webhook: '{"event":"charge.success","data":{"reference":"FLW-5590-GH","amount":12000000,"currency":"NGN","status":"success"}}' },
 ];
 
 const inspectors = [
@@ -119,10 +126,21 @@ function RevenueDashboard() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <SummaryCard label="Gross Revenue" value="₦12,450,000" icon={TrendingUp} color="bg-[#1E3A5F]" />
+        <SummaryCard label="Gross Revenue" value="₦18,260,000" icon={TrendingUp} color="bg-[#1E3A5F]" />
         <SummaryCard label="Refunds" value="₦320,000" icon={TrendingDown} color="bg-[#C0392B]" />
-        <SummaryCard label="Net Revenue" value="₦12,130,000" icon={DollarSign} color="bg-[#1A7A4A]" />
-        <SummaryCard label="Commission" value="₦1,240,000" icon={TrendingUp} color="bg-[#2E75B6]" />
+        <SummaryCard label="Net Revenue" value="₦17,940,000" icon={DollarSign} color="bg-[#1A7A4A]" />
+        <SummaryCard label="Commission" value="₦1,200,000" icon={TrendingUp} color="bg-[#2E75B6]" />
+      </div>
+
+      {/* Cars & Auctions metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {carSalesMetrics.map(m => (
+          <div key={m.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4">
+            <p className="text-xs text-[#6B7280] mb-1">{m.label}</p>
+            <p className={`text-2xl font-bold ${m.color}`}>{m.value}</p>
+            <p className="text-[11px] text-[#6B7280] mt-1">{m.trend}</p>
+          </div>
+        ))}
       </div>
 
       {/* Revenue breakdown chart */}
@@ -139,8 +157,9 @@ function RevenueDashboard() {
                 <Legend wrapperStyle={{ fontSize: '11px' }} />
                 <Bar dataKey="inspection" name="Inspection" stackId="a" fill="#1E3A5F" />
                 <Bar dataKey="commission" name="Commission" stackId="a" fill="#2E75B6" />
-                <Bar dataKey="loan" name="Loan" stackId="a" fill="#1A7A4A" />
-                <Bar dataKey="reinspection" name="Re-inspection" stackId="a" fill="#D35400" radius={[4,4,0,0]} />
+                <Bar dataKey="auction" name="Auction Fees" stackId="a" fill="#D35400" />
+                <Bar dataKey="carSales" name="Car Sales" stackId="a" fill="#1A7A4A" />
+                <Bar dataKey="offers" name="Offers" stackId="a" fill="#7C3AED" radius={[4,4,0,0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
