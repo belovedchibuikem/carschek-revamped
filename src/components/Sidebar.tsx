@@ -52,6 +52,7 @@ const NAV_GROUPS = [
     items: [
       { icon: TabletSmartphone, label: 'Inspector Mobile App', path: '/inspector-app', badge: 'NEW' },
       { icon: Smartphone, label: 'Inspector PWA', path: '/inspector-pwa', badge: null },
+      { icon: LayoutDashboard, label: 'Inspector Admin', path: '/inspector-admin', badge: null },
       { icon: WifiOff, label: 'Offline & PWA', path: '/offline-pwa', badge: null },
       { icon: Zap, label: 'AI Inspector Tools', path: '/ai-inspector-tools', badge: null },
     ],

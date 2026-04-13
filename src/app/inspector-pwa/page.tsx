@@ -5,6 +5,8 @@ import { MapPin, Phone, Navigation, Play, Eye, ChevronLeft, ChevronRight, Clock,
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+import toast, { Toaster } from 'react-hot-toast';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 type JobStatus = 'Upcoming' | 'En Route' | 'In Progress' | 'Awaiting QA' | 'Completed';
 type CheckResult = 'pass' | 'fail' | 'na' | null;
@@ -900,7 +902,7 @@ function InspectorHome({ onJobSelect, activeTab, onTabChange, onLogout }: {
                   </p>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <button className="flex-1 py-2.5 bg-[#F4F6F8] text-[#1F2937] rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 min-h-[48px]">
+                  <button className="flex-1 py-2.5 bg-[#F4F6F8] text-[#6B7280] rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 min-h-[48px]">
                     <Navigation size={14} /> Navigate
                   </button>
                   <button onClick={() => onJobSelect(job)}
@@ -1660,7 +1662,7 @@ async function generateClassicPDF(): Promise<void> {
   .score-num { font-size: 32px; font-weight: 900; color: #1F2937; }
   .score-denom { font-size: 11px; color: #6B7280; }
   .score-label { font-size: 18px; font-weight: 700; color: #1A7A4A; }
-  .score-sub { font-size: 12px; color: #6B7280; margin-top: 4px; }
+  .score-sub { font-size: 12px; color: #6B7280; margin-top: 8px; }
   .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1E3A5F; border-bottom: 2px solid #1E3A5F; padding-bottom: 6px; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
   th { background: #1E3A5F; color: white; padding: 8px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -1887,10 +1889,10 @@ async function generateModernPDF(): Promise<void> {
     <div class="card">
       <div class="card-title">Vehicle Details</div>
       <div class="info-row"><span class="info-label">Make/Model</span><span class="info-value">2019 Toyota Camry LE</span></div>
-      <div class="info-row"><span class="info-label">Plate</span><span class="info-value">KJA 234 AA</span></div>
-      <div class="info-row"><span class="info-label">Mileage</span><span class="info-value">87,450 km</span></div>
-      <div class="info-row"><span class="info-label">Colour</span><span class="info-value">Beige</span></div>
-      <div class="info-row"><span class="info-label">VIN</span><span class="info-value">JTMBF3EH4JD...</span></div>
+      <div class="info-row"><span class="info-label">Plate</span><span class="info-value" style="color:#1A7A4A;">KJA 234 AA</span></div>
+      <div class="info-row"><span class="info-label">Mileage</span><span class="info-value" style="color:#1A7A4A;">87,450 km</span></div>
+      <div class="info-row"><span class="info-label">Colour</span><span class="info-value" style="color:#1A7A4A;">Beige</span></div>
+      <div class="info-row"><span class="info-label">VIN</span><span class="info-value" style="color:#1A7A4A;">JTMBF3EH4JD...</span></div>
     </div>
     <div class="card">
       <div class="card-title">Inspection Details</div>
@@ -2259,13 +2261,17 @@ export default function InspectorPWAPage() {
 
   return (
     <AppLayout currentPath="/inspector-pwa">
+      <Toaster position="top-right" toastOptions={{ duration: 3000, style: { fontSize: '13px', fontWeight: '600', borderRadius: '12px' } }} />
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-[#1F2937]">Inspector PWA — Mobile Screens</h1>
-            <p className="text-sm text-[#6B7280] mt-0.5">Mobile-first inspector app (375px viewport simulation)</p>
+            <p className="text-sm text-[#6B7280] mt-0.5">Mobile-first inspector app (375px viewport simulation) · Powered by Gemini AI</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1.5 bg-gradient-to-r from-[#1E3A5F] to-[#2E75B6] text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+              <Zap size={12} /> Gemini AI Active
+            </div>
             {([
               ['home', 'Home'], ['job-detail', 'Job Detail'], ['section-overview', 'Sections'],
               ['section-checklist', 'Checklist'], ['vehicle-photos', '📷 Photos'], ['damage-photos', '⚠️ Damage'],
