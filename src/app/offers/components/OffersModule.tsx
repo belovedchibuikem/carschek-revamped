@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Plus, MoreHorizontal, X, Check, AlertTriangle, Upload, FileText } from 'lucide-react';
+import { Plus, MoreHorizontal, X, Check, AlertTriangle, Upload, FileText, Eye, Edit2, Trash2, Send, Copy } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const OFFER_STATUS_STYLES: Record<string, string> = {
@@ -53,6 +53,7 @@ export default function OffersModule() {
   const [docStatuses, setDocStatuses] = useState<Record<string, string>>(
     Object.fromEntries(DOCUMENTS_LIST.map(d => [d.name, d.status]))
   );
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const expiryDate = validDays ? new Date(Date.now() + parseInt(validDays) * 86400000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
   const approvedCount = Object.values(docStatuses).filter(s => s === 'Approved').length;
@@ -134,13 +135,55 @@ export default function OffersModule() {
                       <td className="px-4 py-3 text-xs text-gray-500">{offer.validUntil}</td>
                       <td className="px-4 py-3"><span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${OFFER_STATUS_STYLES[offer.status]}`}>{offer.status}</span></td>
                       <td className="px-4 py-3 text-xs text-gray-500">{offer.createdBy}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                      <td className="px-4 py-3 relative" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-1.5">
                           {offer.status === 'Sent' && (
                             <button onClick={() => setShowResponseModal(offer.id)} className="text-xs px-2 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-md hover:bg-[#1E3A5F]/20 transition-colors font-medium">Record Response</button>
                           )}
-                          <button className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400"><MoreHorizontal size={14} /></button>
+                          <button
+                            onClick={() => setOpenMenu(openMenu === offer.id ? null : offer.id)}
+                            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                          >
+                            <MoreHorizontal size={14} />
+                          </button>
                         </div>
+                        {openMenu === offer.id && (
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-1">
+                            <button
+                              onClick={() => { setView('create'); setOpenMenu(null); }}
+                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                            >
+                              <Eye size={14} className="text-gray-400" /> View Offer
+                            </button>
+                            <button
+                              onClick={() => setOpenMenu(null)}
+                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                            >
+                              <Edit2 size={14} className="text-gray-400" /> Edit Offer
+                            </button>
+                            <button
+                              onClick={() => setOpenMenu(null)}
+                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                            >
+                              <Copy size={14} className="text-gray-400" /> Duplicate
+                            </button>
+                            {offer.status === 'Draft' && (
+                              <button
+                                onClick={() => setOpenMenu(null)}
+                                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                              >
+                                <Send size={14} className="text-gray-400" /> Send Now
+                              </button>
+                            )}
+                            <hr className="my-1 border-gray-100" />
+                            <button
+                              onClick={() => setOpenMenu(null)}
+                              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                            >
+                              <Trash2 size={14} /> Delete Offer
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -391,6 +434,11 @@ export default function OffersModule() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Click-outside to close menus */}
+      {openMenu && (
+        <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
       )}
     </div>
   );

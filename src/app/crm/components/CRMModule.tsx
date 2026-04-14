@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Plus, Search, Phone, Mail, MoreHorizontal, ChevronDown, Clock, Car, X } from 'lucide-react';
+import { Plus, Search, Phone, Mail, MoreHorizontal, ChevronDown, Clock, Car, X, Eye, Edit2, Trash2, UserPlus } from 'lucide-react';
 
 const STAGE_STYLES: Record<string, string> = {
   'New': 'bg-[#1E3A5F]/10 text-[#1E3A5F]',
@@ -56,6 +56,7 @@ export default function CRMModule() {
     { icon: '✉️', type: 'Email', content: 'Follow-up on inspection report', time: '4 days ago', by: 'Adaeze Mensah' },
     { icon: '📞', type: 'Call', content: 'Discussed pricing — interested at ₦5.1M', time: '1 week ago', by: 'Promise Ndem' },
   ]);
+  const [openMenu, setOpenMenu] = useState<number | null>(null);
 
   const COMM_ICONS: Record<string, string> = { SMS: '📱', Email: '✉️', Call: '📞', Note: '📝' };
 
@@ -166,8 +167,44 @@ export default function CRMModule() {
                       <td className="px-4 py-3"><span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STAGE_STYLES[contact.stage]}`}>{contact.stage}</span></td>
                       <td className="px-4 py-3 text-xs text-gray-500">{contact.lastContact}</td>
                       <td className="px-4 py-3 text-xs text-gray-600">{contact.carsLinked}</td>
-                      <td className="px-4 py-3 text-xs text-gray-600">{contact.assignedTo}</td>
-                      <td className="px-4 py-3"><button onClick={e => e.stopPropagation()} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400"><MoreHorizontal size={14} /></button></td>
+<td className="px-4 py-3 text-xs text-gray-600">{contact.assignedTo}</td>
+                                      <td className="px-4 py-3 relative" onClick={e => e.stopPropagation()}>
+                                        <button
+                                          onClick={e => { e.stopPropagation(); setOpenMenu(openMenu === contact.id ? null : contact.id); }}
+                                          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                                        >
+                                          <MoreHorizontal size={14} />
+                                        </button>
+                                        {openMenu === contact.id && (
+                                          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-1">
+                                            <button
+                                              onClick={() => { setSelectedContact(contact); setView('detail'); setOpenMenu(null); }}
+                                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                            >
+                                              <Eye size={14} className="text-gray-400" /> View Details
+                                            </button>
+                                            <button
+                                              onClick={() => setOpenMenu(null)}
+                                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                            >
+                                              <Edit2 size={14} className="text-gray-400" /> Edit Contact
+                                            </button>
+                                            <button
+                                              onClick={() => setOpenMenu(null)}
+                                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                            >
+                                              <UserPlus size={14} className="text-gray-400" /> Reassign
+                                            </button>
+                                            <hr className="my-1 border-gray-100" />
+                                            <button
+                                              onClick={() => setOpenMenu(null)}
+                                              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                                            >
+                                              <Trash2 size={14} /> Delete Contact
+                                            </button>
+                                          </div>
+                                        )}
+                                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -399,6 +436,11 @@ export default function CRMModule() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Click-outside to close menus */}
+      {openMenu && (
+        <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
       )}
     </div>
   );

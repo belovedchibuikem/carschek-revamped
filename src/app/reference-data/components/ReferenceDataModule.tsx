@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Plus, MoreHorizontal, X, Upload, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, MoreHorizontal, X, Upload, ChevronDown, ChevronRight, Eye, Edit2, Trash2, Power } from 'lucide-react';
 
 const MOCK_BRANDS = [
   { id: 1, name: 'Toyota', country: '🇯🇵 Japan', models: 12, cars: 34, active: true },
@@ -41,6 +41,8 @@ export default function ReferenceDataModule() {
   const [groupByBrand, setGroupByBrand] = useState(false);
   const [brandFilter, setBrandFilter] = useState('All Brands');
   const [collapsedBrands, setCollapsedBrands] = useState<string[]>([]);
+  const [openBrandMenu, setOpenBrandMenu] = useState<number | null>(null);
+  const [openModelMenu, setOpenModelMenu] = useState<number | null>(null);
 
   const addYear = () => {
     const y = parseInt(newYear);
@@ -93,9 +95,41 @@ export default function ReferenceDataModule() {
                         {brand.name[0]}
                       </div>
                       <div className="relative">
-                        <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 opacity-0 group-hover:opacity-100">
+                        <button
+                          onClick={e => { e.stopPropagation(); setOpenBrandMenu(openBrandMenu === brand.id ? null : brand.id); }}
+                          className="p-1 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 opacity-0 group-hover:opacity-100"
+                        >
                           <MoreHorizontal size={14} />
                         </button>
+                        {openBrandMenu === brand.id && (
+                          <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-1">
+                            <button
+                              onClick={() => setOpenBrandMenu(null)}
+                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                            >
+                              <Eye size={14} className="text-gray-400" /> View Details
+                            </button>
+                            <button
+                              onClick={() => setOpenBrandMenu(null)}
+                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                            >
+                              <Edit2 size={14} className="text-gray-400" /> Edit Brand
+                            </button>
+                            <button
+                              onClick={() => setOpenBrandMenu(null)}
+                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                            >
+                              <Power size={14} className="text-gray-400" /> {brand.active ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <hr className="my-1 border-gray-100" />
+                            <button
+                              onClick={() => setOpenBrandMenu(null)}
+                              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                            >
+                              <Trash2 size={14} /> Delete Brand
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <p className="font-bold text-gray-800 text-sm">{brand.name}</p>
@@ -151,7 +185,28 @@ export default function ReferenceDataModule() {
                                 <td className="px-4 py-2.5"><span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{model.bodyType}</span></td>
                                 <td className="px-4 py-2.5 text-xs text-gray-500">{model.cars} cars</td>
                                 <td className="px-4 py-2.5"><div className={`w-8 h-4 rounded-full transition-colors ${model.active ? 'bg-green-400' : 'bg-gray-200'}`} /></td>
-                                <td className="px-4 py-2.5"><button className="text-gray-400 hover:text-gray-600"><MoreHorizontal size={14} /></button></td>
+                                <td className="px-4 py-2.5 relative">
+                                  <button
+                                    onClick={e => { e.stopPropagation(); setOpenModelMenu(openModelMenu === model.id ? null : model.id); }}
+                                    className="text-gray-400 hover:text-gray-600"
+                                  >
+                                    <MoreHorizontal size={14} />
+                                  </button>
+                                  {openModelMenu === model.id && (
+                                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-1">
+                                      <button onClick={() => setOpenModelMenu(null)} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
+                                        <Edit2 size={14} className="text-gray-400" /> Edit Model
+                                      </button>
+                                      <button onClick={() => setOpenModelMenu(null)} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
+                                        <Power size={14} className="text-gray-400" /> {model.active ? 'Deactivate' : 'Activate'}
+                                      </button>
+                                      <hr className="my-1 border-gray-100" />
+                                      <button onClick={() => setOpenModelMenu(null)} className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
+                                        <Trash2 size={14} /> Delete Model
+                                      </button>
+                                    </div>
+                                  )}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -185,7 +240,28 @@ export default function ReferenceDataModule() {
                           <td className="px-4 py-3">
                             <div className={`w-8 h-4 rounded-full cursor-pointer transition-colors ${model.active ? 'bg-green-400' : 'bg-gray-200'}`} />
                           </td>
-                          <td className="px-4 py-3"><button className="text-gray-400 hover:text-gray-600"><MoreHorizontal size={14} /></button></td>
+                          <td className="px-4 py-3 relative">
+                            <button
+                              onClick={e => { e.stopPropagation(); setOpenModelMenu(openModelMenu === model.id ? null : model.id); }}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <MoreHorizontal size={14} />
+                            </button>
+                            {openModelMenu === model.id && (
+                              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-1">
+                                <button onClick={() => setOpenModelMenu(null)} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
+                                  <Edit2 size={14} className="text-gray-400" /> Edit Model
+                                </button>
+                                <button onClick={() => setOpenModelMenu(null)} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
+                                  <Power size={14} className="text-gray-400" /> {model.active ? 'Deactivate' : 'Activate'}
+                                </button>
+                                <hr className="my-1 border-gray-100" />
+                                <button onClick={() => setOpenModelMenu(null)} className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
+                                  <Trash2 size={14} /> Delete Model
+                                </button>
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -349,6 +425,11 @@ export default function ReferenceDataModule() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Click-outside to close menus */}
+      {(openBrandMenu || openModelMenu) && (
+        <div className="fixed inset-0 z-10" onClick={() => { setOpenBrandMenu(null); setOpenModelMenu(null); }} />
       )}
     </div>
   );

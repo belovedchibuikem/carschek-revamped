@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, Upload, Download, ChevronDown, X, Copy, MoreHorizontal, AlertTriangle, Diamond, CheckSquare, Square, ChevronLeft, ChevronRight, Settings2, Car, Trash2, Flag } from 'lucide-react';
 
@@ -44,7 +44,6 @@ export default function CarsListModule() {
   const [showAuctionModal, setShowAuctionModal] = useState<string | null>(null);
   const [auctionPrice, setAuctionPrice] = useState('');
   const [platformFee, setPlatformFee] = useState(15);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const filtered = MOCK_CARS.filter(c =>
     !search || [c.id, c.vin, c.plate, c.make, c.model].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -59,17 +58,6 @@ export default function CarsListModule() {
     setCopiedVin(vin);
     setTimeout(() => setCopiedVin(null), 1500);
   };
-
-  // Close menu on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenu(null);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   const handleMenuAction = (action: string, car: typeof MOCK_CARS[0], e: React.MouseEvent) => {
     e.stopPropagation();
@@ -287,7 +275,7 @@ export default function CarsListModule() {
                       <MoreHorizontal size={16} />
                     </button>
                     {openMenu === car.id && (
-                      <div ref={menuRef} className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-1">
+                      <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-1">
                         <button
                           onClick={e => handleMenuAction('view', car, e)}
                           className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
@@ -487,6 +475,11 @@ export default function CarsListModule() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Click-outside to close menus */}
+      {openMenu && (
+        <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
       )}
     </div>
   );
