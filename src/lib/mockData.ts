@@ -46,7 +46,8 @@ export const YEARS = Array.from({ length: 36 }, (_, i) => ({
   id: `y${i}`,
   year: 2025 - i,
   active: true,
-  cars: Math.floor(Math.random() * 20),
+  /** Deterministic mock count — avoid Math.random() at module scope (SSR/client hydration mismatch). */
+  cars: (i * 7 + 3) % 19,
 }));
 
 export const CARS = [
@@ -58,6 +59,7 @@ export const CARS = [
   { id: 'CK-46', brand: 'BMW', model: '3 Series', year: 2017, plate: 'LND-789-KJ', status: 'Listed', score: 79, purchasePrice: 16000000, salePrice: null, mileage: 78000, colour: 'Grey', vin: 'WBA8E9G50HNU12345', city: 'Lagos', state: 'Lagos', channel: 'Market Place', createdAt: '2026-03-05', docs: 5, hasDuplicate: false, warnings: 1 },
   { id: 'CK-47', brand: 'Honda', model: 'CR-V', year: 2020, plate: 'ABJ-321-FC', status: 'Acquired', score: 94, purchasePrice: 14000000, salePrice: null, mileage: 38000, colour: 'Pearl White', vin: '7FARW2H54LE012345', city: 'Abuja', state: 'FCT (Abuja)', channel: 'B2B', createdAt: '2026-03-12', docs: 6, hasDuplicate: false, warnings: 0 },
   { id: 'CK-48', brand: 'Hyundai', model: 'Elantra', year: 2014, plate: 'EN-654-EN', status: 'Sold', score: 61, purchasePrice: 4500000, salePrice: 4800000, mileage: 167000, colour: 'Blue', vin: '5NPD84LF5EH012345', city: 'Enugu', state: 'Enugu', channel: 'Offline', createdAt: '2026-01-08', docs: 5, hasDuplicate: true, warnings: 2 },
+  { id: 'CK-49', brand: 'Toyota', model: 'Corolla', year: 2012, plate: 'LAG-112-AB', status: 'Acquired', score: 70, purchasePrice: 3800000, salePrice: null, mileage: 120000, colour: 'Silver', vin: '2T1BURHE0JC999999', city: 'Lagos', state: 'Lagos', channel: 'Auction', createdAt: '2026-04-14', docs: 0, hasDuplicate: false, warnings: 0 },
 ];
 
 export const INSPECTORS = [
@@ -114,6 +116,7 @@ export const REPORTS = [
   { id: 'RPT-446', orderId: 'ORD-1896', carId: 'CK-45', carName: 'Toyota Highlander 2016', inspectorId: 'INS-005', inspectorName: 'Seun Afolabi', score: 67, status: 'QA Review', submittedAt: '2026-04-12T16:00:00', qaReviewedAt: null, version: 1, defects: 6, criticalDefects: 2 },
   { id: 'RPT-440', orderId: 'ORD-1897', carId: 'CK-44', carName: 'Mercedes C-Class 2020', inspectorId: 'INS-001', inspectorName: 'Emeka Okonkwo', score: 88, status: 'Approved', submittedAt: '2026-04-10T14:00:00', qaReviewedAt: '2026-04-10T16:30:00', version: 2, defects: 2, criticalDefects: 0 },
   { id: 'RPT-439', orderId: 'ORD-1891', carId: 'CK-43', carName: 'Lexus RX 2018', inspectorId: 'INS-004', inspectorName: 'Ngozi Obi', score: 91, status: 'Approved', submittedAt: '2026-04-09T11:00:00', qaReviewedAt: '2026-04-09T14:00:00', version: 1, defects: 1, criticalDefects: 0 },
+  { id: 'RPT-437', orderId: 'ORD-1888', carId: 'CK-48', carName: 'Hyundai Elantra 2014', inspectorId: 'INS-003', inspectorName: 'Babatunde Adeyemi', score: 52, status: 'Rejected', submittedAt: '2026-04-08T10:00:00', qaReviewedAt: '2026-04-08T15:00:00', version: 1, defects: 12, criticalDefects: 4 },
 ];
 
 export const NOTIFICATIONS = [
@@ -158,11 +161,9 @@ export const LISTINGS = [
   { id: 'LST-003', carId: 'CK-46', carName: 'BMW 3 Series 2017', price: 16000000, visibility: 'Visible', featured: false, score: 79, views: 189, inquiries: 8, listedAt: '2026-03-25' },
 ];
 
-export const APPOINTMENTS = [
-  { id: 'APT-001', customerId: 'CUS-001', customerName: 'Adaeze Madu', type: 'Inspection', vehicle: 'Toyota Camry 2015', date: '2026-04-14', time: '10:00', location: 'Lagos Island', status: 'Confirmed', inspectorId: 'INS-001' },
-  { id: 'APT-002', customerId: 'CUS-003', customerName: 'Funmilayo Okafor', type: 'Test Drive', vehicle: 'Lexus RX 2019', date: '2026-04-15', time: '14:00', location: 'Port Harcourt', status: 'Pending', inspectorId: null },
-  { id: 'APT-003', customerId: 'CUS-004', customerName: 'Ibrahim Musa', type: 'Inspection', vehicle: 'BMW 3 Series 2017', date: '2026-04-13', time: '14:00', location: 'Lagos Island', status: 'In Progress', inspectorId: 'INS-003' },
-];
+/** @deprecated for list UIs — use GET /api/appointments (mutable store). Kept for typing importers. */
+export { APPOINTMENTS_SEED as APPOINTMENTS } from '@/lib/appointments/seed';
+export type { Appointment } from '@/lib/appointments/types';
 
 export const USERS = [
   { id: 'USR-001', name: 'Promise Ndem', email: 'promise@carschek.com', role: 'super-admin', status: 'Active', lastLogin: '2026-04-13T08:00:00', avatar: 'PN' },
@@ -170,6 +171,16 @@ export const USERS = [
   { id: 'USR-003', name: 'Emeka Okonkwo', email: 'emeka.inspector@carschek.com', role: 'inspector', status: 'Active', lastLogin: '2026-04-13T09:00:00', avatar: 'EO' },
   { id: 'USR-004', name: 'Amaka Finance', email: 'finance@carschek.com', role: 'finance', status: 'Active', lastLogin: '2026-04-12T16:00:00', avatar: 'AF' },
   { id: 'USR-005', name: 'Kola Support', email: 'support@carschek.com', role: 'support', status: 'Active', lastLogin: '2026-04-13T10:00:00', avatar: 'KS' },
+];
+
+/** Sales / inspector staff shown on car purchase step */
+export const SALES_STAFF = [
+  { id: 'USR-001', name: 'Promise Ndem' },
+  { id: 'USR-002', name: 'Chukwuemeka Obi' },
+  { id: 'USR-003', name: 'Emeka Okonkwo' },
+  { id: 'INS-002', name: 'Chidinma Eze' },
+  { id: 'INS-004', name: 'Ngozi Obi' },
+  { id: 'INS-005', name: 'Seun Afolabi' },
 ];
 
 export const INSPECTION_SECTIONS = [
@@ -190,6 +201,16 @@ export const INSPECTION_SECTIONS = [
   { id: 'S15', name: 'Air Conditioning', weight: 2, items: 6, timeEstimate: '4 min' },
   { id: 'S16', name: 'Safety Features', weight: 2, items: 8, timeEstimate: '5 min' },
   { id: 'S17', name: 'Documents & Compliance', weight: 1, items: 5, timeEstimate: '3 min' },
+  { id: 'S18', name: 'Battery & Charging', weight: 1, items: 6, timeEstimate: '4 min' },
+  { id: 'S19', name: 'Undercarriage & Rust', weight: 1, items: 8, timeEstimate: '6 min' },
+  { id: 'S20', name: 'Audio & Infotainment', weight: 1, items: 6, timeEstimate: '4 min' },
+  { id: 'S21', name: 'ADAS & Sensors', weight: 1, items: 7, timeEstimate: '5 min' },
+  { id: 'S22', name: 'Roof & Sunroof', weight: 1, items: 5, timeEstimate: '3 min' },
+  { id: 'S23', name: 'Doors & Locks', weight: 1, items: 8, timeEstimate: '5 min' },
+  { id: 'S24', name: 'Boot / Cargo Area', weight: 1, items: 5, timeEstimate: '3 min' },
+  { id: 'S25', name: 'Fluids & Leaks', weight: 1, items: 6, timeEstimate: '4 min' },
+  { id: 'S26', name: 'Road Test Notes', weight: 1, items: 4, timeEstimate: '5 min' },
+  { id: 'S27', name: 'Final Walk-Around', weight: 1, items: 6, timeEstimate: '4 min' },
 ];
 
 export const formatNaira = (amount: number): string => {
@@ -200,6 +221,23 @@ export const getScoreColor = (score: number): string => {
   if (score >= 80) return '#1A7A4A';
   if (score >= 60) return '#D35400';
   return '#C0392B';
+};
+
+/** Circular gauge / report — 5-band scale (Prompt 04 / CarschekScore) */
+export const getGaugeStrokeColor = (score: number): string => {
+  if (score <= 40) return '#C0392B';
+  if (score <= 60) return '#D35400';
+  if (score <= 75) return '#1A7A4A';
+  if (score <= 90) return '#1E3A5F';
+  return '#0E6655';
+};
+
+export const getGaugeConditionLabel = (score: number): string => {
+  if (score >= 91) return 'Excellent';
+  if (score >= 76) return 'Very Good';
+  if (score >= 61) return 'Good Condition';
+  if (score >= 41) return 'Fair Condition';
+  return 'Poor Condition';
 };
 
 export const getScoreLabel = (score: number): string => {

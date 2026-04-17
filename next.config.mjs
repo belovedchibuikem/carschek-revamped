@@ -5,7 +5,7 @@ const nextConfig = {
   productionBrowserSourceMaps: true,
   distDir: process.env.DIST_DIR || '.next',
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -21,15 +21,16 @@ const nextConfig = {
         destination: '/authentication-screen',
         permanent: false,
       },
+      // Do not implement `app/500/page.tsx` — it breaks the build. Send demo links to the real page.
+      {
+        source: '/500',
+        destination: '/server-error',
+        permanent: false,
+      },
     ];
   },
 
-  webpack(
-    config,
-    {
-      dev: dev
-    }
-  ) {
+  webpack: (config, { dev }) => {
     config.module.rules.push({
       test: /\.(jsx|tsx)$/,
       exclude: [/node_modules/],

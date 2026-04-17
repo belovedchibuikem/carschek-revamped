@@ -45,7 +45,7 @@ export default function YearsPage() {
     const start = parseInt(batchStart);
     const end = parseInt(batchEnd);
     if (start > end) { toast.error('Start year must be less than end year'); return; }
-    const newYears = [];
+    const newYears: { id: string; year: number; active: boolean; cars: number }[] = [];
     for (let y = start; y <= end; y++) {
       if (!years.find(yr => yr.year === y)) {
         newYears.push({ id: `y${Date.now()}-${y}`, year: y, active: true, cars: 0 });

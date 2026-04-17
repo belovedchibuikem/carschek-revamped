@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { DollarSign } from 'lucide-react';
+import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
 
 const DATA = {
   'this-month': [
@@ -24,20 +25,21 @@ const DATA = {
   ],
 };
 
-const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number } }> }) => {
-  if (!active || !payload?.length) return null;
-  const d = payload[0].payload;
-  return (
-    <div className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg p-3 text-xs">
-      <p className="font-semibold text-[#1F2937] mb-1">{d.name}</p>
-      <p className="text-[#2E75B6] font-bold">₦{(d.value / 1000000).toFixed(2)}M</p>
-    </div>
-  );
-};
-
 export default function RevenueBreakdownChart() {
+  const t = useRechartsTheme();
   const [period, setPeriod] = useState<'this-month' | 'last-month' | 'this-quarter'>('this-month');
   const data = DATA[period];
+
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number } }> }) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    return (
+      <div style={t.tooltipContentStyle} className="rounded-xl shadow-lg p-3 text-xs">
+        <p className="font-semibold mb-1" style={{ color: t.tooltipContentStyle.color }}>{d.name}</p>
+        <p className="text-[#2E75B6] font-bold">₦{(d.value / 1000000).toFixed(2)}M</p>
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 shadow-sm">
@@ -58,11 +60,11 @@ export default function RevenueBreakdownChart() {
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 60, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} tickFormatter={v => `₦${(v / 1000000).toFixed(1)}M`} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={false} width={110} />
+          <CartesianGrid strokeDasharray="3 3" stroke={t.gridStroke} horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 10, fill: t.tickFill }} tickLine={false} axisLine={false} tickFormatter={v => `₦${(v / 1000000).toFixed(1)}M`} />
+          <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: t.tickFill }} tickLine={false} axisLine={false} width={110} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} label={{ position: 'right', formatter: (v: number) => `₦${(v / 1000000).toFixed(2)}M`, fontSize: 10, fill: '#6B7280' }}>
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} label={{ position: 'right', formatter: (v: number) => `₦${(v / 1000000).toFixed(2)}M`, fontSize: 10, fill: t.tickFillMuted }}>
             {data.map(entry => <Cell key={`cell-rev-${entry.name}`} fill={entry.color} />)}
           </Bar>
         </BarChart>

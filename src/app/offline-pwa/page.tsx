@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
+import { playReconnectSyncSequenceDemo } from '@/components/providers/NetworkProvider';
+import { toast as sonnerToast } from 'sonner';
 import { Wifi, WifiOff, RefreshCw, X, ChevronDown, ChevronUp, HardDrive, Info, AlertTriangle, Download, Smartphone, ClipboardList, Camera, Zap, Shield } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -158,14 +160,14 @@ function ReconnectionToastDemo() {
   const runSequence = () => {
     if (running) return;
     setRunning(true);
-    setToastStep('back-online');
-    setTimeout(() => setToastStep('syncing'), 2000);
-    setTimeout(() => setToastStep('synced'), 4500);
-    setTimeout(() => { setToastStep(null); setRunning(false); }, 7500);
+    void playReconnectSyncSequenceDemo({ onPhase: setToastStep }).finally(() => {
+      setToastStep(null);
+      setRunning(false);
+    });
   };
 
   const runFailure = () => {
-    setToastStep('failed');
+    void playReconnectSyncSequenceDemo({ simulateFailure: true, onPhase: setToastStep });
   };
 
   return (
@@ -182,7 +184,14 @@ function ReconnectionToastDemo() {
           <AlertTriangle size={14} />
           Simulate Failure
         </button>
-        <button onClick={() => { setToastStep(null); setRunning(false); }} className="flex items-center gap-2 px-4 py-2 text-sm text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-all">
+        <button
+          onClick={() => {
+            setToastStep(null);
+            setRunning(false);
+            sonnerToast.dismiss();
+          }}
+          className="flex items-center gap-2 px-4 py-2 text-sm text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-all"
+        >
           <X size={14} />
           Clear
         </button>

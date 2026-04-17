@@ -41,10 +41,6 @@ export default function InspectorModule() {
     return <InspectorProfile inspector={selectedInspector} onBack={() => setSelectedInspector(null)} />;
   }
 
-  if (activeView === 'onboarding') {
-    return <OnboardingWorkflow onBack={() => setActiveView('list')} />;
-  }
-
   return (
     <div className="space-y-4">
       {/* View toggle */}
@@ -62,7 +58,11 @@ export default function InspectorModule() {
           Onboarding Workflow
         </button>
       </div>
-      <InspectorList inspectors={MOCK_INSPECTORS} onSelectInspector={setSelectedInspector} />
+      {activeView === 'onboarding' ? (
+        <OnboardingWorkflow onBack={() => setActiveView('list')} />
+      ) : (
+        <InspectorList inspectors={MOCK_INSPECTORS} onSelectInspector={setSelectedInspector} />
+      )}
     </div>
   );
 }

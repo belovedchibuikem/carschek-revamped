@@ -1,0 +1,32 @@
+---
+description: Carschek mission — Parts 8–13 (admin wiring, migration, world-class features, routes, PWA/sync, DoD checklist)
+alwaysApply: true
+---
+
+# Carschek mission (Sections 8–13)
+
+## Part 8 — Admin modules
+
+Wire **every** interaction on: `/dashboard`, `/orders` (+ new, `[id]`, Kanban), `/inspectors` (+ `[id]` tabs), `/reports` (+ QA review), `/auctions`, `/customers` (+ `[id]` tabs), `/crm`, `/offers`, `/listings`, `/deals`, `/finance` (+ invoice detail), `/notifications`, `/activity`, `/settings` (all tabs). Filters, sorts, pagination, modals, exports, optimistic updates, role-gated actions — all real behavior or swappable mocks.
+
+## Part 9 — Data migration (`/settings/migration`)
+
+5-step wizard: Connect → Scan & Select → Validate → Migrate → Complete. API vs CSV paths; `localStorage` connection memory; validation groups (pass/warn/error); dry run; typed `MIGRATE` confirm; live log; pause/cancel; report CSV. Reconciliation in `lib/migration/reconcile.ts` (merge customers/cars, status map, CK ID, VIN checksum) — log as `activity_logs` type `migration`.
+
+## Part 10 — Platform features
+
+Command palette (⌘K), bulk progress + undo window, notification drawer + simulated cadence, **Carschek score** in `lib/scoring/calculator.ts`, dark mode (charts included), `react-hotkeys-hook` shortcuts, duplicate detection on save, print/export patterns, responsive admin, skeletons/empty/error states, per-page error boundary, live inspection panel on `/orders/[id]` when in progress.
+
+## Part 11 — Routes & navigation
+
+Implement **full route map** (auth, admin, inspector PWA, inspector-app mirroring PWA via **shared components**, not duplicated logic). `middleware.ts` guards: auth, role-based redirects. No 404 for listed app paths.
+
+## Part 12 — Offline PWA & sync
+
+Workbox/`next-pwa` strategies; Dexie schema v2; `processSyncQueue` with backoff; `NetworkProvider` + `useOnlineStatus`; optional AES-GCM helpers in `lib/db/crypto.ts`; PWA install prompt UX on inspector home.
+
+## Part 13 — Definition of done
+
+Use the Part 13 checklist before calling work “complete”: sidebar coverage, forms/tables/modals, inspection parity, reference data, migration flows, design tokens, loading/empty, mobile, toasts, performance notes.
+
+**Follow-up refinements** (parity, reference years cascade, car detail autosave, auction timers, migration dry-run table, sync UI, score component reuse, dark charts) — apply when touching those areas.

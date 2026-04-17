@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 @layer base {
   :root {
@@ -33,6 +34,13 @@
   body { background-color: hsl(var(--background)); color: hsl(var(--body)); }
   h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
   .font-mono, code, pre { font-family: var(--font-mono); }
+
+  /* Consistent keyboard focus — matches brand secondary blue */
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    @apply outline-none ring-2 ring-[#2E75B6]/45 ring-offset-2 ring-offset-[hsl(var(--background))];
+  }
 }
 
 @layer utilities {
@@ -93,3 +101,108 @@
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fade-in 0.25s ease-out forwards; }
+
+/* Inspection report PDF layouts (Prompt 04) */
+.report-modern {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #ffffff;
+  position: relative;
+}
+
+.report-modern .section-card {
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.report-modern .score-gauge {
+  display: block;
+}
+
+.report-modern .score-text {
+  display: none;
+}
+
+.report-classic {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  position: relative;
+  max-width: 794px;
+}
+
+.report-classic .section-card {
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 0;
+  margin-bottom: 12px;
+}
+
+.report-classic .photo-grid-classic {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.report-classic .score-gauge {
+  display: none;
+}
+
+.report-classic .score-text {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.report-classic::before {
+  content: 'CARSCHEK VERIFIED';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 72px;
+  font-weight: 900;
+  color: #1e3a5f;
+  opacity: 0.08;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 0;
+}
+
+/* Inspection report print (Prompt 03) */
+@media print {
+  html.ck-report-print,
+  html.ck-report-print body {
+    background: #fff !important;
+  }
+  html.ck-report-print .no-print {
+    display: none !important;
+  }
+  html.ck-report-print #report-content,
+  html.ck-report-print #report-content * {
+    color: #000 !important;
+    box-shadow: none !important;
+  }
+  html.ck-report-print #report-content .photo-tile,
+  html.ck-report-print #report-content img {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  html.ck-report-print #report-content .section-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  html.ck-report-print #report-content.report-content {
+    max-width: 100%;
+  }
+  html.ck-report-print .report-action-bar,
+  html.ck-report-print .report-type-selector,
+  html.ck-report-print nav,
+  html.ck-report-print header {
+    display: none !important;
+  }
+  @page {
+    margin: 12mm;
+  }
+}

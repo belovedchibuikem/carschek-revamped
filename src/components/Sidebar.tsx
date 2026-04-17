@@ -1,27 +1,52 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { isAppointmentUnconfirmed } from '@/lib/appointments/logic';
+import type { Appointment } from '@/lib/appointments/types';
 import {
   LayoutDashboard, ClipboardList, Users, FileText, Car, Gavel, UserCircle,
   MessageSquare, Tag, ShoppingBag, Handshake, DollarSign, Bell, Settings,
-  ChevronLeft, ChevronRight, LogOut, X, Database, Calendar, BarChart2,
-  Activity, Shield, Layers, BookOpen
+  ChevronLeft, ChevronRight, ChevronDown, LogOut, X, Database, Calendar, BarChart2,
+  Activity, Shield, Layers, BookOpen, Smartphone, ArrowRightLeft, FileEdit, TrendingUp, Briefcase,
 } from 'lucide-react';
 
-const NAV_GROUPS = [
+type NavSubItem = { label: string; path: string; unconfirmedBadge?: boolean };
+
+type NavItem = {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  path: string;
+  badge: string | null;
+  subItems?: NavSubItem[];
+};
+
+const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: 'Overview',
     items: [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', badge: null },
+      { icon: Briefcase, label: 'Ops Dashboard', path: '/admin-dashboard', badge: null },
     ],
   },
   {
     label: 'Operations',
     items: [
       { icon: ClipboardList, label: 'Inspection Orders', path: '/orders', badge: '12' },
+      { icon: Smartphone, label: 'Inspector App', path: '/inspector-app', badge: null },
       { icon: Users, label: 'Inspectors', path: '/inspectors', badge: null },
       { icon: FileText, label: 'Reports', path: '/reports', badge: '5' },
-      { icon: Calendar, label: 'Appointments', path: '/appointments', badge: null },
+      {
+        icon: Calendar,
+        label: 'Appointments',
+        path: '/appointments',
+        badge: null,
+        subItems: [
+          { label: 'All appointments', path: '/appointments' },
+          { label: 'Confirmed', path: '/appointments/confirmed' },
+          { label: 'Unconfirmed', path: '/appointments/unconfirmed', unconfirmedBadge: true },
+          { label: 'Inspected', path: '/appointments/inspected' },
+        ],
+      },
     ],
   },
   {
@@ -67,6 +92,9 @@ const NAV_GROUPS = [
       { icon: Activity, label: 'Activity Log', path: '/activity', badge: null },
       { icon: Shield, label: 'Users', path: '/users', badge: null },
       { icon: BarChart2, label: 'Analytics', path: '/analytics', badge: null },
+      { icon: TrendingUp, label: 'Investor', path: '/investor-dashboard', badge: null },
+      { icon: FileEdit, label: 'Drafts', path: '/drafts', badge: null },
+      { icon: ArrowRightLeft, label: 'Data Migration', path: '/settings/migration', badge: null },
       { icon: Settings, label: 'Settings', path: '/settings', badge: null },
     ],
   },
@@ -80,8 +108,33 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClose }: SidebarProps) {
+  const [unconfirmedApt, setUnconfirmedApt] = useState<number | null>(null);
+  /** Submenus (e.g. Appointments) start collapsed; open via chevron only */
+  const [expandedBranches, setExpandedBranches] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/appointments', { cache: 'no-store' })
+      .then(r => (r.ok ? r.json() : null))
+      .then((j: { appointments?: Appointment[] } | null) => {
+        if (cancelled || !j?.appointments) return;
+        setUnconfirmedApt(j.appointments.filter(isAppointmentUnconfirmed).length);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const isActive = (path: string) => {
     if (path === '/dashboard') return currentPath === '/dashboard' || currentPath === '/';
+    if (path === '/admin-dashboard') return currentPath.startsWith('/admin-dashboard');
+    if (path === '/settings') {
+      return currentPath === '/settings' || currentPath === '/settings/';
+    }
+    if (path === '/settings/migration') return currentPath.startsWith('/settings/migration');
+    if (path === '/drafts') return currentPath.startsWith('/drafts');
+    if (path === '/investor-dashboard') return currentPath.startsWith('/investor-dashboard');
     return currentPath.startsWith(path);
   };
 
@@ -94,12 +147,18 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
     >
       {/* Logo */}
       <div className={`flex items-center h-16 px-4 border-b border-white/10 flex-shrink-0 ${collapsed ? 'justify-center' : 'gap-3'}`}>
-        <div className="w-8 h-8 bg-[#2E75B6] rounded-lg flex items-center justify-center flex-shrink-0">
-          <Car size={16} className="text-white" />
-        </div>
-        {!collapsed && (
-          <span className="font-heading font-bold text-lg tracking-tight text-white flex-1">CARSCHEK</span>
-        )}
+        <Link
+          href="/dashboard"
+          onClick={onMobileClose}
+          className={`flex items-center gap-3 min-w-0 rounded-lg flex-1 focus-visible:ring-offset-[#1E3A5F] ${collapsed ? 'justify-center flex-none' : ''}`}
+        >
+          <div className="w-8 h-8 bg-[#2E75B6] rounded-lg flex items-center justify-center flex-shrink-0">
+            <Car size={16} className="text-white" />
+          </div>
+          {!collapsed && (
+            <span className="font-heading font-bold text-lg tracking-tight text-white flex-1 truncate">CARSCHEK</span>
+          )}
+        </Link>
         {!collapsed && onMobileClose && (
           <button
             onClick={onMobileClose}
@@ -121,6 +180,114 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
               </p>
             )}
             {group.items.map(item => {
+              if (item.subItems?.length) {
+                const branchActive =
+                  isActive(item.path) || item.subItems.some(s => currentPath.startsWith(s.path));
+                const branchOpen = expandedBranches[item.path] === true;
+
+                if (collapsed) {
+                  return (
+                    <Link
+                      key={`nav-branch-${item.path}`}
+                      href={item.path}
+                      onClick={onMobileClose}
+                      className={`
+                        relative flex items-center justify-center gap-3 mx-2 px-3 rounded-lg mb-0.5 transition-all duration-150 group
+                        min-h-[40px] focus-visible:ring-offset-[#1E3A5F]
+                        ${branchActive
+                          ? 'bg-white/15 text-white'
+                          : 'text-white/60 hover:bg-white/10 hover:text-white'
+                        }
+                      `}
+                      title={item.label}
+                    >
+                      {branchActive && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#2E75B6] rounded-r-full" />
+                      )}
+                      <item.icon size={17} className="flex-shrink-0" />
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-[#1F2937] text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
+                        {item.label}
+                      </div>
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div key={`nav-branch-${item.path}`} className="mb-1">
+                    <div
+                      className={`
+                        flex items-stretch mx-2 rounded-lg mb-0.5 transition-all duration-150 overflow-hidden
+                        ${branchActive ? 'bg-white/15 text-white' : 'text-white/60'}
+                      `}
+                    >
+                      <Link
+                        href={item.path}
+                        onClick={onMobileClose}
+                        className={`
+                          relative flex flex-1 items-center gap-3 min-w-0 pl-3 pr-1 py-2 min-h-[40px] focus-visible:ring-offset-[#1E3A5F]
+                          ${branchActive ? 'text-white' : 'hover:bg-white/10 hover:text-white'}
+                        `}
+                      >
+                        {branchActive && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#2E75B6] rounded-r-full" />
+                        )}
+                        <item.icon size={17} className="flex-shrink-0" />
+                        <span className="text-sm font-medium flex-1 truncate">{item.label}</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={e => {
+                          e.preventDefault();
+                          setExpandedBranches(prev => ({ ...prev, [item.path]: !prev[item.path] }));
+                        }}
+                        aria-expanded={branchOpen}
+                        aria-label={branchOpen ? `Collapse ${item.label} submenu` : `Expand ${item.label} submenu`}
+                        className={`
+                          flex-shrink-0 px-2 flex items-center justify-center rounded-r-lg transition-colors
+                          ${branchActive ? 'hover:bg-white/10 text-white' : 'hover:bg-white/10 hover:text-white text-white/70'}
+                        `}
+                      >
+                        <ChevronDown
+                          size={16}
+                          className={`transition-transform duration-200 ${branchOpen ? 'rotate-180' : ''}`}
+                          aria-hidden
+                        />
+                      </button>
+                    </div>
+                    {branchOpen &&
+                      item.subItems.map(sub => {
+                        const subActive = currentPath === sub.path || currentPath.startsWith(`${sub.path}/`);
+                        const uBadge =
+                          sub.unconfirmedBadge && unconfirmedApt != null && unconfirmedApt > 0
+                            ? unconfirmedApt
+                            : null;
+                        return (
+                          <Link
+                            key={`nav-${sub.path}`}
+                            href={sub.path}
+                            onClick={onMobileClose}
+                            className={`
+                              relative flex items-center gap-2 mx-2 pl-9 pr-3 rounded-lg mb-0.5 transition-all duration-150
+                              min-h-[36px] text-[13px]
+                              ${subActive ? 'bg-white/10 text-white' : 'text-white/55 hover:bg-white/10 hover:text-white'}
+                            `}
+                          >
+                            {subActive && (
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#2E75B6] rounded-r-full" />
+                            )}
+                            <span className="flex-1 truncate">{sub.label}</span>
+                            {uBadge != null && (
+                              <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                {uBadge}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                  </div>
+                );
+              }
+
               const active = isActive(item.path);
               return (
                 <Link
@@ -129,7 +296,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
                   onClick={onMobileClose}
                   className={`
                     relative flex items-center gap-3 mx-2 px-3 rounded-lg mb-0.5 transition-all duration-150 group
-                    min-h-[40px]
+                    min-h-[40px] focus-visible:ring-offset-[#1E3A5F]
                     ${active
                       ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
                     }
@@ -169,7 +336,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
           {collapsed ? <ChevronRight size={16} /> : <><ChevronLeft size={16} /><span>Collapse</span></>}
         </button>
         <Link
-          href="/login"
+          href="/authentication-screen"
           className={`mt-2 flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all min-h-[44px] ${collapsed ? 'justify-center' : ''}`}
         >
           <div className="w-8 h-8 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">

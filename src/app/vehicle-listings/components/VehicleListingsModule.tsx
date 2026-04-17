@@ -63,14 +63,6 @@ export default function VehicleListingsModule() {
     return <ListingDetail listing={selectedListing} onBack={handleBack} />;
   }
 
-  if (activeView === 'pricing') {
-    return <PricingGuidanceTool onBack={handleBack} />;
-  }
-
-  if (activeView === 'dealer') {
-    return <DealerPortal onBack={handleBack} listings={MOCK_LISTINGS} />;
-  }
-
   return (
     <div className="space-y-4">
       {/* Tab bar */}
@@ -94,7 +86,13 @@ export default function VehicleListingsModule() {
           Dealer Portal
         </button>
       </div>
-      <ListingsTable listings={MOCK_LISTINGS} onViewDetail={handleViewDetail} onOpenPricing={() => setActiveView('pricing')} />
+      {activeView === 'pricing' ? (
+        <PricingGuidanceTool onBack={handleBack} />
+      ) : activeView === 'dealer' ? (
+        <DealerPortal onBack={handleBack} listings={MOCK_LISTINGS} />
+      ) : (
+        <ListingsTable listings={MOCK_LISTINGS} onViewDetail={handleViewDetail} onOpenPricing={() => setActiveView('pricing')} />
+      )}
     </div>
   );
 }

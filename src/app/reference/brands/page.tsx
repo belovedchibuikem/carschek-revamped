@@ -4,7 +4,7 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 
 import { Plus, Search, Grid, List, Edit, Trash2, X } from 'lucide-react';
-import { BRANDS } from '@/lib/mockData';
+import { BRANDS, MODELS, CARS } from '@/lib/mockData';
 import { toast } from 'sonner';
 
 export default function BrandsPage() {
@@ -29,8 +29,11 @@ export default function BrandsPage() {
 
   const handleDelete = (id: string) => {
     const brand = brands.find(b => b.id === id);
-    if (brand && (brand.models > 0 || brand.cars > 0)) {
-      toast.error(`Cannot delete ${brand.name} — ${brand.models} models and ${brand.cars} cars are linked`);
+    if (!brand) return;
+    const modelCount = MODELS.filter(m => m.brandId === id).length;
+    const carCount = CARS.filter(c => c.brand === brand.name).length;
+    if (modelCount > 0 || carCount > 0) {
+      toast.error(`Cannot delete ${brand.name} — ${modelCount} model(s) and ${carCount} car(s) are linked`);
       setDeleteConfirm(null);
       return;
     }

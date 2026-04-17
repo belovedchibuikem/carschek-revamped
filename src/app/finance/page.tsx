@@ -1,19 +1,27 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { Download, TrendingUp, DollarSign, CreditCard, Users, FileText, RefreshCw } from 'lucide-react';
+import { CreateInvoiceModal } from '@/components/finance/CreateInvoiceModal';
+import { InvoicePrintTemplate } from '@/components/finance/InvoicePrintTemplate';
+import type { FinanceInvoiceListRow } from '@/lib/finance/invoiceTypes';
+import { getAllFinanceInvoiceRows, upsertFinanceInvoiceRow } from '@/lib/finance/seedFinanceInvoices';
+import { generateInvoicePDF } from '@/lib/pdf/generateInvoice';
 import { FINANCE_SUMMARY, formatNaira } from '@/lib/mockData';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'sonner';
+import { downloadCsv } from '@/lib/csv';
+import { useTheme } from 'next-themes';
 
 const TABS = ['Revenue', 'Payments', 'Inspector Payouts', 'Invoices', 'Refunds'];
 
 const REVENUE_DATA = Array.from({ length: 12 }, (_, i) => ({
   month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-  revenue: Math.floor(Math.random() * 8000000) + 4000000,
-  expenses: Math.floor(Math.random() * 3000000) + 1000000,
+  revenue: 4000000 + ((i * 577 + 13) % 7500000),
+  expenses: 1000000 + ((i * 311 + 7) % 2800000),
 }));
 
 const PAYMENTS = [
@@ -23,31 +31,194 @@ const PAYMENTS = [
   { id: 'PAY-004', customer: 'Ngozi Chukwu', amount: 7500, method: 'Paystack', status: 'Pending', date: '2026-04-10' },
 ];
 
-const PAYOUTS = [
-  { inspector: 'Emeka Okonkwo', jobs: 12, amount: 180000, period: 'Apr 2026', status: 'Pending', bank: 'GTBank' },
-  { inspector: 'Chidinma Eze', jobs: 9, amount: 135000, period: 'Apr 2026', status: 'Pending', bank: 'Access Bank' },
-  { inspector: 'Ngozi Obi', jobs: 11, amount: 165000, period: 'Apr 2026', status: 'Paid', bank: 'First Bank' },
+type PayoutRow = {
+  id: string;
+  inspector: string;
+  jobs: number;
+  amount: number;
+  period: string;
+  status: 'Pending' | 'Paid';
+  bank: string;
+  bankRef?: string;
+};
+
+const PAYOUTS_SEED: PayoutRow[] = [
+  { id: 'pay-1', inspector: 'Emeka Okonkwo', jobs: 12, amount: 180000, period: 'Apr 2026', status: 'Pending', bank: 'GTBank' },
+  { id: 'pay-2', inspector: 'Chidinma Eze', jobs: 9, amount: 135000, period: 'Apr 2026', status: 'Pending', bank: 'Access Bank' },
+  { id: 'pay-3', inspector: 'Ngozi Obi', jobs: 11, amount: 165000, period: 'Apr 2026', status: 'Paid', bank: 'First Bank' },
 ];
 
-const INVOICES = [
-  { id: 'INV-023', customer: 'AutoDeals Nigeria', amount: 45000, status: 'Overdue', date: '2026-04-01', dueDate: '2026-04-10' },
-  { id: 'INV-024', customer: 'Tunde Fashola', amount: 24000000, status: 'Paid', date: '2026-04-12', dueDate: '2026-04-19' },
-  { id: 'INV-025', customer: 'Adaeze Madu', amount: 15000, status: 'Sent', date: '2026-04-13', dueDate: '2026-04-20' },
-];
+function inDateRange(isoDate: string, from: string, to: string): boolean {
+  if (!from && !to) return true;
+  const d = isoDate.slice(0, 10);
+  if (from && d < from) return false;
+  if (to && d > to) return false;
+  return true;
+}
 
 export default function FinancePage() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const { resolvedTheme } = useTheme();
+  const isDark = mounted && resolvedTheme === 'dark';
+  const chartMuted = isDark ? '#94a3b8' : '#9CA3AF';
+  const chartGrid = isDark ? '#334155' : '#F4F6F8';
   const [activeTab, setActiveTab] = useState('Revenue');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [invoices, setInvoices] = useState<FinanceInvoiceListRow[]>(() => getAllFinanceInvoiceRows());
+  const [createInvoiceOpen, setCreateInvoiceOpen] = useState(false);
+  const [renderPdfInvoice, setRenderPdfInvoice] = useState<FinanceInvoiceListRow['printable'] | null>(null);
+  const [payouts, setPayouts] = useState<PayoutRow[]>(PAYOUTS_SEED);
+  const [markPaidTarget, setMarkPaidTarget] = useState<PayoutRow | null>(null);
+  const [markPaidRef, setMarkPaidRef] = useState('');
+
+  const refreshInvoices = () => setInvoices(getAllFinanceInvoiceRows());
+
+  const downloadInvoicePdf = async (row: FinanceInvoiceListRow) => {
+    setRenderPdfInvoice(row.printable);
+    await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+    await new Promise(r => setTimeout(r, 150));
+    try {
+      await generateInvoicePDF(row.printable);
+    } catch {
+      toast.error('Could not generate PDF');
+    } finally {
+      setRenderPdfInvoice(null);
+    }
+  };
+
+  const paymentsFiltered = useMemo(
+    () => PAYMENTS.filter(p => inDateRange(p.date, dateFrom, dateTo)),
+    [dateFrom, dateTo]
+  );
+
+  const exportFinance = () => {
+    try {
+      if (activeTab === 'Revenue') {
+        downloadCsv(
+          'finance-revenue-2026.csv',
+          [['Month', 'Revenue', 'Expenses'], ...REVENUE_DATA.map(r => [r.month, r.revenue, r.expenses])]
+        );
+      } else if (activeTab === 'Payments') {
+        downloadCsv(
+          'finance-payments.csv',
+          [
+            ['Payment ID', 'Customer', 'Amount', 'Method', 'Status', 'Date'],
+            ...paymentsFiltered.map(p => [p.id, p.customer, p.amount, p.method, p.status, p.date]),
+          ]
+        );
+      } else if (activeTab === 'Inspector Payouts') {
+        downloadCsv(
+          'finance-inspector-payouts.csv',
+          [
+            ['Inspector', 'Jobs', 'Amount', 'Period', 'Bank', 'Status'],
+            ...payouts.map(p => [p.inspector, p.jobs, p.amount, p.period, p.bank, p.status]),
+          ]
+        );
+      } else if (activeTab === 'Invoices') {
+        downloadCsv(
+          'finance-invoices.csv',
+          [
+            ['Invoice ID', 'Customer', 'Amount', 'Date', 'Due Date', 'Status'],
+            ...invoices.map(i => [i.id, i.customer, i.amount, i.date, i.dueDate, i.status]),
+          ]
+        );
+      } else {
+        downloadCsv('finance-refunds.csv', [['Note'], ['No pending refunds — export placeholder']]);
+      }
+      toast.success('CSV exported');
+    } catch {
+      toast.error('Export failed');
+    }
+  };
 
   return (
     <AppLayout currentPath={pathname}>
+      {renderPdfInvoice ? (
+        <div className="pointer-events-none fixed left-[-12000px] top-0 z-0 overflow-hidden" aria-hidden>
+          <InvoicePrintTemplate invoice={renderPdfInvoice} />
+        </div>
+      ) : null}
+      <CreateInvoiceModal
+        open={createInvoiceOpen}
+        onClose={() => setCreateInvoiceOpen(false)}
+        onCreated={row => {
+          upsertFinanceInvoiceRow(row);
+          refreshInvoices();
+        }}
+      />
+      {markPaidTarget && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40" aria-hidden onClick={() => setMarkPaidTarget(null)} />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mark-paid-title"
+            className="fixed left-1/2 top-1/2 z-50 w-[min(100vw-2rem,400px)] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+          >
+            <h2 id="mark-paid-title" className="text-base font-heading font-semibold text-[#1F2937] dark:text-slate-100">
+              Mark payout as paid
+            </h2>
+            <p className="mt-1 text-sm text-[#6B7280]">
+              {markPaidTarget.inspector} — {formatNaira(markPaidTarget.amount)} ({markPaidTarget.period})
+            </p>
+            <label className="mt-4 block text-xs font-medium text-[#6B7280]">
+              Bank reference / transfer ID
+              <input
+                value={markPaidRef}
+                onChange={e => setMarkPaidRef(e.target.value)}
+                placeholder="e.g. NIP-TRF-20260416-88421"
+                className="mt-1 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              />
+            </label>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMarkPaidTarget(null);
+                  setMarkPaidRef('');
+                }}
+                className="rounded-lg border border-[#E5E7EB] px-4 py-2 text-sm font-medium text-[#6B7280] hover:bg-[#F4F6F8] dark:border-slate-600 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const ref = markPaidRef.trim();
+                  if (!ref) {
+                    toast.error('Enter a bank reference');
+                    return;
+                  }
+                  setPayouts(prev =>
+                    prev.map(p =>
+                      p.id === markPaidTarget.id ? { ...p, status: 'Paid' as const, bankRef: ref } : p
+                    )
+                  );
+                  toast.success(`Recorded paid for ${markPaidTarget.inspector} (ref: ${ref})`);
+                  setMarkPaidTarget(null);
+                  setMarkPaidRef('');
+                }}
+                className="rounded-lg bg-[#1A7A4A] px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+              >
+                Confirm paid
+              </button>
+            </div>
+          </div>
+        </>
+      )}
       <div className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Finance</h1>
             <p className="text-sm text-[#6B7280]">Financial overview and management</p>
           </div>
-          <button onClick={() => toast.success('CSV exported')} className="flex items-center gap-2 px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium text-[#6B7280] hover:bg-[#F4F6F8] transition-colors">
+          <button
+            onClick={exportFinance}
+            className="flex items-center gap-2 px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium text-[#6B7280] hover:bg-[#F4F6F8] transition-colors"
+          >
             <Download size={15} /> Export
           </button>
         </div>
@@ -93,11 +264,11 @@ export default function FinancePage() {
                       <stop offset="95%" stopColor="#C0392B" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F4F6F8" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9CA3AF' }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} tickLine={false} axisLine={false} tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} />
-                  <Tooltip formatter={(v: number) => formatNaira(v)} contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: chartMuted }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: chartMuted }} tickLine={false} axisLine={false} tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} />
+                  <Tooltip formatter={(v: number) => formatNaira(v)} contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12, background: isDark ? '#1e293b' : '#fff', color: isDark ? '#e2e8f0' : '#1F2937' }} />
+                  <Legend wrapperStyle={{ fontSize: 12, color: isDark ? '#e2e8f0' : '#1F2937' }} />
                   <Area type="monotone" dataKey="revenue" stroke="#1A7A4A" strokeWidth={2} fill="url(#rev)" name="Revenue" />
                   <Area type="monotone" dataKey="expenses" stroke="#C0392B" strokeWidth={2} fill="url(#exp)" name="Expenses" />
                 </AreaChart>
@@ -108,6 +279,38 @@ export default function FinancePage() {
 
         {activeTab === 'Payments' && (
           <div className="space-y-4">
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="text-xs text-[#6B7280]">
+                From
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={e => setDateFrom(e.target.value)}
+                  className="mt-1 block px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg bg-white"
+                />
+              </label>
+              <label className="text-xs text-[#6B7280]">
+                To
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={e => setDateTo(e.target.value)}
+                  className="mt-1 block px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg bg-white"
+                />
+              </label>
+              {(dateFrom || dateTo) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDateFrom('');
+                    setDateTo('');
+                  }}
+                  className="text-sm text-[#C0392B] hover:underline"
+                >
+                  Clear dates
+                </button>
+              )}
+            </div>
             {PAYMENTS.some(p => p.status === 'Failed') && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
                 <span className="text-[#C0392B] text-lg">⚠</span>
@@ -124,7 +327,7 @@ export default function FinancePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {PAYMENTS.map(p => (
+                  {paymentsFiltered.map(p => (
                     <tr key={p.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                       <td className="px-4 py-3 font-mono text-xs font-semibold text-[#2E75B6]">{p.id}</td>
                       <td className="px-4 py-3 font-medium text-[#1F2937]">{p.customer}</td>
@@ -161,8 +364,8 @@ export default function FinancePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {PAYOUTS.map((p, i) => (
-                    <tr key={i} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
+                  {payouts.map(p => (
+                    <tr key={p.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                       <td className="px-4 py-3 font-medium text-[#1F2937]">{p.inspector}</td>
                       <td className="px-4 py-3 text-[#6B7280]">{p.jobs}</td>
                       <td className="px-4 py-3 font-semibold text-[#1F2937]">{formatNaira(p.amount)}</td>
@@ -179,7 +382,14 @@ export default function FinancePage() {
                             Payslip
                           </button>
                           {p.status === 'Pending' && (
-                            <button onClick={() => toast.success(`${p.inspector} marked as paid`)} className="px-3 py-1.5 bg-[#1A7A4A] text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition-all">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMarkPaidTarget(p);
+                                setMarkPaidRef('');
+                              }}
+                              className="px-3 py-1.5 bg-[#1A7A4A] text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition-all"
+                            >
                               Mark Paid
                             </button>
                           )}
@@ -196,7 +406,11 @@ export default function FinancePage() {
         {activeTab === 'Invoices' && (
           <div className="space-y-4">
             <div className="flex justify-end">
-              <button onClick={() => toast.success('Invoice creation form — coming soon')} className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+              <button
+                type="button"
+                onClick={() => setCreateInvoiceOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all"
+              >
                 <FileText size={15} /> Create Invoice
               </button>
             </div>
@@ -210,7 +424,7 @@ export default function FinancePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {INVOICES.map(inv => (
+                  {invoices.map(inv => (
                     <tr key={inv.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                       <td className="px-4 py-3 font-mono text-xs font-semibold text-[#2E75B6]">{inv.id}</td>
                       <td className="px-4 py-3 font-medium text-[#1F2937]">{inv.customer}</td>
@@ -218,14 +432,47 @@ export default function FinancePage() {
                       <td className="px-4 py-3 text-xs text-[#6B7280]">{inv.date}</td>
                       <td className="px-4 py-3 text-xs text-[#6B7280]">{inv.dueDate}</td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${inv.status === 'Paid' ? 'bg-green-100 text-green-700' : inv.status === 'Overdue' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                        <span
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                            inv.status === 'Paid'
+                              ? 'bg-green-100 text-green-700'
+                              : inv.status === 'Overdue'
+                                ? 'bg-red-100 text-red-700'
+                                : inv.status === 'Draft'
+                                  ? 'bg-slate-100 text-slate-700'
+                                  : 'bg-blue-100 text-blue-700'
+                          }`}
+                        >
                           {inv.status}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <button onClick={() => toast.success('Invoice sent via email')} className="px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-colors">
-                          Send
-                        </button>
+                        <div className="flex flex-wrap gap-1">
+                          <Link
+                            href={`/finance/invoices/${encodeURIComponent(inv.id)}`}
+                            className="px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#2E75B6] rounded-lg hover:bg-[#F4F6F8] transition-colors"
+                          >
+                            View
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => void downloadInvoicePdf(inv)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#1E3A5F] rounded-lg hover:bg-[#F4F6F8] transition-colors"
+                          >
+                            <Download size={12} /> Download
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              toast.success('Invoice emailed (simulated)', {
+                                description: `${inv.printable.email} · ${inv.id} · ${formatNaira(inv.amount)}`,
+                              })
+                            }
+                            className="px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-colors"
+                          >
+                            Send
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

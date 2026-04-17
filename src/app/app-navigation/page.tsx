@@ -4,6 +4,7 @@ import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
 import { LayoutDashboard, ClipboardList, Users, FileText, UserCircle, Car, Handshake, DollarSign, Bell, Settings, ChevronLeft, ChevronRight, Menu, X, Sun, Moon, Home, Briefcase, User, Plus, ArrowLeft, Search, RefreshCw, Smartphone, Monitor, Tablet, Zap, Play } from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
+import { toast } from 'sonner';
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -236,7 +237,11 @@ function AdminNavDemo() {
                   <p className={`text-xs font-semibold ${textPrimary}`}>#{r.id} · {r.vehicle}</p>
                   <p className={`text-[10px] ${textMuted}`}>{r.inspector} · {r.time} in queue</p>
                 </div>
-                <button className="px-2.5 py-1 bg-[#1E3A5F] text-white text-[10px] font-medium rounded-lg hover:bg-[#2E75B6] transition-colors">
+                <button
+                  type="button"
+                  onClick={() => toast.success('Opening report review…', { description: 'Prototype: use Inspection → Reports QA in the live app.' })}
+                  className="px-2.5 py-1 bg-[#1E3A5F] text-white text-[10px] font-medium rounded-lg hover:bg-[#2E75B6] transition-colors"
+                >
                   Review
                 </button>
               </div>
@@ -453,7 +458,12 @@ function AdminNavDemo() {
                       <span className="text-[9px] font-medium">{tab.label}</span>
                     </button>
                   ))}
-                  <button className="w-9 h-9 rounded-full bg-[#1E3A5F] flex items-center justify-center shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(true)}
+                    aria-label="Create new order"
+                    className="w-9 h-9 rounded-full bg-[#1E3A5F] flex items-center justify-center shadow-lg hover:bg-[#16304F] transition-colors"
+                  >
                     <Plus size={18} className="text-white" />
                   </button>
                 </div>
@@ -673,6 +683,14 @@ function LoadingSkeletons() {
 function ErrorStates() {
   const [activeError, setActiveError] = useState<ErrorType>(null);
 
+  const retryDemo = () => {
+    toast.success('Connection retry', { description: 'Prototype only — no network call was made.' });
+  };
+
+  const clearFiltersDemo = () => {
+    toast.info('Filters cleared', { description: 'Adjust search or reset filters to see more vehicles.' });
+  };
+
   const ERROR_TYPES: { key: ErrorType; label: string; color: string }[] = [
     { key: '404', label: '404 Not Found', color: 'bg-blue-100 text-blue-700' },
     { key: '500', label: '500 Server Error', color: 'bg-red-100 text-red-700' },
@@ -716,7 +734,11 @@ function ErrorStates() {
               <div className="text-6xl mb-4">⚙️</div>
               <h3 className="text-xl font-bold text-[#1F2937] mb-2">Something went wrong on our end</h3>
               <p className="text-sm text-[#6B7280] mb-5">Our team has been notified and is working on a fix.</p>
-              <button className="flex items-center gap-2 px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-medium rounded-xl hover:bg-[#2E75B6] transition-colors">
+              <button
+                type="button"
+                onClick={retryDemo}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-medium rounded-xl hover:bg-[#2E75B6] transition-colors"
+              >
                 <RefreshCw size={15} />
                 Retry
               </button>
@@ -727,7 +749,11 @@ function ErrorStates() {
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-bold text-[#1F2937] mb-2">No results for "Toyota 2025"</h3>
               <p className="text-sm text-[#6B7280] mb-5">Try adjusting your search or clearing the filters.</p>
-              <button className="px-5 py-2.5 border border-[#E5E7EB] text-[#374151] text-sm font-medium rounded-xl hover:bg-[#F4F6F8] transition-colors">
+              <button
+                type="button"
+                onClick={clearFiltersDemo}
+                className="px-5 py-2.5 border border-[#E5E7EB] text-[#374151] text-sm font-medium rounded-xl hover:bg-[#F4F6F8] transition-colors"
+              >
                 Clear Filters
               </button>
             </>
@@ -737,7 +763,11 @@ function ErrorStates() {
               <div className="text-6xl mb-4">📡</div>
               <h3 className="text-xl font-bold text-[#1F2937] mb-2">You appear to be offline</h3>
               <p className="text-sm text-[#6B7280] mb-5">Check your internet connection and try again.</p>
-              <button className="flex items-center gap-2 px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-medium rounded-xl hover:bg-[#2E75B6] transition-colors">
+              <button
+                type="button"
+                onClick={retryDemo}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-medium rounded-xl hover:bg-[#2E75B6] transition-colors"
+              >
                 <RefreshCw size={15} />
                 Retry
               </button>

@@ -4,6 +4,7 @@ import AppLayout from '@/components/AppLayout';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import { TrendingUp, Download, Calendar, Users, Star, MapPin, DollarSign, Target } from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
+import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
 
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
@@ -111,6 +112,7 @@ function HeatCell({ value }: { value: number }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function InvestorDashboardPage() {
+  const chartTheme = useRechartsTheme();
   const [period, setPeriod] = useState('YTD');
   const [scenario, setScenario] = useState<'base' | 'conservative' | 'optimistic'>('base');
   const periods = ['MTD', 'QTD', 'YTD', 'Custom'];
@@ -152,12 +154,12 @@ export default function InvestorDashboardPage() {
             <div className="min-w-[400px]">
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={monthlyData} margin={{ top: 5, right: 16, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis yAxisId="left" tick={{ fontSize: 10 }} width={36} />
-                  <YAxis yAxisId="right" orientation="right" tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} tick={{ fontSize: 10 }} width={44} />
-                  <Tooltip formatter={(v: number, name: string) => name === 'revenue' ? `₦${v.toLocaleString()}` : v} />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStrokeAlt} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: chartTheme.tickFill }} />
+                  <YAxis yAxisId="left" tick={{ fontSize: 10, fill: chartTheme.tickFill }} width={36} />
+                  <YAxis yAxisId="right" orientation="right" tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} tick={{ fontSize: 10, fill: chartTheme.tickFill }} width={44} />
+                  <Tooltip formatter={(v: number, name: string) => name === 'revenue' ? `₦${v.toLocaleString()}` : v} contentStyle={chartTheme.tooltipContentStyle} />
+                  <Legend wrapperStyle={{ ...chartTheme.legendWrapperStyle, fontSize: '11px' }} />
                   <Bar yAxisId="left" dataKey="inspections" name="Inspections" fill="#1E3A5F" radius={[4, 4, 0, 0]} />
                   <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="#1A7A4A" strokeWidth={2.5} dot={false} />
                   <ReferenceLine yAxisId="left" x="Oct" stroke="#D35400" strokeDasharray="4 4" label={{ value: 'Abuja Launch', position: 'top', fontSize: 9, fill: '#D35400' }} />
@@ -271,11 +273,11 @@ export default function InvestorDashboardPage() {
             <div className="min-w-[320px]">
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={forecastData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} tick={{ fontSize: 10 }} width={48} />
-                  <Tooltip formatter={(v: number) => v ? `₦${v.toLocaleString()}` : '—'} />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStrokeAlt} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: chartTheme.tickFill }} />
+                  <YAxis tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} tick={{ fontSize: 10, fill: chartTheme.tickFill }} width={48} />
+                  <Tooltip formatter={(v: number) => v ? `₦${v.toLocaleString()}` : '—'} contentStyle={chartTheme.tooltipContentStyle} />
+                  <Legend wrapperStyle={{ ...chartTheme.legendWrapperStyle, fontSize: '11px' }} />
                   <Line type="monotone" dataKey="actual" name="Actual" stroke="#1E3A5F" strokeWidth={2.5} dot={{ r: 4 }} connectNulls={false} />
                   <Line type="monotone" dataKey={scenario} name={`${scenario.charAt(0).toUpperCase() + scenario.slice(1)} Forecast`}
                     stroke={scenario === 'optimistic' ? '#1A7A4A' : scenario === 'conservative' ? '#C0392B' : '#2E75B6'}
@@ -337,11 +339,11 @@ export default function InvestorDashboardPage() {
                     { type: 'Dealer', deals: 187, avgPrice: 5200000, conversion: 31 },
                     { type: 'Private', deals: 100, avgPrice: 3800000, conversion: 18 },
                   ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                    <XAxis dataKey="type" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 10 }} width={32} />
-                    <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStrokeAlt} />
+                    <XAxis dataKey="type" tick={{ fontSize: 12, fill: chartTheme.tickFill }} />
+                    <YAxis tick={{ fontSize: 10, fill: chartTheme.tickFill }} width={32} />
+                    <Tooltip contentStyle={chartTheme.tooltipContentStyle} />
+                    <Legend wrapperStyle={{ ...chartTheme.legendWrapperStyle, fontSize: '11px' }} />
                     <Bar dataKey="deals" name="Deals Closed" fill="#1E3A5F" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="conversion" name="Conversion %" fill="#2E75B6" radius={[4, 4, 0, 0]} />
                   </BarChart>

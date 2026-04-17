@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, Users, Star } from 'lucide-react';
 import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts';
+import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
 
 function useCountUp(target: number, duration = 1200) {
   const [val, setVal] = useState(0);
@@ -43,6 +44,7 @@ const SPARKLINES = {
 };
 
 export default function DashboardKPIs() {
+  const t = useRechartsTheme();
   const inspections = useCountUp(47);
   const pending = useCountUp(9);
   const scoreVal = useCountUp(78);
@@ -128,7 +130,7 @@ export default function DashboardKPIs() {
           <div className="h-16 w-16">
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="100%" data={[{ value: scoreVal, fill: scoreVal >= 71 ? '#1A7A4A' : scoreVal >= 41 ? '#D35400' : '#C0392B' }]} startAngle={90} endAngle={-270}>
-                <RadialBar dataKey="value" cornerRadius={4} background={{ fill: '#F4F6F8' }} />
+                <RadialBar dataKey="value" cornerRadius={4} background={{ fill: t.gridStrokeAlt }} />
               </RadialBarChart>
             </ResponsiveContainer>
           </div>

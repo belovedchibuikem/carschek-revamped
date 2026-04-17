@@ -2,16 +2,17 @@
 import React from 'react';
 import { Trophy, Star, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { CircularScoreProgress } from '@/components/shared/CircularScoreProgress';
 
 const INSPECTORS = [
-  { id: 'insp-001', name: 'Emeka Okonkwo', avatar: 'EO', zone: 'Lagos Island', jobs: 28, rating: 4.9, turnaround: '8m 20s', earnings: 185000, status: 'available' as const },
-  { id: 'insp-002', name: 'Adaora Nwosu', avatar: 'AN', zone: 'Lekki/VI', jobs: 24, rating: 4.8, turnaround: '9m 05s', earnings: 162000, status: 'busy' as const },
-  { id: 'insp-003', name: 'Chukwudi Eze', avatar: 'CE', zone: 'Abuja Central', jobs: 22, rating: 4.7, turnaround: '9m 45s', earnings: 148000, status: 'available' as const },
-  { id: 'insp-004', name: 'Fatima Bello', avatar: 'FB', zone: 'Kano Metro', jobs: 19, rating: 4.6, turnaround: '10m 12s', earnings: 128000, status: 'available' as const },
-  { id: 'insp-005', name: 'Olumide Adeyemi', avatar: 'OA', zone: 'Ibadan', jobs: 17, rating: 4.5, turnaround: '11m 30s', earnings: 114000, status: 'off-duty' as const },
-  { id: 'insp-006', name: 'Ngozi Okafor', avatar: 'NO', zone: 'Port Harcourt', jobs: 16, rating: 4.4, turnaround: '10m 55s', earnings: 107000, status: 'busy' as const },
-  { id: 'insp-007', name: 'Ibrahim Musa', avatar: 'IM', zone: 'Abuja Suburbs', jobs: 14, rating: 4.3, turnaround: '12m 10s', earnings: 94000, status: 'available' as const },
-  { id: 'insp-008', name: 'Taiwo Ogundimu', avatar: 'TO', zone: 'Lagos Mainland', jobs: 13, rating: 4.2, turnaround: '12m 45s', earnings: 87000, status: 'off-duty' as const },
+  { id: 'insp-001', name: 'Emeka Okonkwo', avatar: 'EO', zone: 'Lagos Island', jobs: 28, rating: 4.9, avgCkScore: 82, turnaround: '8m 20s', earnings: 185000, status: 'available' as const },
+  { id: 'insp-002', name: 'Adaora Nwosu', avatar: 'AN', zone: 'Lekki/VI', jobs: 24, rating: 4.8, avgCkScore: 85, turnaround: '9m 05s', earnings: 162000, status: 'busy' as const },
+  { id: 'insp-003', name: 'Chukwudi Eze', avatar: 'CE', zone: 'Abuja Central', jobs: 22, rating: 4.7, avgCkScore: 79, turnaround: '9m 45s', earnings: 148000, status: 'available' as const },
+  { id: 'insp-004', name: 'Fatima Bello', avatar: 'FB', zone: 'Kano Metro', jobs: 19, rating: 4.6, avgCkScore: 77, turnaround: '10m 12s', earnings: 128000, status: 'available' as const },
+  { id: 'insp-005', name: 'Olumide Adeyemi', avatar: 'OA', zone: 'Ibadan', jobs: 17, rating: 4.5, avgCkScore: 74, turnaround: '11m 30s', earnings: 114000, status: 'off-duty' as const },
+  { id: 'insp-006', name: 'Ngozi Okafor', avatar: 'NO', zone: 'Port Harcourt', jobs: 16, rating: 4.4, avgCkScore: 81, turnaround: '10m 55s', earnings: 107000, status: 'busy' as const },
+  { id: 'insp-007', name: 'Ibrahim Musa', avatar: 'IM', zone: 'Abuja Suburbs', jobs: 14, rating: 4.3, avgCkScore: 73, turnaround: '12m 10s', earnings: 94000, status: 'available' as const },
+  { id: 'insp-008', name: 'Taiwo Ogundimu', avatar: 'TO', zone: 'Lagos Mainland', jobs: 13, rating: 4.2, avgCkScore: 71, turnaround: '12m 45s', earnings: 87000, status: 'off-duty' as const },
 ];
 
 const RANK_COLORS = ['border-l-amber-400', 'border-l-gray-400', 'border-l-amber-700', 'border-l-transparent', 'border-l-transparent', 'border-l-transparent', 'border-l-transparent', 'border-l-transparent'];
@@ -39,6 +40,7 @@ export default function InspectorLeaderboard() {
               <th className="px-6 py-3 text-left w-12">Rank</th>
               <th className="px-4 py-3 text-left">Inspector</th>
               <th className="px-4 py-3 text-right">Jobs</th>
+              <th className="px-4 py-3 text-center">Avg CK</th>
               <th className="px-4 py-3 text-right">Rating</th>
               <th className="px-4 py-3 text-right">Avg Turnaround</th>
               <th className="px-4 py-3 text-right">Earnings MTD</th>
@@ -64,6 +66,11 @@ export default function InspectorLeaderboard() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span className="text-sm font-bold text-[#1F2937] tabular-nums">{insp.jobs}</span>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex justify-center">
+                    <CircularScoreProgress score={insp.avgCkScore} size={40} />
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">

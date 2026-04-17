@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { ArrowLeft, CheckCircle, XCircle, Star, Eye, TrendingUp, MessageSquare, Calendar, Camera, FileText, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Listing } from './VehicleListingsModule';
 import { toast } from 'sonner';
-import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
+import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
+import { CarschekScore } from '@/components/shared/CarschekScore';
 
 const VIEWS_DATA = [
   { day: 'Mon', views: 42 }, { day: 'Tue', views: 67 }, { day: 'Wed', views: 55 },
@@ -22,12 +24,12 @@ const PRICE_HISTORY = [
   { date: '01 Apr 2026', price: 5200000, note: 'Price reduced' },
 ];
 
-const SCORE_COLOR = (s: number) => s >= 71 ? '#1A7A4A' : s >= 41 ? '#D35400' : '#C0392B';
 const SCORE_BG = (s: number) => s >= 71 ? 'bg-green-50 text-green-700' : s >= 41 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700';
 
 interface Props { listing: Listing; onBack: () => void; }
 
 export default function ListingDetail({ listing, onBack }: Props) {
+  const chartTheme = useRechartsTheme();
   const [featured, setFeatured] = useState(listing.status === 'featured');
   const [activePhoto, setActivePhoto] = useState(0);
   const isSold = listing.status === 'sold';
@@ -172,22 +174,10 @@ export default function ListingDetail({ listing, onBack }: Props) {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-3 flex items-center gap-2"><FileText size={15} className="text-[#2E75B6]" /> Attached Inspection Report</h3>
             <div className="flex items-center gap-4 p-4 bg-[#F4F6F8] rounded-xl border border-[#E5E7EB]">
-              <div className="relative w-14 h-14 flex-shrink-0">
-                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" strokeWidth="12" />
-                  <circle cx="50" cy="50" r="40" fill="none" stroke={SCORE_COLOR(listing.score)} strokeWidth="12"
-                    strokeDasharray={`${2 * Math.PI * 40}`}
-                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - listing.score / 100)}`}
-                    strokeLinecap="round" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-bold tabular-nums" style={{ color: SCORE_COLOR(listing.score) }}>{listing.score}</span>
-                </div>
-              </div>
+              <CarschekScore score={listing.score} size={48} />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-[#1F2937]">Carschek Inspection Report</p>
                 <p className="text-xs text-[#6B7280]">Inspected: 28 Mar 2026 · Score: {listing.score}/100</p>
-                <p className="text-xs text-[#6B7280]">{listing.score >= 71 ? 'Good Condition' : listing.score >= 41 ? 'Fair Condition' : 'Poor Condition'}</p>
               </div>
               <button className="text-xs text-[#2E75B6] hover:underline font-semibold">View Full Report →</button>
             </div>
@@ -236,9 +226,10 @@ export default function ListingDetail({ listing, onBack }: Props) {
               <span className="text-lg font-bold text-[#1F2937]">{VIEWS_DATA.reduce((a, d) => a + d.views, 0)}</span>
             </div>
             <ResponsiveContainer width="100%" height={60}>
-              <LineChart data={VIEWS_DATA}>
+              <LineChart data={VIEWS_DATA} margin={{ top: 2, right: 4, left: -18, bottom: 0 }}>
+                <XAxis dataKey="day" tick={{ fontSize: 9, fill: chartTheme.tickFill }} tickLine={false} axisLine={false} />
                 <Line type="monotone" dataKey="views" stroke="#2E75B6" strokeWidth={2} dot={false} />
-                <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB' }} />
+                <Tooltip contentStyle={{ ...chartTheme.tooltipContentStyle, fontSize: 11 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -258,7 +249,7 @@ export default function ListingDetail({ listing, onBack }: Props) {
                     <p className="text-xs font-semibold text-[#1F2937] truncate">{b.name}</p>
                     <p className="text-[10px] text-[#6B7280]">{b.date}</p>
                   </div>
-                  <button className="text-[10px] text-[#2E75B6] hover:underline">Contact</button>
+                  <button type="button" onClick={() => toast.message('Contact (demo)', { description: `${b.name} · ${b.phone}` })} className="text-[10px] text-[#2E75B6] hover:underline">Contact</button>
                 </div>
               ))}
             </div>

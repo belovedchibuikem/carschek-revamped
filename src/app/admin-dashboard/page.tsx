@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import DashboardKPIs from './components/DashboardKPIs';
 import BookingTrendChart from './components/BookingTrendChart';
@@ -22,9 +23,12 @@ export default function AdminDashboardPage() {
               <span className="w-1.5 h-1.5 bg-[#1A7A4A] rounded-full animate-pulse" />
               Live data
             </span>
-            <button className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98] min-h-[44px]">
+            <Link
+              href="/orders/new"
+              className="inline-flex items-center justify-center px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98] min-h-[44px]"
+            >
               + New Order
-            </button>
+            </Link>
           </div>
         </div>
         <DashboardKPIs />

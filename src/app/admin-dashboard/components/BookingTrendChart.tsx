@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Calendar } from 'lucide-react';
+import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
 
 const generateData = (days: number) => {
   const result = [];
@@ -10,8 +11,8 @@ const generateData = (days: number) => {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const label = d.toLocaleDateString('en-NG', { day: '2-digit', month: 'short' });
-    const booked = Math.floor(30 + Math.random() * 30 + (i % 7 < 2 ? -10 : 0));
-    const completed = Math.floor(booked * (0.72 + Math.random() * 0.2));
+    const booked = 30 + ((i * 17 + days) % 28) + (i % 7 < 2 ? -10 : 0);
+    const completed = Math.floor(booked * (0.72 + ((i * 3) % 20) / 100));
     result.push({ date: label, booked, completed });
   }
   return result;
@@ -23,25 +24,26 @@ const DATASETS: Record<string, ReturnType<typeof generateData>> = {
   '90d': generateData(90),
 };
 
-const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }>; label?: string }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg p-3 text-xs">
-      <p className="font-semibold text-[#1F2937] mb-2">{label}</p>
-      {payload.map(p => (
-        <div key={`tooltip-${p.name}`} className="flex items-center gap-2 mb-1">
-          <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />
-          <span className="text-[#6B7280]">{p.name}:</span>
-          <span className="font-semibold text-[#1F2937]">{p.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
-
 export default function BookingTrendChart() {
+  const t = useRechartsTheme();
   const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
   const data = DATASETS[period];
+
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }>; label?: string }) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div style={t.tooltipContentStyle} className="rounded-xl shadow-lg p-3 text-xs">
+        <p className="font-semibold mb-2" style={{ color: t.tooltipContentStyle.color }}>{label}</p>
+        {payload.map(p => (
+          <div key={`tooltip-${p.name}`} className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />
+            <span style={{ color: t.tickFillMuted }}>{p.name}:</span>
+            <span className="font-semibold" style={{ color: t.tooltipContentStyle.color }}>{p.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 sm:p-6 shadow-sm">
@@ -76,11 +78,11 @@ export default function BookingTrendChart() {
                   <stop offset="95%" stopColor="#1A7A4A" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} interval={period === '90d' ? 9 : period === '30d' ? 4 : 0} />
-              <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} width={28} />
+              <CartesianGrid strokeDasharray="3 3" stroke={t.gridStroke} />
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: t.tickFill }} tickLine={false} axisLine={false} interval={period === '90d' ? 9 : period === '30d' ? 4 : 0} />
+              <YAxis tick={{ fontSize: 10, fill: t.tickFill }} tickLine={false} axisLine={false} width={28} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }} />
+              <Legend wrapperStyle={{ ...t.legendWrapperStyle, fontSize: '11px', paddingTop: '12px' }} />
               <Area type="monotone" dataKey="booked" name="Booked" stroke="#1E3A5F" strokeWidth={2} fill="url(#gradBooked)" />
               <Area type="monotone" dataKey="completed" name="Completed" stroke="#1A7A4A" strokeWidth={2} fill="url(#gradCompleted)" />
             </AreaChart>

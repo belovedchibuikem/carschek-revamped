@@ -1,7 +1,5 @@
-'use client';
-import React from 'react';
-import InspectorMobileApp from './components/InspectorMobileApp';
+import { redirect } from 'next/navigation';
 
-export default function InspectorAppPage() {
-  return <InspectorMobileApp />;
+export default function InspectorAppIndexPage() {
+  redirect('/inspector-app/jobs');
 }

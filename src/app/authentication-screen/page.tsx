@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { setCarschekSessionCookies } from '@/lib/auth/session';
 import { Eye, EyeOff, Shield, ArrowLeft, Car, CheckCircle, Mail, Lock, RefreshCw, ChevronRight, AlertTriangle } from 'lucide-react';
 
 type AuthStep = 'login' | '2fa' | 'welcome' | 'forgot-1' | 'forgot-2' | 'forgot-3';
@@ -171,6 +172,7 @@ export default function AuthenticationScreen() {
   const handle2FA = (code: string) => {
     if (code === '123456' || code.length === 6) {
       toast.success('Identity verified successfully');
+      setCarschekSessionCookies(welcomeRole);
       setStep('welcome');
     }
   };
@@ -430,7 +432,7 @@ export default function AuthenticationScreen() {
                 ))}
               </div>
               <a
-                href="/admin-dashboard"
+                href="/dashboard"
                 className="block w-full py-2.5 bg-[#1E3A5F] hover:bg-[#16304F] text-white font-semibold text-sm rounded-lg transition-all duration-150 active:scale-[0.99] text-center"
               >
                 Go to Dashboard →

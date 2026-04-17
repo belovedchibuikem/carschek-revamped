@@ -1,0 +1,16 @@
+---
+description: Carschek project — explore codebase before implementing
+alwaysApply: true
+---
+
+# Carschek session workflow
+
+This repository is the **Carschek** project.
+
+**Before writing or changing code for a task:**
+
+1. Orient yourself in the repo: skim layout (`src/`, `app/`, config files), and open or search files relevant to the request.
+2. Prefer reading existing patterns (components, API usage, styling) over inventing new structure.
+3. Implement the user’s request only after you have enough context from the codebase to match conventions.
+
+If the user opens a session with: *“I am working on the Carschek project. Read the existing codebase structure first, then implement the following.”* — treat that as confirmation of this workflow; still follow the steps above for every substantive change.

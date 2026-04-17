@@ -1,20 +1,26 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Clock, Eye } from 'lucide-react';
 import { AUCTIONS, formatNaira } from '@/lib/mockData';
 import { toast } from 'sonner';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { EmptyState } from '@/components/shared/TableSkeleton';
 
 export default function AuctionsPage() {
   const pathname = usePathname();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [bidsPanel, setBidsPanel] = useState<string | null>(null);
 
-  const filtered = AUCTIONS.filter(a =>
-    !search || a.carName.toLowerCase().includes(search.toLowerCase()) || a.id.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    const q = debouncedSearch.toLowerCase().trim();
+    return AUCTIONS.filter(
+      a => !q || a.carName.toLowerCase().includes(q) || a.id.toLowerCase().includes(q)
+    );
+  }, [debouncedSearch]);
 
   const getTimeRemaining = (endsAt: string) => {
     const diff = new Date(endsAt).getTime() - Date.now();
@@ -75,8 +81,16 @@ export default function AuctionsPage() {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search auctions…"
             className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+          {search !== debouncedSearch && (
+            <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
+          )}
         </div>
 
+        {filtered.length === 0 ? (
+          <div className="bg-white rounded-xl border border-[#E5E7EB]">
+            <EmptyState title="No auctions match" hint="Try another search or check ended auctions." />
+          </div>
+        ) : (
         <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -91,7 +105,9 @@ export default function AuctionsPage() {
                 {filtered.map(auction => (
                   <tr key={auction.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs font-semibold text-[#2E75B6]">{auction.id}</span>
+                      <Link href={`/auctions/${auction.id}`} className="font-mono text-xs font-semibold text-[#2E75B6] hover:underline">
+                        {auction.id}
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <Link href={`/cars/${auction.carId}`} className="font-medium text-[#1F2937] hover:text-[#2E75B6] transition-colors">{auction.carName}</Link>
@@ -121,7 +137,11 @@ export default function AuctionsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <Link href={`/auctions/${auction.id}`}
+                          className="px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-colors">
+                          View
+                        </Link>
                         <button onClick={() => setBidsPanel(auction.id)}
                           className="px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-colors flex items-center gap-1">
                           <Eye size={12} /> Bids
@@ -140,6 +160,7 @@ export default function AuctionsPage() {
             </table>
           </div>
         </div>
+        )}
       </div>
     </AppLayout>
   );

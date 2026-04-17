@@ -1,19 +1,21 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { TrendingUp, TrendingDown, ArrowRight, Users, ClipboardList, DollarSign, Star, MapPin, Activity, ChevronRight, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, Users, ClipboardList, DollarSign, Star, MapPin, Activity, ChevronRight, Zap, Download } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, Cell
 } from 'recharts';
-import { formatNaira, getScoreColor } from '@/lib/mockData';
+import { formatNaira, getScoreColor, INSPECTORS } from '@/lib/mockData';
+import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
+import { AppointmentDashboardKpis } from '@/components/dashboard/AppointmentDashboardKpis';
 
 const BOOKING_DATA = Array.from({ length: 30 }, (_, i) => ({
   day: `Apr ${i + 1}`,
-  booked: Math.floor(Math.random() * 15) + 5,
-  completed: Math.floor(Math.random() * 12) + 3,
+  booked: 5 + ((i * 13 + 7) % 15),
+  completed: 3 + ((i * 11 + 5) % 12),
 }));
 
 const REVENUE_DATA = [
@@ -67,8 +69,44 @@ function CountUp({ target, prefix = '', suffix = '' }: { target: number; prefix?
 
 export default function DashboardPage() {
   const pathname = usePathname();
+  const chartTheme = useRechartsTheme();
   const [chartRange, setChartRange] = useState<'7D' | '30D' | '90D'>('30D');
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  const [showBookedSeries, setShowBookedSeries] = useState(true);
+  const [showCompletedSeries, setShowCompletedSeries] = useState(true);
+  const exportRootRef = useRef<HTMLDivElement>(null);
+
+  const exportSummaryPdf = async () => {
+    const el = exportRootRef.current;
+    if (!el || typeof window === 'undefined') return;
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#F4F6F8',
+      });
+      const pdf = new jsPDF({ format: 'a4', orientation: 'portrait', unit: 'mm' });
+      const pageW = 210;
+      const pageH = 297;
+      const img = canvas.toDataURL('image/jpeg', 0.92);
+      const natW = pageW;
+      const natH = (canvas.height * pageW) / canvas.width;
+      const scale = natH > pageH ? pageH / natH : 1;
+      pdf.addImage(img, 'JPEG', 0, 0, natW * scale, natH * scale);
+      pdf.save(`Carschek-Dashboard-Summary-${new Date().toISOString().slice(0, 10)}.pdf`);
+    } catch {
+      window.alert('Could not generate PDF snapshot. Try again or use browser print.');
+    }
+  };
+
+  const onBookingLegendClick = (data: { dataKey?: unknown }) => {
+    const key = String(data?.dataKey ?? '');
+    if (key === 'booked') setShowBookedSeries(v => !v);
+    if (key === 'completed') setShowCompletedSeries(v => !v);
+  };
 
   const kpis = [
     {
@@ -78,7 +116,7 @@ export default function DashboardPage() {
       trendLabel: 'vs yesterday',
       icon: ClipboardList,
       color: '#1E3A5F',
-      href: '/orders',
+      href: '/orders?status=in-progress',
     },
     {
       label: 'Pending Orders',
@@ -121,7 +159,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout currentPath={pathname}>
-      <div className="space-y-6">
+      <div ref={exportRootRef} className="space-y-6">
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -133,6 +171,13 @@ export default function DashboardPage() {
               <span className="w-1.5 h-1.5 bg-[#1A7A4A] rounded-full animate-pulse" />
               Live data
             </span>
+            <button
+              type="button"
+              onClick={exportSummaryPdf}
+              className="px-4 py-2.5 border border-[#E5E7EB] bg-white text-[#1F2937] text-sm font-semibold rounded-lg hover:bg-[#F4F6F8] transition-all min-h-[44px] inline-flex items-center gap-2"
+            >
+              <Download size={15} /> Export summary
+            </button>
             <Link href="/orders/new" className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px] flex items-center gap-2">
               <Zap size={15} /> New Order
             </Link>
@@ -178,6 +223,8 @@ export default function DashboardPage() {
           ))}
         </div>
 
+        <AppointmentDashboardKpis />
+
         {/* Booking Trend Chart */}
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -206,13 +253,20 @@ export default function DashboardPage() {
                   <stop offset="95%" stopColor="#1A7A4A" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F4F6F8" />
-              <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#9CA3AF' }} tickLine={false} axisLine={false} interval={4} />
-              <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="booked" stroke="#1E3A5F" strokeWidth={2} fill="url(#booked)" name="Booked" />
-              <Area type="monotone" dataKey="completed" stroke="#1A7A4A" strokeWidth={2} fill="url(#completed)" name="Completed" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: chartTheme.tickFill }} tickLine={false} axisLine={false} interval={4} />
+              <YAxis tick={{ fontSize: 11, fill: chartTheme.tickFill }} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={chartTheme.tooltipContentStyle}
+                formatter={(value: number, name: string) => [`${value} inspections`, name]}
+              />
+              <Legend wrapperStyle={chartTheme.legendWrapperStyle} onClick={onBookingLegendClick} />
+              {showBookedSeries ? (
+                <Area type="monotone" dataKey="booked" stroke="#1E3A5F" strokeWidth={2} fill="url(#booked)" name="Booked" />
+              ) : null}
+              {showCompletedSeries ? (
+                <Area type="monotone" dataKey="completed" stroke="#1A7A4A" strokeWidth={2} fill="url(#completed)" name="Completed" />
+              ) : null}
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -225,11 +279,11 @@ export default function DashboardPage() {
             <p className="text-xs text-[#6B7280] mb-5">By service type — April 2026</p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={REVENUE_DATA} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#F4F6F8" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#9CA3AF' }} tickLine={false} axisLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: chartTheme.tickFill }} tickLine={false} axisLine={false}
                   tickFormatter={v => `₦${(v / 1000000).toFixed(1)}M`} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={false} width={140} />
-                <Tooltip formatter={(v: number) => formatNaira(v)} contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: chartTheme.tickFillMuted }} tickLine={false} axisLine={false} width={140} />
+                <Tooltip formatter={(v: number) => formatNaira(v)} contentStyle={chartTheme.tooltipContentStyle} />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                   {REVENUE_DATA.map((entry, i) => <Cell key={`cell-${i}`} fill={entry.color} />)}
                 </Bar>
@@ -299,7 +353,7 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-2">
               {LEADERBOARD.map((ins, i) => (
-                <Link key={ins.rank} href={`/inspectors/INS-00${ins.rank}`}
+                <Link key={ins.rank} href={`/inspectors/${INSPECTORS[i]?.id ?? `INS-00${ins.rank}`}`}
                   className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-[#F4F6F8] transition-colors group">
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-gray-100 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-700' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>
                     {ins.rank}

@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { ArrowLeft, User, MapPin, Clock, CheckCircle, MessageSquare } from 'lucide-react';
 import { ORDERS, STATUS_COLORS } from '@/lib/mockData';
 import { toast } from 'sonner';
+import LiveInspectionPanel from '@/components/orders/LiveInspectionPanel';
+import { openPrintableReport } from '@/lib/print';
 
 const TIMELINE_EVENTS = [
   { status: 'New', time: '2026-04-12 14:30', actor: 'System', note: 'Order created via web booking' },
@@ -15,6 +17,10 @@ const TIMELINE_EVENTS = [
   { status: 'QA Review', time: '2026-04-13 12:35', actor: 'System', note: 'Report sent to QA queue' },
 ];
 
+type OrderActionButton = { type: 'button'; label: string; color: string; action: () => void };
+type OrderActionLink = { type: 'link'; label: string; color: string; href: string };
+type OrderAction = OrderActionButton | OrderActionLink;
+
 export default function OrderDetailPage() {
   const pathname = usePathname();
   const params = useParams();
@@ -22,29 +28,44 @@ export default function OrderDetailPage() {
   const order = ORDERS.find(o => o.id === orderId) || ORDERS[0];
   const [reassignModal, setReassignModal] = useState(false);
 
-  const getActions = () => {
+  const getActions = (): OrderAction[] => {
     switch (order.status) {
       case 'New': return [
-        { label: 'Assign Inspector', color: 'bg-[#1E3A5F]', action: () => setReassignModal(true) },
-        { label: 'Cancel Order', color: 'bg-[#C0392B]', action: () => toast.success('Order cancelled') },
+        { type: 'button', label: 'Assign Inspector', color: 'bg-[#1E3A5F]', action: () => setReassignModal(true) },
+        { type: 'button', label: 'Cancel Order', color: 'bg-[#C0392B]', action: () => toast.success('Order cancelled') },
       ];
       case 'Assigned': return [
-        { label: 'Mark En Route', color: 'bg-[#D35400]', action: () => toast.success('Status updated to En Route') },
-        { label: 'Cancel Order', color: 'bg-[#C0392B]', action: () => toast.success('Order cancelled') },
+        { type: 'button', label: 'Mark En Route', color: 'bg-[#D35400]', action: () => toast.success('Status updated to En Route') },
+        { type: 'button', label: 'Cancel Order', color: 'bg-[#C0392B]', action: () => toast.success('Order cancelled') },
       ];
       case 'In Progress': return [
-        { label: 'View Live Progress', color: 'bg-[#2E75B6]', action: () => toast.success('Opening live tracker…') },
+        { type: 'button', label: 'Message inspector', color: 'bg-[#2E75B6]', action: () => toast.success('Use the live panel above to message the inspector') },
       ];
       case 'Reported': return [
-        { label: 'Review Report', color: 'bg-[#1E3A5F]', href: order.reportId ? `/reports/${order.reportId}/review` : undefined },
+        {
+          type: 'link',
+          label: 'Review Report',
+          color: 'bg-[#1E3A5F]',
+          href: order.reportId ? `/reports/${order.reportId}/review` : '/reports',
+        },
       ];
       case 'QA Review': return [
-        { label: 'Approve Report', color: 'bg-[#1A7A4A]', action: () => toast.success('Report approved') },
-        { label: 'Request Corrections', color: 'bg-[#D35400]', action: () => toast.success('Corrections requested') },
+        { type: 'button', label: 'Approve Report', color: 'bg-[#1A7A4A]', action: () => toast.success('Report approved') },
+        { type: 'button', label: 'Request Corrections', color: 'bg-[#D35400]', action: () => toast.success('Corrections requested') },
       ];
       case 'Closed': return [
-        { label: 'Download Report PDF', color: 'bg-[#1E3A5F]', action: () => toast.success('PDF downloading…') },
-        { label: 'Resend to Customer', color: 'bg-[#2E75B6]', action: () => toast.success('Report resent to customer') },
+        {
+          type: 'button',
+          label: 'Download Report PDF',
+          color: 'bg-[#1E3A5F]',
+          action: () =>
+            openPrintableReport({
+              title: `Order ${order.id} — report`,
+              subtitle: order.vehicle,
+              bodyHtml: `<p><strong>Status:</strong> ${order.status}</p><p><strong>Zone:</strong> ${order.zone}</p><p>Print or save as PDF from the browser dialog.</p>`,
+            }),
+        },
+        { type: 'button', label: 'Resend to Customer', color: 'bg-[#2E75B6]', action: () => toast.success('Report resent to customer') },
       ];
       default: return [];
     }
@@ -89,6 +110,12 @@ export default function OrderDetailPage() {
             <p className="text-sm text-[#6B7280]">{order.vehicle} · {order.zone}</p>
           </div>
         </div>
+
+        {order.status === 'In Progress' && (
+          <div className="max-w-3xl">
+            <LiveInspectionPanel orderId={order.id} />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Timeline */}
@@ -195,19 +222,19 @@ export default function OrderDetailPage() {
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
               <h2 className="text-sm font-heading font-semibold text-[#1F2937] mb-3">Actions</h2>
               <div className="space-y-2">
-                {getActions().map(action => (
-                  action.href ? (
+                {getActions().map(action =>
+                  action.type === 'link' ? (
                     <Link key={action.label} href={action.href}
                       className={`block w-full text-center py-2.5 ${action.color} text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all`}>
                       {action.label}
                     </Link>
                   ) : (
-                    <button key={action.label} onClick={action.action}
+                    <button key={action.label} type="button" onClick={action.action}
                       className={`w-full py-2.5 ${action.color} text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all`}>
                       {action.label}
                     </button>
                   )
-                ))}
+                )}
               </div>
             </div>
           </div>

@@ -1,22 +1,32 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Search, Grid, List, Star, MapPin } from 'lucide-react';
 import { INSPECTORS } from '@/lib/mockData';
 import { toast } from 'sonner';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { EmptyState } from '@/components/shared/TableSkeleton';
 
 export default function InspectorsPage() {
   const pathname = usePathname();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [inviteModal, setInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
 
-  const filtered = INSPECTORS.filter(i =>
-    !search || i.name.toLowerCase().includes(search.toLowerCase()) || i.zone.some(z => z.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filtered = useMemo(() => {
+    const q = debouncedSearch.toLowerCase().trim();
+    return INSPECTORS.filter(
+      i =>
+        !q ||
+        i.name.toLowerCase().includes(q) ||
+        i.email.toLowerCase().includes(q) ||
+        i.zone.some(z => z.toLowerCase().includes(q))
+    );
+  }, [debouncedSearch]);
 
   const statusColor = (s: string) => s === 'online' ? 'bg-green-500' : s === 'en-route' ? 'bg-amber-500' : 'bg-gray-400';
   const statusLabel = (s: string) => s === 'online' ? 'Online' : s === 'en-route' ? 'En Route' : 'Offline';
@@ -71,9 +81,16 @@ export default function InspectorsPage() {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search inspectors…"
             className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+          {search !== debouncedSearch && (
+            <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
+          )}
         </div>
 
-        {viewMode === 'grid' ? (
+        {filtered.length === 0 ? (
+          <div className="bg-white rounded-xl border border-[#E5E7EB]">
+            <EmptyState title="No inspectors match" hint="Try another search or invite a new inspector." />
+          </div>
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map(ins => (
               <div key={ins.id} className="bg-white rounded-xl border border-[#E5E7EB] p-5 hover:shadow-md transition-all">

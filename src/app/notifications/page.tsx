@@ -1,7 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Check, Bell } from 'lucide-react';
 import { NOTIFICATIONS } from '@/lib/mockData';
@@ -9,14 +9,34 @@ import { toast } from 'sonner';
 
 const FILTER_TABS = ['All', 'Orders', 'Reports', 'Payments', 'System'];
 
-export default function NotificationsPage() {
+function NotificationsPageContent() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [notifications, setNotifications] = useState(NOTIFICATIONS);
   const [activeFilter, setActiveFilter] = useState('All');
 
-  const filtered = notifications.filter(n =>
-    activeFilter === 'All' || n.type === activeFilter.toLowerCase()
-  );
+  useEffect(() => {
+    const f = searchParams.get('filter');
+    if (f && FILTER_TABS.includes(f)) setActiveFilter(f);
+  }, [searchParams]);
+
+  const setFilter = (tab: string) => {
+    setActiveFilter(tab);
+    router.replace(`${pathname}?filter=${encodeURIComponent(tab)}`, { scroll: false });
+  };
+
+  const typeMap: Record<string, string> = {
+    Orders: 'order',
+    Reports: 'report',
+    Payments: 'payment',
+    System: 'system',
+  };
+  const filtered = notifications.filter(n => {
+    if (activeFilter === 'All') return true;
+    const want = typeMap[activeFilter] ?? activeFilter.toLowerCase();
+    return n.type === want;
+  });
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -56,7 +76,7 @@ export default function NotificationsPage() {
 
         <div className="flex gap-1 border-b border-[#E5E7EB] overflow-x-auto">
           {FILTER_TABS.map(tab => (
-            <button key={tab} onClick={() => setActiveFilter(tab)}
+            <button key={tab} type="button" onClick={() => setFilter(tab)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeFilter === tab ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
               {tab}
             </button>
@@ -92,5 +112,17 @@ export default function NotificationsPage() {
         )}
       </div>
     </AppLayout>
+  );
+}
+
+export default function NotificationsPage() {
+  return (
+    <Suspense fallback={
+      <AppLayout currentPath="/notifications">
+        <div className="p-8 text-sm text-[#6B7280]">Loading…</div>
+      </AppLayout>
+    }>
+      <NotificationsPageContent />
+    </Suspense>
   );
 }

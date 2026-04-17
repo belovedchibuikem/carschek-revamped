@@ -311,7 +311,16 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${ver.status === 'rejected' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
                         {ver.status === 'rejected' ? 'Rejected' : 'Under Review'}
                       </span>
-                      <button className="text-xs text-[#2E75B6] hover:underline">View</button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveView('review');
+                          toast.info(`Version ${ver.version} snapshot`, { description: 'Switched to Review tab — compare with current submission.' });
+                        }}
+                        className="text-xs text-[#2E75B6] hover:underline rounded-sm"
+                      >
+                        View
+                      </button>
                     </div>
                   </div>
                 </div>

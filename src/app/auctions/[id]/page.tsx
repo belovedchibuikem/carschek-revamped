@@ -1,0 +1,163 @@
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import AppLayout from '@/components/AppLayout';
+import Link from 'next/link';
+import { useParams, usePathname } from 'next/navigation';
+import { AUCTIONS, formatNaira } from '@/lib/mockData';
+import { Clock, Gavel, Car, Handshake } from 'lucide-react';
+import { toast } from 'sonner';
+
+const MOCK_BIDS = [
+  { bidder: 'AutoDeals Nigeria', amount: 4950000, time: '2h ago' },
+  { bidder: 'Tunde Fashola', amount: 4800000, time: '3h ago' },
+  { bidder: 'Anonymous', amount: 4700000, time: '5h ago' },
+];
+
+function useCountdown(endsAt: string) {
+  const [now, setNow] = useState(-1);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [endsAt]);
+
+  return useMemo(() => {
+    if (now < 0) return { ended: false as const, label: '—' };
+    const diff = new Date(endsAt).getTime() - now;
+    if (diff <= 0) return { ended: true as const, label: 'Ended' };
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    return { ended: false as const, label: `${days}d ${hours}h ${mins}m ${secs}s` };
+  }, [endsAt, now]);
+}
+
+export default function AuctionDetailPage() {
+  const pathname = usePathname();
+  const params = useParams();
+  const id = params.id as string;
+  const auction = AUCTIONS.find(a => a.id === id);
+  const cd = useCountdown(auction?.endsAt ?? '1970-01-01T00:00:00Z');
+
+  if (!auction) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="rounded-xl border border-[#E5E7EB] bg-white p-8 text-center">
+          <p className="font-medium text-[#1F2937]">Auction not found</p>
+          <Link href="/auctions" className="mt-3 inline-block text-sm text-[#2E75B6] hover:underline">
+            Back to auctions
+          </Link>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  return (
+    <AppLayout currentPath={pathname}>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-[#6B7280] text-sm mb-1">
+              <Link href="/auctions" className="hover:text-[#1E3A5F]">
+                Auctions
+              </Link>
+              <span>/</span>
+              <span className="font-mono text-[#1F2937]">{auction.id}</span>
+            </div>
+            <h1 className="text-2xl font-heading font-bold text-[#1F2937] flex items-center gap-2">
+              <Gavel className="text-[#D35400]" size={26} />
+              {auction.carName}
+            </h1>
+            <p className="text-sm text-[#6B7280] mt-1">
+              Platform fee {auction.platformFee}% · Reserve {formatNaira(auction.reservePrice)}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/cars/${auction.carId}`}
+              className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium text-[#1F2937] hover:bg-[#F4F6F8] transition-colors"
+            >
+              <Car size={16} /> Vehicle
+            </Link>
+            <Link
+              href={`/deals/new?auction=${encodeURIComponent(auction.id)}`}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F] transition-all"
+              onClick={() => toast.success('Deal draft linked to this auction')}
+            >
+              <Handshake size={16} /> Create deal
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div>
+                <p className="text-xs text-[#6B7280] uppercase tracking-wide">Current bid</p>
+                <p className="text-lg font-heading font-bold text-[#1F2937]">{formatNaira(auction.currentBid)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-[#6B7280] uppercase tracking-wide">Starting</p>
+                <p className="text-sm font-semibold text-[#1F2937]">{formatNaira(auction.startingBid)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-[#6B7280] uppercase tracking-wide">Bids</p>
+                <p className="text-sm font-semibold text-[#1F2937]">{auction.bidCount}</p>
+              </div>
+              <div>
+                <p className="text-xs text-[#6B7280] uppercase tracking-wide">Reserve</p>
+                <span
+                  className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full ${auction.reserveMet ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
+                >
+                  {auction.reserveMet ? 'Met' : 'Not met'}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-[#F9FAFB] border border-[#E5E7EB]">
+              <Clock className="text-[#D35400] shrink-0" size={22} />
+              <div>
+                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Time remaining</p>
+                <p className={`text-lg font-mono font-bold ${cd?.ended ? 'text-[#6B7280]' : 'text-[#D35400]'}`}>
+                  {cd?.label}
+                </p>
+              </div>
+            </div>
+            <div>
+              <h2 className="text-sm font-heading font-semibold text-[#1F2937] mb-3">Recent bids</h2>
+              <ul className="divide-y divide-[#F4F6F8] border border-[#E5E7EB] rounded-xl overflow-hidden">
+                {MOCK_BIDS.map((b, i) => (
+                  <li key={i} className={`flex items-center justify-between px-4 py-3 text-sm ${i === 0 ? 'bg-green-50/80' : 'bg-white'}`}>
+                    <span className="font-medium text-[#1F2937]">{b.bidder}</span>
+                    <span className="font-semibold text-[#1F2937]">{formatNaira(b.amount)}</span>
+                    <span className="text-xs text-[#6B7280]">{b.time}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-3">
+            <p className="text-sm font-semibold text-[#1F2937]">Status</p>
+            <span
+              className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full ${auction.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}
+            >
+              {auction.status}
+            </span>
+            <p className="text-xs text-[#6B7280]">Started {new Date(auction.startedAt).toLocaleString('en-NG')}</p>
+            <p className="text-xs text-[#6B7280]">Ends {new Date(auction.endsAt).toLocaleString('en-NG')}</p>
+            {auction.status === 'Active' && (
+              <button
+                type="button"
+                onClick={() => toast.success('Auction extended by 24 hours')}
+                className="w-full py-2.5 bg-[#D35400] text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-all"
+              >
+                Extend auction
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
+}

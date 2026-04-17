@@ -6,11 +6,12 @@ import { Download } from 'lucide-react';
 
 import { AreaChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
+import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
 
 const GMV_DATA = Array.from({ length: 12 }, (_, i) => ({
   month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-  gmv: Math.floor(Math.random() * 50000000) + 20000000,
-  inspections: Math.floor(Math.random() * 100) + 50,
+  gmv: 20000000 + ((i * 3_791_123 + 11) % 48000000),
+  inspections: 50 + ((i * 17 + 5) % 95),
 }));
 
 const GEO_DATA = [
@@ -23,6 +24,7 @@ const GEO_DATA = [
 
 export default function AnalyticsPage() {
   const pathname = usePathname();
+  const chartTheme = useRechartsTheme();
 
   return (
     <AppLayout currentPath={pathname}>
@@ -62,12 +64,12 @@ export default function AnalyticsPage() {
                   <stop offset="95%" stopColor="#1E3A5F" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F4F6F8" />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9CA3AF' }} tickLine={false} axisLine={false} />
-              <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#9CA3AF' }} tickLine={false} axisLine={false} tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} />
-              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#9CA3AF' }} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: chartTheme.tickFill }} tickLine={false} axisLine={false} />
+              <YAxis yAxisId="left" tick={{ fontSize: 11, fill: chartTheme.tickFill }} tickLine={false} axisLine={false} tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: chartTheme.tickFill }} tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={chartTheme.tooltipContentStyle} />
+              <Legend wrapperStyle={chartTheme.legendWrapperStyle} />
               <Area yAxisId="left" type="monotone" dataKey="gmv" stroke="#1E3A5F" strokeWidth={2} fill="url(#gmv)" name="GMV (₦)" />
               <Bar yAxisId="right" dataKey="inspections" fill="#2E75B6" opacity={0.6} name="Inspections" radius={[4, 4, 0, 0]} />
             </AreaChart>
@@ -83,7 +85,7 @@ export default function AnalyticsPage() {
                   <Pie data={GEO_DATA} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3}>
                     {GEO_DATA.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
-                  <Tooltip formatter={(v: number) => `${v}%`} contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }} />
+                  <Tooltip formatter={(v: number) => `${v}%`} contentStyle={chartTheme.tooltipContentStyle} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2">

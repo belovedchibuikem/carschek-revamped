@@ -1,13 +1,14 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Check, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+/** Fixed ISO end times — avoid `Date.now()` in module scope (hydration mismatch). */
 const MOCK_AUCTIONS = [
-  { id: 'AUC-001', ckId: 'CK-41', vehicle: 'Toyota Camry 2011', startingBid: 5000000, currentBid: 5400000, bidCount: 12, reserveMet: true, endsAt: new Date(Date.now() + 2 * 60 * 60 * 1000), status: 'Active' },
-  { id: 'AUC-002', ckId: 'CK-39', vehicle: 'Mercedes-Benz C300 2018', startingBid: 18000000, currentBid: 19200000, bidCount: 7, reserveMet: true, endsAt: new Date(Date.now() + 26 * 60 * 60 * 1000), status: 'Active' },
-  { id: 'AUC-003', ckId: 'CK-37', vehicle: 'Ford Explorer 2016', startingBid: 9800000, currentBid: 9900000, bidCount: 3, reserveMet: false, endsAt: new Date(Date.now() - 2 * 60 * 60 * 1000), status: 'Ended — No Sale' },
-  { id: 'AUC-004', ckId: 'CK-36', vehicle: 'Lexus RX350 2020', startingBid: 28000000, currentBid: 30500000, bidCount: 18, reserveMet: true, endsAt: new Date(Date.now() - 5 * 60 * 60 * 1000), status: 'Ended — Sale' },
+  { id: 'AUC-001', ckId: 'CK-41', vehicle: 'Toyota Camry 2011', startingBid: 5000000, currentBid: 5400000, bidCount: 12, reserveMet: true, endsAt: new Date('2026-06-15T20:00:00+01:00'), status: 'Active' },
+  { id: 'AUC-002', ckId: 'CK-39', vehicle: 'Mercedes-Benz C300 2018', startingBid: 18000000, currentBid: 19200000, bidCount: 7, reserveMet: true, endsAt: new Date('2026-06-16T18:00:00+01:00'), status: 'Active' },
+  { id: 'AUC-003', ckId: 'CK-37', vehicle: 'Ford Explorer 2016', startingBid: 9800000, currentBid: 9900000, bidCount: 3, reserveMet: false, endsAt: new Date('2026-04-01T12:00:00+01:00'), status: 'Ended — No Sale' },
+  { id: 'AUC-004', ckId: 'CK-36', vehicle: 'Lexus RX350 2020', startingBid: 28000000, currentBid: 30500000, bidCount: 18, reserveMet: true, endsAt: new Date('2026-04-02T14:00:00+01:00'), status: 'Ended — Sale' },
 ];
 
 const MOCK_BIDS: Record<string, { bidder: string; amount: number; time: string }[]> = {
@@ -20,8 +21,12 @@ const MOCK_BIDS: Record<string, { bidder: string; amount: number; time: string }
   ],
 };
 
-function getTimeRemaining(endsAt: Date) {
-  const diff = endsAt.getTime() - Date.now();
+function getTimeRemaining(endsAt: Date, nowMs: number, status: string) {
+  if (nowMs < 0) {
+    if (status.startsWith('Ended')) return { label: 'ENDED', color: 'bg-gray-100 text-gray-500' };
+    return { label: '—', color: 'bg-gray-100 text-gray-500' };
+  }
+  const diff = endsAt.getTime() - nowMs;
   if (diff <= 0) return { label: 'ENDED', color: 'bg-gray-100 text-gray-500' };
   const hours = Math.floor(diff / 3600000);
   const mins = Math.floor((diff % 3600000) / 60000);
@@ -41,6 +46,12 @@ export default function AuctionModule() {
   const router = useRouter();
   const [selectedAuction, setSelectedAuction] = useState<string | null>(null);
   const [showCloseFlow, setShowCloseFlow] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState(-1);
+  useEffect(() => {
+    setNowMs(Date.now());
+    const t = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
 
   const selectedAuctionData = MOCK_AUCTIONS.find(a => a.id === selectedAuction);
   const bids = selectedAuction ? (MOCK_BIDS[selectedAuction] || []) : [];
@@ -68,7 +79,7 @@ export default function AuctionModule() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {MOCK_AUCTIONS.map(auction => {
-                const time = getTimeRemaining(auction.endsAt);
+                const time = getTimeRemaining(auction.endsAt, nowMs, auction.status);
                 return (
                   <tr key={auction.id} className="hover:bg-gray-50/80 transition-colors">
                     <td className="px-4 py-3">

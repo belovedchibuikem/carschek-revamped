@@ -1,11 +1,13 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Search, MessageSquare, Phone } from 'lucide-react';
+import { Plus, Search, MessageSquare, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CRM_CONTACTS, STATUS_COLORS } from '@/lib/mockData';
 import { toast } from 'sonner';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { EmptyState } from '@/components/shared/TableSkeleton';
 
 const STAGES = ['Lead', 'Hot Lead', 'Qualified', 'Negotiation', 'Offer Sent', 'Closed Won', 'Cold'];
 
@@ -15,10 +17,26 @@ export default function CRMPage() {
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
   const [showAddModal, setShowAddModal] = useState(false);
   const [newContact, setNewContact] = useState({ name: '', email: '', phone: '', type: 'Individual', stage: 'Lead' });
+  const debouncedSearch = useDebouncedValue(search, 300);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-  const filtered = CRM_CONTACTS.filter(c =>
-    !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase())
+  const filtered = useMemo(() => {
+    const q = debouncedSearch.toLowerCase();
+    return CRM_CONTACTS.filter(
+      c => !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
+    );
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * pageSize, page * pageSize),
+    [filtered, page]
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
   const handleAdd = () => {
     if (!newContact.name || !newContact.email) { toast.error('Name and email are required'); return; }
@@ -106,9 +124,17 @@ export default function CRMPage() {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts…"
             className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+          {search !== debouncedSearch && (
+            <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
+          )}
         </div>
 
         {viewMode === 'table' ? (
+          filtered.length === 0 ? (
+            <div className="bg-white rounded-xl border border-[#E5E7EB]">
+              <EmptyState title="No contacts match" hint="Try another search or add a contact." />
+            </div>
+          ) : (
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
             <table className="w-full text-sm">
               <thead>
@@ -119,7 +145,7 @@ export default function CRMPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(contact => (
+                {paginated.map(contact => (
                   <tr key={contact.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -152,12 +178,41 @@ export default function CRMPage() {
                 ))}
               </tbody>
             </table>
+            {totalPages > 1 && (
+              <div className="px-4 py-3 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#6B7280]">
+                <span>
+                  Page {page} of {totalPages} · {filtered.length} contact{filtered.length === 1 ? '' : 's'}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                    className="p-1.5 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] disabled:opacity-40"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="p-1.5 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] disabled:opacity-40"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+          )
         ) : (
           <div className="overflow-x-auto pb-4">
             <div className="flex gap-4 min-w-max">
               {STAGES.map(stage => {
-                const stageContacts = CRM_CONTACTS.filter(c => c.stage === stage);
+                const stageContacts = CRM_CONTACTS.filter(c => c.stage === stage).filter(c => {
+                  const q = debouncedSearch.toLowerCase();
+                  return !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
+                });
                 return (
                   <div key={stage} className="w-56 flex-shrink-0">
                     <div className="flex items-center justify-between mb-3">

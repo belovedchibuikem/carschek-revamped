@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, Upload, Download, ChevronDown, X, Copy, MoreHorizontal, AlertTriangle, Diamond, CheckSquare, Square, ChevronLeft, ChevronRight, Settings2, Car, Trash2, Flag } from 'lucide-react';
+import { CircularScoreProgress } from '@/components/shared/CircularScoreProgress';
 
 const MOCK_CARS = [
   { id: 'CK-41', make: 'Toyota', model: 'Camry', year: 2011, transmission: 'Automatic', body: 'Sedan', colour: 'Silver', vin: 'JT2BF22K1W0123456', plate: 'LSD260JE', physicalStatus: 'At Buyer', purchaseChannel: 'Auction', purchasePrice: 5000000, purchaseDate: '2024-12-01', soldPrice: 5100000, margin: 1.96, score: 73, warnings: 2, duplicate: true, docs: { uploaded: 6, required: 8 }, createdAt: '02/12/2024', createdBy: 'Promise Ndem' },
@@ -20,13 +21,6 @@ const STATUS_STYLES: Record<string, string> = {
   'Listed': 'bg-teal-100 text-teal-700',
   'Sold': 'bg-green-100 text-green-700',
   'Cancelled': 'bg-red-100 text-red-700',
-};
-
-const SCORE_COLOR = (s: number | null) => {
-  if (s === null) return 'bg-gray-100 text-gray-400';
-  if (s >= 80) return 'bg-green-100 text-green-700';
-  if (s >= 60) return 'bg-amber-100 text-amber-700';
-  return 'bg-red-100 text-red-700';
 };
 
 const formatNaira = (n: number) => `₦${n.toLocaleString()}`;
@@ -180,7 +174,14 @@ export default function CarsListModule() {
                   </button>
                 </th>
                 {['CK ID', 'Vehicle', 'VIN', 'Plate', 'Physical Status', 'Purchase', 'Sold', 'Score', 'Flags', 'Docs', 'Created', 'Actions'].map(h => (
-                  <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                  <th
+                    key={h}
+                    className={`px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap ${
+                      h === 'Score' ? 'min-w-[104px] w-[104px]' : ''
+                    } ${h === 'Docs' ? 'pl-4' : ''}`}
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -248,11 +249,11 @@ export default function CarsListModule() {
                       </>
                     ) : <span className="text-gray-300">—</span>}
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="min-w-[104px] w-[104px] px-3 py-3 pr-5 align-middle">
                     {car.score !== null ? (
-                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold ${SCORE_COLOR(car.score)}`}>{car.score}</span>
+                      <CircularScoreProgress score={car.score} size={56} />
                     ) : (
-                      <span className="text-[10px] text-gray-400">Not Graded</span>
+                      <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-400">Not graded</span>
                     )}
                   </td>
                   <td className="px-3 py-3">
@@ -270,7 +271,7 @@ export default function CarsListModule() {
                       {car.warnings === 0 && !car.duplicate && <span className="text-gray-300 text-xs">—</span>}
                     </div>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="px-3 py-3 pl-4">
                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${car.docs.uploaded >= car.docs.required ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
                       {car.docs.uploaded}/{car.docs.required}
                     </span>

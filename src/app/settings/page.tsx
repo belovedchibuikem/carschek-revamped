@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Shield, Users, Activity, Mail, MessageSquare, Settings, Lock, Database, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,12 +28,24 @@ const PERMISSIONS = [
   { module: 'Customers', superAdmin: true, opsManager: true, finance: false, support: true },
 ];
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState('roles');
   const [permissions, setPermissions] = useState(PERMISSIONS);
   const [generalForm, setGeneralForm] = useState({ companyName: 'Carschek Technologies Ltd', timezone: 'Africa/Lagos', currency: 'NGN' });
   const [sessionTimeout, setSessionTimeout] = useState(30);
+
+  useEffect(() => {
+    const s = searchParams.get('section');
+    if (s && SETTINGS_NAV.some(x => x.id === s)) setActiveSection(s);
+  }, [searchParams]);
+
+  const goSection = (id: string) => {
+    setActiveSection(id);
+    router.replace(`${pathname}?section=${encodeURIComponent(id)}`, { scroll: false });
+  };
 
   const togglePermission = (moduleIdx: number, role: string) => {
     setPermissions(prev => prev.map((p, i) => i === moduleIdx ? { ...p, [role]: !p[role as keyof typeof p] } : p));
@@ -48,7 +61,7 @@ export default function SettingsPage() {
           <div className="lg:w-56 flex-shrink-0">
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-2">
               {SETTINGS_NAV.map(item => (
-                <button key={item.id} onClick={() => setActiveSection(item.id)}
+                <button key={item.id} type="button" onClick={() => goSection(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${activeSection === item.id ? 'bg-[#1E3A5F] text-white' : 'text-[#6B7280] hover:bg-[#F4F6F8] hover:text-[#1F2937]'}`}>
                   <item.icon size={16} className="flex-shrink-0" />
                   {item.label}
@@ -152,40 +165,15 @@ export default function SettingsPage() {
             {activeSection === 'migration' && (
               <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
                 <h2 className="text-base font-heading font-semibold text-[#1F2937] mb-2">Data Migration</h2>
-                <p className="text-sm text-[#6B7280] mb-5">Migrate data from the legacy Carschek system</p>
-                <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                    <h3 className="text-sm font-semibold text-[#1E3A5F] mb-2">Connect to Legacy System</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-[#374151] mb-1.5">API Base URL</label>
-                        <input defaultValue="https://admin.carschek.com/api" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 bg-white" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-[#374151] mb-1.5">API Key</label>
-                        <input type="password" placeholder="Enter API key…" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 bg-white" />
-                      </div>
-                      <button onClick={() => toast.success('Connection successful! Found 33 cars, 41 inspections, 156 customers')} className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
-                        Test Connection
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { label: 'Cars', count: 33 }, { label: 'Car Brands', count: 8 }, { label: 'Car Models', count: 24 },
-                      { label: 'Inspections & Reports', count: 41 }, { label: 'Customers', count: 156 }, { label: 'Inspectors', count: 12 },
-                    ].map(item => (
-                      <label key={item.label} className="flex items-center gap-3 p-3 bg-[#F9FAFB] rounded-lg cursor-pointer hover:bg-[#F4F6F8] transition-colors">
-                        <input type="checkbox" defaultChecked className="w-4 h-4 rounded" />
-                        <span className="text-sm text-[#1F2937] flex-1">{item.label}</span>
-                        <span className="text-xs text-[#6B7280] font-semibold">{item.count} records</span>
-                      </label>
-                    ))}
-                  </div>
-                  <button onClick={() => toast.success('Migration started! This may take a few minutes.')} className="w-full py-3 bg-[#D35400] text-white text-sm font-bold rounded-xl hover:bg-orange-700 transition-all">
-                    Start Migration
-                  </button>
-                </div>
+                <p className="text-sm text-[#6B7280] mb-5">
+                  Run the full five-step wizard: connect to the legacy system, select entities, validate, migrate, and download a report.
+                </p>
+                <Link
+                  href="/settings/migration"
+                  className="inline-flex items-center gap-2 px-4 py-3 bg-[#D35400] text-white text-sm font-bold rounded-xl hover:bg-orange-700 transition-colors"
+                >
+                  Open full migration wizard
+                </Link>
               </div>
             )}
 
@@ -203,5 +191,17 @@ export default function SettingsPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <AppLayout currentPath="/settings">
+        <div className="p-8 text-sm text-[#6B7280]">Loading settings…</div>
+      </AppLayout>
+    }>
+      <SettingsPageContent />
+    </Suspense>
   );
 }
