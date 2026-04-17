@@ -69,6 +69,8 @@ export interface DamagePhotoRow {
   sizeKb?: number;
   synced?: boolean;
   capturedAt?: number;
+  /** Set after successful upload (sync v5 index). */
+  uploadedUrl?: string;
 }
 
 export interface SyncQueueRow {
