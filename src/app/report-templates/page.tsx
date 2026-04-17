@@ -73,12 +73,12 @@ function ModernReport() {
   return (
     <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden" id="modern-report-content">
       {/* Navy top border */}
-      <div className="h-2 bg-[#1E3A5F]" />
+      <div className="h-2 bg-[#ff5722]" />
 
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-5 border-b border-[#E5E7EB]">
         <div>
-          <span className="font-black text-xl text-[#1E3A5F] tracking-tight">CARSCHEK</span>
+          <span className="font-black text-xl text-[#ff5722] tracking-tight">CARSCHEK</span>
           <p className="text-xs text-[#6B7280] mt-0.5">Vehicle Inspection Report</p>
         </div>
         <div className="text-right">
@@ -117,7 +117,7 @@ function ModernReport() {
               <div key={s.label} className="text-center">
                 <p className="text-sm font-bold text-[#1F2937]">{s.score}</p>
                 <div className="h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden my-1">
-                  <div className="h-full bg-[#2E75B6] rounded-full" style={{ width: `${s.score}%` }} />
+                  <div className="h-full bg-[#ff8a65] rounded-full" style={{ width: `${s.score}%` }} />
                 </div>
                 <p className="text-xs text-[#6B7280]">{s.label}</p>
               </div>
@@ -127,7 +127,7 @@ function ModernReport() {
       </div>
 
       {/* Inspection summary strip */}
-      <div className="px-8 py-4 bg-[#1E3A5F] flex flex-wrap gap-4">
+      <div className="px-8 py-4 bg-[#ff5722] flex flex-wrap gap-4">
         {[['Inspector', 'Emeka Okonkwo'], ['Zone', 'Lekki'], ['Date', '15 Apr 2026'], ['Duration', '8min 42sec'], ['Report #', 'CS-2026-4521']].map(([k, v]) => (
           <div key={k}>
             <span className="text-white/50 text-xs">{k}: </span>
@@ -205,22 +205,22 @@ function ModernReport() {
       <div className="px-8 py-6 bg-[#F9FAFB] border-t border-[#E5E7EB]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold">EO</div>
+            <div className="w-12 h-12 rounded-full bg-[#ff5722] flex items-center justify-center text-white font-bold">EO</div>
             <div>
               <p className="font-bold text-[#1F2937]">Emeka Okonkwo</p>
               <p className="text-xs text-[#6B7280]">Cert #INS-001 · Apr 15, 2026 10:38 AM</p>
               <div className="mt-1">
                 <svg viewBox="0 0 120 30" className="w-24 h-6">
-                  <path d="M5,20 Q15,5 25,18 Q35,30 45,15 Q55,5 65,18 Q75,28 85,12 Q95,2 115,15" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M5,20 Q15,5 25,18 Q35,30 45,15 Q55,5 65,18 Q75,28 85,12 Q95,2 115,15" fill="none" stroke="#ff5722" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </div>
             </div>
           </div>
           <div className="text-center">
-            <div className="w-16 h-16 bg-[#1E3A5F] rounded-xl flex items-center justify-center mb-1 p-1">
+            <div className="w-16 h-16 bg-[#ff5722] rounded-xl flex items-center justify-center mb-1 p-1">
               <div className="grid grid-cols-5 gap-0.5 w-full h-full">
                 {Array.from({ length: 25 }).map((_, i) => (
-                  <div key={i} className={`rounded-[1px] ${[0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24].includes(i) ? 'bg-white' : 'bg-[#1E3A5F]'}`} />
+                  <div key={i} className={`rounded-[1px] ${[0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24].includes(i) ? 'bg-white' : 'bg-[#ff5722]'}`} />
                 ))}
               </div>
             </div>
@@ -245,10 +245,10 @@ function ClassicReport() {
 
       <div className="relative z-10">
         {/* Header */}
-        <div className="border-b-4 border-[#1E3A5F] px-8 py-5">
+        <div className="border-b-4 border-[#ff5722] px-8 py-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-black text-2xl text-[#1E3A5F] tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>CARSCHEK</p>
+              <p className="font-black text-2xl text-[#ff5722] tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>CARSCHEK</p>
               <p className="text-xs text-[#6B7280] mt-0.5" style={{ fontFamily: 'Arial, sans-serif' }}>VEHICLE INSPECTION REPORT</p>
             </div>
             <div className="text-right" style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -263,7 +263,7 @@ function ClassicReport() {
         <div className="grid grid-cols-2 gap-0 border-b border-[#E5E7EB]">
           {/* Left column */}
           <div className="border-r border-[#E5E7EB] p-6">
-            <h3 className="text-sm font-bold text-[#1E3A5F] uppercase tracking-widest mb-3 border-b border-[#E5E7EB] pb-2" style={{ fontFamily: 'Georgia, serif' }}>Vehicle Information</h3>
+            <h3 className="text-sm font-bold text-[#ff5722] uppercase tracking-widest mb-3 border-b border-[#E5E7EB] pb-2" style={{ fontFamily: 'Georgia, serif' }}>Vehicle Information</h3>
             <table className="w-full text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>
               <tbody>
                 {[['Make/Model', '2019 Toyota Camry LE'], ['Plate Number', 'KJA 234 AA'], ['VIN', 'JTMBF3EH4...'], ['Mileage', '87,450 km'], ['Colour', 'Beige'], ['Fuel Type', 'Petrol'], ['Transmission', 'Automatic']].map(([k, v]) => (
@@ -278,7 +278,7 @@ function ClassicReport() {
 
           {/* Right column */}
           <div className="p-6">
-            <h3 className="text-sm font-bold text-[#1E3A5F] uppercase tracking-widest mb-3 border-b border-[#E5E7EB] pb-2" style={{ fontFamily: 'Georgia, serif' }}>Inspection Summary</h3>
+            <h3 className="text-sm font-bold text-[#ff5722] uppercase tracking-widest mb-3 border-b border-[#E5E7EB] pb-2" style={{ fontFamily: 'Georgia, serif' }}>Inspection Summary</h3>
             <div className="flex justify-center mb-3">
               <ScoreGauge score={score} size={100} />
             </div>
@@ -297,10 +297,10 @@ function ClassicReport() {
 
         {/* Full inspection table */}
         <div className="p-6">
-          <h3 className="text-sm font-bold text-[#1E3A5F] uppercase tracking-widest mb-3 border-b border-[#E5E7EB] pb-2" style={{ fontFamily: 'Georgia, serif' }}>Detailed Inspection Results</h3>
+          <h3 className="text-sm font-bold text-[#ff5722] uppercase tracking-widest mb-3 border-b border-[#E5E7EB] pb-2" style={{ fontFamily: 'Georgia, serif' }}>Detailed Inspection Results</h3>
           <table className="w-full text-xs border border-[#E5E7EB]" style={{ fontFamily: 'Arial, sans-serif' }}>
             <thead>
-              <tr className="bg-[#1E3A5F] text-white">
+              <tr className="bg-[#ff5722] text-white">
                 <th className="text-left py-2 px-3 font-semibold">Section</th>
                 <th className="text-center py-2 px-3 font-semibold">Pass</th>
                 <th className="text-center py-2 px-3 font-semibold">Fail</th>
@@ -326,7 +326,7 @@ function ClassicReport() {
 
         {/* Defects table */}
         <div className="px-6 pb-6">
-          <h3 className="text-sm font-bold text-[#1E3A5F] uppercase tracking-widest mb-3 border-b border-[#E5E7EB] pb-2" style={{ fontFamily: 'Georgia, serif' }}>Defects Found</h3>
+          <h3 className="text-sm font-bold text-[#ff5722] uppercase tracking-widest mb-3 border-b border-[#E5E7EB] pb-2" style={{ fontFamily: 'Georgia, serif' }}>Defects Found</h3>
           <table className="w-full text-xs border border-[#E5E7EB]" style={{ fontFamily: 'Arial, sans-serif' }}>
             <thead>
               <tr className="bg-[#F4F6F8]">
@@ -352,12 +352,12 @@ function ClassicReport() {
         </div>
 
         {/* Footer */}
-        <div className="border-t-2 border-[#1E3A5F] px-6 py-4 bg-[#F9FAFB]">
+        <div className="border-t-2 border-[#ff5722] px-6 py-4 bg-[#F9FAFB]">
           <div className="flex items-center justify-between" style={{ fontFamily: 'Arial, sans-serif' }}>
             <div>
               <p className="text-xs font-bold text-[#1F2937]">Emeka Okonkwo · Cert #INS-001</p>
               <svg viewBox="0 0 120 25" className="w-24 h-5 mt-1">
-                <path d="M5,18 Q15,4 25,15 Q35,26 45,12 Q55,3 65,15 Q75,25 85,10 Q95,1 115,12" fill="none" stroke="#1E3A5F" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M5,18 Q15,4 25,15 Q35,26 45,12 Q55,3 65,15 Q75,25 85,10 Q95,1 115,12" fill="none" stroke="#ff5722" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
               <p className="text-[10px] text-[#6B7280] mt-0.5">Digital Signature · 15 Apr 2026 10:38 AM</p>
             </div>
@@ -419,10 +419,10 @@ export default function ReportTemplatesPage() {
               body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             }
             .h-2 { height: 8px; }
-            .bg-\\[\\#1E3A5F\\] { background-color: #1E3A5F !important; }
+            .bg-\\[\\#ff5722\\] { background-color: #ff5722 !important; }
             .bg-\\[\\#F9FAFB\\] { background-color: #F9FAFB !important; }
             .bg-\\[\\#F4F6F8\\] { background-color: #F4F6F8 !important; }
-            .text-\\[\\#1E3A5F\\] { color: #1E3A5F !important; }
+            .text-\\[\\#ff5722\\] { color: #ff5722 !important; }
             .text-\\[\\#1F2937\\] { color: #1F2937 !important; }
             .text-\\[\\#6B7280\\] { color: #6B7280 !important; }
             .text-\\[\\#1A7A4A\\] { color: #1A7A4A !important; }
@@ -437,7 +437,7 @@ export default function ReportTemplatesPage() {
             .text-orange-700 { color: #C2410C !important; }
             .text-white { color: white !important; }
             .text-white\\/50 { color: rgba(255,255,255,0.5) !important; }
-            .bg-\\[\\#2E75B6\\] { background-color: #2E75B6 !important; }
+            .bg-\\[\\#ff8a65\\] { background-color: #ff8a65 !important; }
             .bg-\\[\\#E5E7EB\\] { background-color: #E5E7EB !important; }
             .bg-\\[\\#D1D5DB\\] { background-color: #D1D5DB !important; }
             .bg-gradient-to-br { background: linear-gradient(135deg, #E5E7EB, #D1D5DB) !important; }
@@ -501,11 +501,11 @@ export default function ReportTemplatesPage() {
             {/* Template toggle */}
             <div className="flex items-center gap-1 bg-[#F4F6F8] p-1 rounded-xl border border-[#E5E7EB]">
               <button onClick={() => setTemplate('modern')}
-                className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${template === 'modern' ? 'bg-white text-[#1E3A5F] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
+                className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${template === 'modern' ? 'bg-white text-[#ff5722] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
                 Modern
               </button>
               <button onClick={() => setTemplate('classic')}
-                className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${template === 'classic' ? 'bg-white text-[#1E3A5F] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
+                className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${template === 'classic' ? 'bg-white text-[#ff5722] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
                 Classic
               </button>
             </div>
@@ -527,7 +527,7 @@ export default function ReportTemplatesPage() {
                       <MessageSquare size={15} className="text-green-600" /> Share via WhatsApp
                     </button>
                     <button onClick={handleShareEmail} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#1F2937] hover:bg-[#F4F6F8] transition-colors">
-                      <Mail size={15} className="text-[#2E75B6]" /> Share via Email
+                      <Mail size={15} className="text-[#ff8a65]" /> Share via Email
                     </button>
                     <button onClick={handleCopyLink} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#1F2937] hover:bg-[#F4F6F8] transition-colors border-t border-[#E5E7EB]">
                       <Link size={15} className="text-[#6B7280]" /> Copy Report Link
@@ -549,7 +549,7 @@ export default function ReportTemplatesPage() {
             {/* Download PDF button */}
             <button
               onClick={handleDownload}
-              className="flex items-center gap-2 px-5 py-2 bg-[#1E3A5F] hover:bg-[#16304F] text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+              className="flex items-center gap-2 px-5 py-2 bg-[#ff5722] hover:bg-[#e64a19] text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
             >
               <Download size={15} />
               Download PDF
@@ -560,11 +560,11 @@ export default function ReportTemplatesPage() {
         {/* Report info banner */}
         <div className="no-print bg-[#F0F7FF] border border-[#BFDBFE] rounded-xl px-5 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#2E75B6] rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#ff8a65] rounded-lg flex items-center justify-center">
               <CheckCircle size={16} className="text-white" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#1E3A5F]">Report #CS-2026-4521 — QA Approved</p>
+              <p className="text-sm font-semibold text-[#ff5722]">Report #CS-2026-4521 — QA Approved</p>
               <p className="text-xs text-[#6B7280]">2019 Toyota Camry LE · KJA 234 AA · Carschek Score: 73/100 · Valid until 14 Jul 2026</p>
             </div>
           </div>

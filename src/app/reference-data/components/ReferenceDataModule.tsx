@@ -61,14 +61,14 @@ export default function ReferenceDataModule() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[#1E3A5F]">Reference Data</h1>
+        <h1 className="text-2xl font-bold text-[#ff5722]">Reference Data</h1>
       </div>
 
       {/* Tab Nav */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
         <div className="flex border-b border-gray-100 px-4">
           {([['brands', 'Vehicle Brands'], ['models', 'Car Models'], ['years', 'Car Years']] as [Tab, string][]).map(([id, label]) => (
-            <button key={id} onClick={() => setActiveTab(id)} className={`px-4 py-3 text-sm font-medium transition-colors ${activeTab === id ? 'text-[#1E3A5F] border-b-2 border-[#1E3A5F]' : 'text-gray-500 hover:text-gray-700'}`}>{label}</button>
+            <button key={id} onClick={() => setActiveTab(id)} className={`px-4 py-3 text-sm font-medium transition-colors ${activeTab === id ? 'text-[#ff5722] border-b-2 border-[#ff5722]' : 'text-gray-500 hover:text-gray-700'}`}>{label}</button>
           ))}
         </div>
 
@@ -78,10 +78,10 @@ export default function ReferenceDataModule() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-[#1E3A5F]">Vehicle Brands</h2>
-                  <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-xs font-semibold px-2 py-0.5 rounded-full">{MOCK_BRANDS.length}</span>
+                  <h2 className="font-bold text-[#ff5722]">Vehicle Brands</h2>
+                  <span className="bg-[#ff5722]/10 text-[#ff5722] text-xs font-semibold px-2 py-0.5 rounded-full">{MOCK_BRANDS.length}</span>
                 </div>
-                <button onClick={() => setShowBrandModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">
+                <button onClick={() => setShowBrandModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors">
                   <Plus size={14} /> Add Brand
                 </button>
               </div>
@@ -116,8 +116,8 @@ export default function ReferenceDataModule() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-[#1E3A5F]">Car Models</h2>
-                  <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-xs font-semibold px-2 py-0.5 rounded-full">{MOCK_MODELS.length}</span>
+                  <h2 className="font-bold text-[#ff5722]">Car Models</h2>
+                  <span className="bg-[#ff5722]/10 text-[#ff5722] text-xs font-semibold px-2 py-0.5 rounded-full">{MOCK_MODELS.length}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
@@ -128,7 +128,7 @@ export default function ReferenceDataModule() {
                     <input type="checkbox" checked={groupByBrand} onChange={e => setGroupByBrand(e.target.checked)} className="rounded" />
                     Group by Brand
                   </label>
-                  <button onClick={() => setShowModelModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">
+                  <button onClick={() => setShowModelModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors">
                     <Plus size={14} /> Add Model
                   </button>
                 </div>
@@ -139,7 +139,7 @@ export default function ReferenceDataModule() {
                   {brandGroups.map(brand => (
                     <div key={brand} className="border border-gray-100 rounded-xl overflow-hidden">
                       <button onClick={() => toggleBrandCollapse(brand)} className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors">
-                        <span className="font-semibold text-sm text-[#1E3A5F]">{brand}</span>
+                        <span className="font-semibold text-sm text-[#ff5722]">{brand}</span>
                         {collapsedBrands.includes(brand) ? <ChevronRight size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
                       </button>
                       {!collapsedBrands.includes(brand) && (
@@ -200,13 +200,13 @@ export default function ReferenceDataModule() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-[#1E3A5F]">Car Years</h2>
-                  <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-xs font-semibold px-2 py-0.5 rounded-full">{years.length}</span>
+                  <h2 className="font-bold text-[#ff5722]">Car Years</h2>
+                  <span className="bg-[#ff5722]/10 text-[#ff5722] text-xs font-semibold px-2 py-0.5 rounded-full">{years.length}</span>
                 </div>
                 <button onClick={() => {
                   const batch = Array.from({ length: 35 }, (_, i) => ({ year: 2024 - i, cars: 0, active: true }));
                   setYears(batch);
-                }} className="text-xs text-[#1E3A5F] hover:underline">Add years 1990–2024</button>
+                }} className="text-xs text-[#ff5722] hover:underline">Add years 1990–2024</button>
               </div>
 
               {/* Inline Add */}
@@ -219,9 +219,9 @@ export default function ReferenceDataModule() {
                   placeholder="e.g. 2025"
                   min={1990}
                   max={2025}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20"
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20"
                 />
-                <button onClick={addYear} className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">
+                <button onClick={addYear} className="flex items-center gap-1.5 px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors">
                   <Plus size={14} /> Add Year
                 </button>
                 <span className="text-xs text-gray-400">Press Enter to add</span>
@@ -278,17 +278,17 @@ export default function ReferenceDataModule() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-[#1E3A5F]">Add Brand</h3>
+              <h3 className="font-bold text-[#ff5722]">Add Brand</h3>
               <button onClick={() => setShowBrandModal(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"><X size={16} /></button>
             </div>
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Brand Name *</label>
-                <input type="text" placeholder="e.g. Toyota" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                <input type="text" placeholder="e.g. Toyota" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Logo</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center text-xs text-gray-400 hover:border-[#1E3A5F]/30 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center text-xs text-gray-400 hover:border-[#ff5722]/30 transition-colors cursor-pointer">
                   <Upload size={16} className="mx-auto mb-1" />
                   Drag & drop or click to upload
                 </div>
@@ -305,7 +305,7 @@ export default function ReferenceDataModule() {
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowBrandModal(false)} className="flex-1 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button onClick={() => setShowBrandModal(false)} className="flex-1 py-2 bg-[#1E3A5F] text-white rounded-xl text-sm font-bold hover:bg-[#162d4a] transition-colors">Save Brand</button>
+              <button onClick={() => setShowBrandModal(false)} className="flex-1 py-2 bg-[#ff5722] text-white rounded-xl text-sm font-bold hover:bg-[#e64a19] transition-colors">Save Brand</button>
             </div>
           </div>
         </div>
@@ -316,7 +316,7 @@ export default function ReferenceDataModule() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-[#1E3A5F]">Add Car Model</h3>
+              <h3 className="font-bold text-[#ff5722]">Add Car Model</h3>
               <button onClick={() => setShowModelModal(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"><X size={16} /></button>
             </div>
             <div className="space-y-3">
@@ -329,13 +329,13 @@ export default function ReferenceDataModule() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Model Name *</label>
-                <input type="text" placeholder="e.g. Camry" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                <input type="text" placeholder="e.g. Camry" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-2">Body Type</label>
                 <div className="flex flex-wrap gap-1.5">
                   {['Sedan', 'SUV', 'Hatchback', 'Pickup', 'Van', 'Convertible', 'Bus', 'Other'].map(b => (
-                    <button key={b} className="px-2.5 py-1 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition-colors">{b}</button>
+                    <button key={b} className="px-2.5 py-1 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:border-[#ff5722] hover:text-[#ff5722] transition-colors">{b}</button>
                   ))}
                 </div>
               </div>
@@ -345,7 +345,7 @@ export default function ReferenceDataModule() {
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowModelModal(false)} className="flex-1 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button onClick={() => setShowModelModal(false)} className="flex-1 py-2 bg-[#1E3A5F] text-white rounded-xl text-sm font-bold hover:bg-[#162d4a] transition-colors">Save Model</button>
+              <button onClick={() => setShowModelModal(false)} className="flex-1 py-2 bg-[#ff5722] text-white rounded-xl text-sm font-bold hover:bg-[#e64a19] transition-colors">Save Model</button>
             </div>
           </div>
         </div>

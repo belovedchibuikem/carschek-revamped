@@ -178,7 +178,7 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
               {completed}/{SECTION_ITEMS.length} items done
             </span>
             <span className="text-[#E5E7EB]">·</span>
-            <span className="font-medium text-[#1E3A5F]">💾 {savedAgoLabel()}</span>
+            <span className="font-medium text-[#ff5722]">💾 {savedAgoLabel()}</span>
             {!online && (
               <span className="inline-flex items-center gap-1 text-amber-700">
                 <CloudOff size={10} /> Offline
@@ -193,10 +193,10 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
           <span className="text-xs font-semibold text-[#6B7280]">
             {completed}/{SECTION_ITEMS.length} items
           </span>
-          <span className="text-xs font-semibold text-[#1E3A5F]">{Math.round(progress)}%</span>
+          <span className="text-xs font-semibold text-[#ff5722]">{Math.round(progress)}%</span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-[#F4F6F8]">
-          <div className="h-full rounded-full bg-[#1E3A5F] transition-all duration-300" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-[#ff5722] transition-all duration-300" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
@@ -238,7 +238,7 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
                           e.preventDefault();
                           markBothPass(item.id);
                         }}
-                        className="mb-1.5 block w-full text-left text-xs text-[#6B7280] hover:text-[#1E3A5F]"
+                        className="mb-1.5 block w-full text-left text-xs text-[#6B7280] hover:text-[#ff5722]"
                       >
                         {side === 'L' ? 'Left' : 'Right'} <span className="text-[10px] text-[#9CA3AF]">(long-press both pass)</span>
                       </button>
@@ -319,7 +319,7 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
                     onChange={e => setDefects(prev => ({ ...prev, [item.id]: { ...prev[item.id], note: e.target.value } }))}
                     placeholder="Type or record defect description…"
                     rows={2}
-                    className="w-full resize-none rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+                    className="w-full resize-none rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                   />
                   <button
                     type="button"

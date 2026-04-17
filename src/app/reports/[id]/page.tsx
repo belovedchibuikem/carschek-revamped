@@ -75,7 +75,7 @@ export default function ReportViewPage() {
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
           <strong className="font-semibold">Access (design-phase mock):</strong>{' '}
           Production will validate share tokens. For demo, open with <code className="font-mono text-xs bg-white/80 px-1 rounded">?access=demo</code> or{' '}
-          <button type="button" className="text-[#1E3A5F] font-semibold underline" onClick={() => { sessionStorage.setItem(ACCESS_KEY(reportId), '1'); setShareAccess(true); toast.success('Demo access enabled for this browser'); }}>
+          <button type="button" className="text-[#ff5722] font-semibold underline" onClick={() => { sessionStorage.setItem(ACCESS_KEY(reportId), '1'); setShareAccess(true); toast.success('Demo access enabled for this browser'); }}>
             unlock in this session
           </button>
           . {shareAccess ? 'Session unlocked.' : ''}
@@ -103,7 +103,7 @@ export default function ReportViewPage() {
             <select
               value={viewVersion}
               onChange={e => setViewVersion(Number(e.target.value))}
-              className="appearance-none rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] py-2 pl-3 pr-9 text-sm font-medium text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+              className="appearance-none rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] py-2 pl-3 pr-9 text-sm font-medium text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
             >
               {versionMeta.map(m => (
                 <option key={m.version} value={m.version}>
@@ -123,7 +123,7 @@ export default function ReportViewPage() {
           <button
             type="button"
             onClick={() => setCompareOpen(true)}
-            className="ml-auto rounded-lg border border-[#1E3A5F] px-3 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F]/5"
+            className="ml-auto rounded-lg border border-[#ff5722] px-3 py-2 text-sm font-semibold text-[#ff5722] hover:bg-[#ff5722]/5"
           >
             Compare Versions
           </button>
@@ -160,10 +160,10 @@ export default function ReportViewPage() {
               <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#E5E7EB]">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="w-8 h-8 bg-[#1E3A5F] rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-[#ff5722] rounded-lg flex items-center justify-center">
                       <span className="text-white text-xs font-bold">CK</span>
                     </div>
-                    <span className="text-lg font-heading font-bold text-[#1E3A5F]">CARSCHEK</span>
+                    <span className="text-lg font-heading font-bold text-[#ff5722]">CARSCHEK</span>
                   </div>
                   <p className="text-xs text-[#6B7280]">Vehicle Inspection Report</p>
                 </div>
@@ -217,7 +217,7 @@ export default function ReportViewPage() {
               {/* Summary stats */}
               <div className="grid grid-cols-4 gap-4">
                 {[
-                  { label: 'Total Items', value: 127, color: '#1E3A5F' },
+                  { label: 'Total Items', value: 127, color: '#ff5722' },
                   { label: 'Passed', value: 123 - displayReport.defects, color: '#1A7A4A' },
                   { label: 'Failed', value: displayReport.defects, color: '#C0392B' },
                   { label: 'N/A', value: 4, color: '#6B7280' },
@@ -231,8 +231,8 @@ export default function ReportViewPage() {
             </div>
           ) : (
             <div className="p-6">
-              <div className="text-center mb-6 pb-4 border-b-2 border-[#1E3A5F]">
-                <h2 className="text-xl font-heading font-bold text-[#1E3A5F]">CARSCHEK VEHICLE INSPECTION REPORT</h2>
+              <div className="text-center mb-6 pb-4 border-b-2 border-[#ff5722]">
+                <h2 className="text-xl font-heading font-bold text-[#ff5722]">CARSCHEK VEHICLE INSPECTION REPORT</h2>
                 <p className="text-sm text-[#6B7280] mt-1">
                   Report ID: {displayReport.id} | Date: {new Date(displayReport.submittedAt).toLocaleDateString('en-NG')} | v{viewVersion}
                 </p>

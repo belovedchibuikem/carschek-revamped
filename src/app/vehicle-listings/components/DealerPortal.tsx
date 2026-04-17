@@ -54,7 +54,7 @@ export default function DealerPortal({ onBack, listings }: Props) {
       </button>
 
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-[#1E3A5F] flex items-center justify-center">
+        <div className="w-9 h-9 rounded-xl bg-[#ff5722] flex items-center justify-center">
           <Building2 size={18} className="text-white" />
         </div>
         <div>
@@ -71,10 +71,10 @@ export default function DealerPortal({ onBack, listings }: Props) {
             <button
               key={dealer.id}
               onClick={() => setSelectedDealer(dealer)}
-              className={`w-full text-left p-4 rounded-xl border transition-all ${selectedDealer.id === dealer.id ? 'border-[#1E3A5F] bg-[#EEF2FF]' : 'border-[#E5E7EB] bg-white hover:bg-[#F4F6F8]'}`}
+              className={`w-full text-left p-4 rounded-xl border transition-all ${selectedDealer.id === dealer.id ? 'border-[#ff5722] bg-[#EEF2FF]' : 'border-[#E5E7EB] bg-white hover:bg-[#F4F6F8]'}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                   {dealer.logo}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -95,7 +95,7 @@ export default function DealerPortal({ onBack, listings }: Props) {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <div className="flex items-start justify-between flex-wrap gap-4 mb-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-[#1E3A5F] flex items-center justify-center text-white text-xl font-bold">
+                <div className="w-16 h-16 rounded-2xl bg-[#ff5722] flex items-center justify-center text-white text-xl font-bold">
                   {selectedDealer.logo}
                 </div>
                 <div>
@@ -118,8 +118,8 @@ export default function DealerPortal({ onBack, listings }: Props) {
               {[
                 { label: 'Total Listings', value: selectedDealer.totalListings },
                 { label: 'Active', value: selectedDealer.activeListings, color: '#1A7A4A' },
-                { label: 'Sold This Month', value: selectedDealer.soldThisMonth, color: '#2E75B6' },
-                { label: 'Total Revenue', value: `₦${(selectedDealer.totalRevenue / 1000000).toFixed(1)}M`, color: '#1E3A5F' },
+                { label: 'Sold This Month', value: selectedDealer.soldThisMonth, color: '#ff8a65' },
+                { label: 'Total Revenue', value: `₦${(selectedDealer.totalRevenue / 1000000).toFixed(1)}M`, color: '#ff5722' },
               ].map(stat => (
                 <div key={stat.label} className="p-3 bg-[#F4F6F8] rounded-xl border border-[#E5E7EB] text-center">
                   <p className="text-xl font-heading font-bold tabular-nums" style={{ color: stat.color || '#1F2937' }}>{stat.value}</p>
@@ -135,7 +135,7 @@ export default function DealerPortal({ onBack, listings }: Props) {
               <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Fleet Listings ({selectedDealer.activeListings})</h3>
               <div className="flex gap-2">
                 {bulkSelected.length > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ff5722] text-white text-xs font-semibold rounded-lg">
                     <span>{bulkSelected.length} selected</span>
                     <button onClick={() => { toast.success(`${bulkSelected.length} listings approved`); setBulkSelected([]); }} className="hover:underline">Approve</button>
                     <button onClick={() => { toast.error(`${bulkSelected.length} listings rejected`); setBulkSelected([]); }} className="hover:underline">Reject</button>
@@ -189,7 +189,7 @@ export default function DealerPortal({ onBack, listings }: Props) {
                       {listing.status === 'featured' ? (
                         <span className="flex items-center gap-1 text-[10px] text-purple-700"><Star size={10} className="fill-purple-500" /> Featured</span>
                       ) : (
-                        <button onClick={() => toast.info(`${listing.id} featured`)} className="text-[10px] text-[#2E75B6] hover:underline">Feature</button>
+                        <button onClick={() => toast.info(`${listing.id} featured`)} className="text-[10px] text-[#ff8a65] hover:underline">Feature</button>
                       )}
                     </td>
                   </tr>
@@ -253,7 +253,7 @@ export default function DealerPortal({ onBack, listings }: Props) {
             <p className="text-sm text-[#6B7280] mb-4">Upload a CSV with VIN numbers to schedule bulk inspections. Date and time will be auto-assigned based on inspector availability.</p>
 
             {/* CSV upload area */}
-            <div className="border-2 border-dashed border-[#E5E7EB] rounded-xl p-8 flex flex-col items-center justify-center text-center mb-4 hover:border-[#2E75B6] transition-colors cursor-pointer">
+            <div className="border-2 border-dashed border-[#E5E7EB] rounded-xl p-8 flex flex-col items-center justify-center text-center mb-4 hover:border-[#ff8a65] transition-colors cursor-pointer">
               <Upload size={24} className="text-[#6B7280] mb-2" />
               <p className="text-sm font-semibold text-[#1F2937]">Drop CSV file here or click to upload</p>
               <p className="text-xs text-[#6B7280] mt-1">Required columns: VIN, Make, Model, Year</p>
@@ -288,7 +288,7 @@ export default function DealerPortal({ onBack, listings }: Props) {
 
             <div className="flex gap-3">
               <button onClick={() => setShowBulkModal(false)} className="flex-1 py-2.5 border border-[#E5E7EB] text-sm font-semibold text-[#6B7280] rounded-lg hover:bg-[#F4F6F8]">Cancel</button>
-              <button onClick={() => { setShowBulkModal(false); toast.success(`${CSV_PREVIEW.length} inspection bookings created successfully`); }} className="flex-1 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F]">
+              <button onClick={() => { setShowBulkModal(false); toast.success(`${CSV_PREVIEW.length} inspection bookings created successfully`); }} className="flex-1 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19]">
                 Confirm Bookings
               </button>
             </div>

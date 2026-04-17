@@ -141,7 +141,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
   return (
     <aside
       className={`
-        flex flex-col bg-[#1E3A5F] text-white transition-all duration-300 ease-in-out flex-shrink-0 h-full
+        flex flex-col bg-[#ff5722] text-white transition-all duration-300 ease-in-out flex-shrink-0 h-full
         ${collapsed ? 'w-16' : 'w-64'}
       `}
     >
@@ -150,9 +150,9 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
         <Link
           href="/dashboard"
           onClick={onMobileClose}
-          className={`flex items-center gap-3 min-w-0 rounded-lg flex-1 focus-visible:ring-offset-[#1E3A5F] ${collapsed ? 'justify-center flex-none' : ''}`}
+          className={`flex items-center gap-3 min-w-0 rounded-lg flex-1 focus-visible:ring-offset-[#ff5722] ${collapsed ? 'justify-center flex-none' : ''}`}
         >
-          <div className="w-8 h-8 bg-[#2E75B6] rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-[#ff8a65] rounded-lg flex items-center justify-center flex-shrink-0">
             <Car size={16} className="text-white" />
           </div>
           {!collapsed && (
@@ -193,7 +193,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
                       onClick={onMobileClose}
                       className={`
                         relative flex items-center justify-center gap-3 mx-2 px-3 rounded-lg mb-0.5 transition-all duration-150 group
-                        min-h-[40px] focus-visible:ring-offset-[#1E3A5F]
+                        min-h-[40px] focus-visible:ring-offset-[#ff5722]
                         ${branchActive
                           ? 'bg-white/15 text-white'
                           : 'text-white/60 hover:bg-white/10 hover:text-white'
@@ -202,7 +202,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
                       title={item.label}
                     >
                       {branchActive && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#2E75B6] rounded-r-full" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#ff8a65] rounded-r-full" />
                       )}
                       <item.icon size={17} className="flex-shrink-0" />
                       <div className="absolute left-full ml-2 px-2 py-1 bg-[#1F2937] text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
@@ -224,12 +224,12 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
                         href={item.path}
                         onClick={onMobileClose}
                         className={`
-                          relative flex flex-1 items-center gap-3 min-w-0 pl-3 pr-1 py-2 min-h-[40px] focus-visible:ring-offset-[#1E3A5F]
+                          relative flex flex-1 items-center gap-3 min-w-0 pl-3 pr-1 py-2 min-h-[40px] focus-visible:ring-offset-[#ff5722]
                           ${branchActive ? 'text-white' : 'hover:bg-white/10 hover:text-white'}
                         `}
                       >
                         {branchActive && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#2E75B6] rounded-r-full" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#ff8a65] rounded-r-full" />
                         )}
                         <item.icon size={17} className="flex-shrink-0" />
                         <span className="text-sm font-medium flex-1 truncate">{item.label}</span>
@@ -273,7 +273,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
                             `}
                           >
                             {subActive && (
-                              <span className="absolute left-2 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#2E75B6] rounded-r-full" />
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#ff8a65] rounded-r-full" />
                             )}
                             <span className="flex-1 truncate">{sub.label}</span>
                             {uBadge != null && (
@@ -296,24 +296,24 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
                   onClick={onMobileClose}
                   className={`
                     relative flex items-center gap-3 mx-2 px-3 rounded-lg mb-0.5 transition-all duration-150 group
-                    min-h-[40px] focus-visible:ring-offset-[#1E3A5F]
+                    min-h-[40px] focus-visible:ring-offset-[#ff5722]
                     ${active
                       ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
                     }
                   `}
                 >
-                  {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#2E75B6] rounded-r-full" />}
+                  {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#ff8a65] rounded-r-full" />}
                   <item.icon size={17} className="flex-shrink-0" />
                   {!collapsed && (
                     <span className="text-sm font-medium flex-1 truncate">{item.label}</span>
                   )}
                   {!collapsed && item.badge && (
-                    <span className="bg-[#2E75B6] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                    <span className="bg-[#ff8a65] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                       {item.badge}
                     </span>
                   )}
                   {collapsed && item.badge && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#2E75B6] rounded-full" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#ff8a65] rounded-full" />
                   )}
                   {collapsed && (
                     <div className="absolute left-full ml-2 px-2 py-1 bg-[#1F2937] text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
@@ -339,7 +339,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
           href="/authentication-screen"
           className={`mt-2 flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all min-h-[44px] ${collapsed ? 'justify-center' : ''}`}
         >
-          <div className="w-8 h-8 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#ff8a65] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             PN
           </div>
           {!collapsed && (

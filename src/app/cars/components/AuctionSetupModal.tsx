@@ -51,7 +51,7 @@ export default function AuctionSetupModal({
         <div className="p-6 border-b border-[#E5E7EB]">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-heading font-bold text-[#1E3A5F]">Start Auction</h2>
+              <h2 className="text-lg font-heading font-bold text-[#ff5722]">Start Auction</h2>
               <p className="text-xs text-[#6B7280] mt-0.5">
                 {vehicleTitle} — <span className="font-mono">{carId}</span>
               </p>
@@ -77,7 +77,7 @@ export default function AuctionSetupModal({
                 value={startingPrice ? priceNum.toLocaleString('en-NG') : ''}
                 onChange={e => setStartingPrice(e.target.value.replace(/\D/g, ''))}
                 placeholder="0"
-                className="w-full border border-[#E5E7EB] rounded-lg pl-8 pr-3 py-3 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+                className="w-full border border-[#E5E7EB] rounded-lg pl-8 pr-3 py-3 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
               />
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function AuctionSetupModal({
                   key={f}
                   type="button"
                   onClick={() => setPlatformFee(f)}
-                  className={`flex-1 py-2 text-xs font-bold transition-colors ${platformFee === f ? 'bg-[#1E3A5F] text-white' : 'text-[#6B7280] hover:bg-[#F9FAFB]'}`}
+                  className={`flex-1 py-2 text-xs font-bold transition-colors ${platformFee === f ? 'bg-[#ff5722] text-white' : 'text-[#6B7280] hover:bg-[#F9FAFB]'}`}
                 >
                   {f}%
                 </button>
@@ -98,7 +98,7 @@ export default function AuctionSetupModal({
             {priceNum > 0 && (
               <div className="mt-2 p-3 bg-[#F4F6F8] rounded-lg text-xs text-[#6B7280]">
                 ₦{priceNum.toLocaleString('en-NG')} × (1 − {platformFee}%) ={' '}
-                <span className="font-bold text-[#1E3A5F]">₦{afterFee.toLocaleString('en-NG')}</span> visible to bidders after fee
+                <span className="font-bold text-[#ff5722]">₦{afterFee.toLocaleString('en-NG')}</span> visible to bidders after fee
               </div>
             )}
           </div>
@@ -108,7 +108,7 @@ export default function AuctionSetupModal({
               type="datetime-local"
               value={endsAt}
               onChange={e => setEndsAt(e.target.value)}
-              className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+              className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
             />
           </div>
           {priceNum > 0 && (
@@ -125,7 +125,7 @@ export default function AuctionSetupModal({
           <button
             type="button"
             onClick={() => toast.message('Draft saved locally')}
-            className="flex-1 min-w-[100px] py-2.5 border border-[#1E3A5F] text-[#1E3A5F] rounded-xl text-sm font-semibold hover:bg-[#1E3A5F]/5"
+            className="flex-1 min-w-[100px] py-2.5 border border-[#ff5722] text-[#ff5722] rounded-xl text-sm font-semibold hover:bg-[#ff5722]/5"
           >
             Save Draft
           </button>

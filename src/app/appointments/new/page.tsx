@@ -107,7 +107,7 @@ function NewAppointmentInner() {
               {(nextStep.serviceType === 'Buy a Car' || nextStep.serviceType === 'Sell a Car') && (
                 <Link
                   href={`/cars/new?from=appointment&appointmentId=${encodeURIComponent(nextStep.id)}`}
-                  className="px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold"
+                  className="px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold"
                   onClick={() => setNextStep(null)}
                 >
                   Create car listing

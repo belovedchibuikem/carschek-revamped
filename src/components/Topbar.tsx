@@ -170,7 +170,7 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
 
         <button
           onClick={openSearch}
-          className="hidden sm:flex flex-1 max-w-sm items-center gap-2 px-3 py-2 bg-[#F4F6F8] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-lg text-sm text-[#9CA3AF] hover:border-[#2E75B6] transition-colors"
+          className="hidden sm:flex flex-1 max-w-sm items-center gap-2 px-3 py-2 bg-[#F4F6F8] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-lg text-sm text-[#9CA3AF] hover:border-[#ff8a65] transition-colors"
         >
           <Search size={15} />
           <span className="flex-1 text-left">Search…</span>
@@ -191,7 +191,7 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
                 type="button"
                 onClick={runSyncNow}
                 disabled={syncRunning || !online}
-                className="inline-flex items-center rounded-full bg-[#1E3A5F]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#1E3A5F] dark:bg-slate-700 dark:text-slate-200 hover:bg-[#1E3A5F]/20 disabled:opacity-50"
+                className="inline-flex items-center rounded-full bg-[#ff5722]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#ff5722] dark:bg-slate-700 dark:text-slate-200 hover:bg-[#ff5722]/20 disabled:opacity-50"
                 title={online ? 'Sync now (offline queue)' : 'Go online to sync'}
               >
                 {syncRunning ? '…' : `${syncPending} sync`}
@@ -205,7 +205,7 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
                 type="button"
                 onClick={runSyncNow}
                 disabled={syncRunning}
-                className="text-[10px] font-semibold text-[#1E3A5F]"
+                className="text-[10px] font-semibold text-[#ff5722]"
               >
                 {syncRunning ? '…' : `${syncPending}`}
               </button>
@@ -245,11 +245,11 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
                     <h3 className="font-semibold text-sm text-[#1F2937] dark:text-slate-100">Notifications</h3>
                     <div className="flex items-center gap-2">
                       {unreadCount > 0 && (
-                        <button type="button" onClick={markAllRead} className="text-xs text-[#2E75B6] hover:underline flex items-center gap-1">
+                        <button type="button" onClick={markAllRead} className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">
                           <Check size={12} /> Mark all read
                         </button>
                       )}
-                      <Link href="/notifications" onClick={() => setNotifOpen(false)} className="text-xs text-[#2E75B6] hover:underline">
+                      <Link href="/notifications" onClick={() => setNotifOpen(false)} className="text-xs text-[#ff8a65] hover:underline">
                         View all
                       </Link>
                     </div>
@@ -271,7 +271,7 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
                           <p className="text-[11px] text-[#6B7280] mt-0.5 line-clamp-2">{n.description}</p>
                           <p className="text-[10px] text-[#9CA3AF] mt-1">{n.time}</p>
                         </div>
-                        {!n.read && <span className="w-2 h-2 bg-[#2E75B6] rounded-full flex-shrink-0 mt-1.5" />}
+                        {!n.read && <span className="w-2 h-2 bg-[#ff8a65] rounded-full flex-shrink-0 mt-1.5" />}
                       </Link>
                     ))}
                   </div>
@@ -289,7 +289,7 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
               }}
               className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-[#E5E7EB] dark:border-slate-700 cursor-pointer min-h-[44px] hover:bg-[#F4F6F8] dark:hover:bg-slate-800 rounded-lg px-2 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">PN</div>
+              <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">PN</div>
               <div className="hidden sm:block text-left">
                 <p className="text-xs font-semibold text-[#1F2937] dark:text-slate-100">Promise Ndem</p>
                 <p className="text-[10px] text-[#6B7280]">Super Admin</p>

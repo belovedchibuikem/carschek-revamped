@@ -6,20 +6,20 @@ import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
 
 const DATA = {
   'this-month': [
-    { name: 'Inspection Fees', value: 1420000, color: '#1E3A5F' },
-    { name: 'Sales Commission', value: 680000, color: '#2E75B6' },
+    { name: 'Inspection Fees', value: 1420000, color: '#ff5722' },
+    { name: 'Sales Commission', value: 680000, color: '#ff8a65' },
     { name: 'Loan Referral', value: 240000, color: '#1A7A4A' },
     { name: 'Re-inspection', value: 110000, color: '#D35400' },
   ],
   'last-month': [
-    { name: 'Inspection Fees', value: 1280000, color: '#1E3A5F' },
-    { name: 'Sales Commission', value: 590000, color: '#2E75B6' },
+    { name: 'Inspection Fees', value: 1280000, color: '#ff5722' },
+    { name: 'Sales Commission', value: 590000, color: '#ff8a65' },
     { name: 'Loan Referral', value: 195000, color: '#1A7A4A' },
     { name: 'Re-inspection', value: 95000, color: '#D35400' },
   ],
   'this-quarter': [
-    { name: 'Inspection Fees', value: 4100000, color: '#1E3A5F' },
-    { name: 'Sales Commission', value: 1950000, color: '#2E75B6' },
+    { name: 'Inspection Fees', value: 4100000, color: '#ff5722' },
+    { name: 'Sales Commission', value: 1950000, color: '#ff8a65' },
     { name: 'Loan Referral', value: 720000, color: '#1A7A4A' },
     { name: 'Re-inspection', value: 310000, color: '#D35400' },
   ],
@@ -36,7 +36,7 @@ export default function RevenueBreakdownChart() {
     return (
       <div style={t.tooltipContentStyle} className="rounded-xl shadow-lg p-3 text-xs">
         <p className="font-semibold mb-1" style={{ color: t.tooltipContentStyle.color }}>{d.name}</p>
-        <p className="text-[#2E75B6] font-bold">₦{(d.value / 1000000).toFixed(2)}M</p>
+        <p className="text-[#ff8a65] font-bold">₦{(d.value / 1000000).toFixed(2)}M</p>
       </div>
     );
   };
@@ -45,13 +45,13 @@ export default function RevenueBreakdownChart() {
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <DollarSign size={18} className="text-[#2E75B6]" />
+          <DollarSign size={18} className="text-[#ff8a65]" />
           <h2 className="text-base font-heading font-semibold text-[#1F2937]">Revenue Breakdown</h2>
         </div>
         <select
           value={period}
           onChange={e => setPeriod(e.target.value as typeof period)}
-          className="text-xs border border-[#E5E7EB] rounded-lg px-3 py-1.5 text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20"
+          className="text-xs border border-[#E5E7EB] rounded-lg px-3 py-1.5 text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20"
         >
           <option value="this-month">This Month</option>
           <option value="last-month">Last Month</option>

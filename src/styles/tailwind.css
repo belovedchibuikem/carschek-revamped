@@ -7,17 +7,22 @@
 
 @layer base {
   :root {
-    --primary: 214 66% 24%;
+    /* Theme: primary #ff5722, secondary #ffffff */
+    --ck-primary: #ff5722;
+    --ck-primary-light: #ff8a65;
+    --ck-primary-dark: #e64a19;
+    --ck-secondary: #ffffff;
+    --primary: 14 100% 57%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 59% 45%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 222 47% 11%;
     --success: 150 64% 29%;
     --success-foreground: 0 0% 100%;
     --danger: 4 62% 47%;
     --danger-foreground: 0 0% 100%;
     --warning: 21 96% 40%;
     --warning-foreground: 0 0% 100%;
-    --background: 210 17% 97%;
+    --background: 0 0% 100%;
     --surface: 0 0% 100%;
     --border: 220 13% 91%;
     --muted: 220 9% 46%;
@@ -35,11 +40,11 @@
   h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
   .font-mono, code, pre { font-family: var(--font-mono); }
 
-  /* Consistent keyboard focus — matches brand secondary blue */
+  /* Consistent keyboard focus — brand primary */
   a:focus-visible,
   button:focus-visible,
   summary:focus-visible {
-    @apply outline-none ring-2 ring-[#2E75B6]/45 ring-offset-2 ring-offset-[hsl(var(--background))];
+    @apply outline-none ring-2 ring-[#ff8a65]/55 ring-offset-2 ring-offset-[hsl(var(--background))];
   }
 }
 
@@ -47,10 +52,10 @@
   .tabular-nums { font-variant-numeric: tabular-nums; }
   .font-heading { font-family: var(--font-heading); }
   .font-body { font-family: var(--font-body); }
-  .text-primary-brand { color: #1E3A5F; }
-  .text-secondary-brand { color: #2E75B6; }
-  .bg-primary-brand { background-color: #1E3A5F; }
-  .bg-secondary-brand { background-color: #2E75B6; }
+  .text-primary-brand { color: var(--ck-primary); }
+  .text-secondary-brand { color: var(--ck-primary-light); }
+  .bg-primary-brand { background-color: var(--ck-primary); }
+  .bg-secondary-brand { background-color: var(--ck-primary-light); }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -163,7 +168,7 @@
   transform: translate(-50%, -50%) rotate(-30deg);
   font-size: 72px;
   font-weight: 900;
-  color: #1e3a5f;
+  color: #ff5722;
   opacity: 0.08;
   pointer-events: none;
   white-space: nowrap;

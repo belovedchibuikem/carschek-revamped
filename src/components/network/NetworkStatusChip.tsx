@@ -29,7 +29,7 @@ export function NetworkStatusChip({ compact }: Props) {
     const { processed, total } = syncProgress;
     return (
       <div
-        className={`flex items-center gap-1.5 font-medium text-[#1E3A5F] dark:text-sky-300 ${
+        className={`flex items-center gap-1.5 font-medium text-[#ff5722] dark:text-sky-300 ${
           compact ? 'text-[11px]' : 'text-xs'
         }`}
       >
@@ -49,7 +49,7 @@ export function NetworkStatusChip({ compact }: Props) {
         <span className="hidden sm:inline text-red-700 dark:text-red-400">
           {syncFailedCount} item{syncFailedCount === 1 ? '' : 's'} failed
         </span>
-        <button type="button" onClick={() => void retrySync()} className="font-semibold text-[#2E75B6] hover:underline">
+        <button type="button" onClick={() => void retrySync()} className="font-semibold text-[#ff8a65] hover:underline">
           Retry
         </button>
       </div>

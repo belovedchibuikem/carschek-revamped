@@ -163,11 +163,11 @@ export function VehiclePhotos({
                 <div
                   key={angle}
                   className={`flex flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-sm ${
-                    isHi ? 'ring-2 ring-[#2E75B6] ring-offset-2' : ''
+                    isHi ? 'ring-2 ring-[#ff8a65] ring-offset-2' : ''
                   }`}
                 >
                   <div className="relative aspect-[4/3] bg-[#F4F6F8]">
-                    <span className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-[#1E3A5F] text-xs font-bold text-white shadow">
+                    <span className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-[#ff5722] text-xs font-bold text-white shadow">
                       {idx}
                     </span>
                     <button
@@ -194,7 +194,7 @@ export function VehiclePhotos({
                         setLoadingAngle(angle);
                         setCameraAngle(angle);
                       }}
-                      className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1E3A5F] py-2.5 text-xs font-bold text-white"
+                      className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#ff5722] py-2.5 text-xs font-bold text-white"
                     >
                       <Camera size={14} /> Capture
                     </button>
@@ -207,11 +207,11 @@ export function VehiclePhotos({
               <div
                 key={angle}
                 className={`flex flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-sm ${
-                  isHi ? 'ring-2 ring-[#2E75B6] ring-offset-2' : ''
+                  isHi ? 'ring-2 ring-[#ff8a65] ring-offset-2' : ''
                 }`}
               >
                 <div className="relative aspect-[4/3] bg-[#F4F6F8]">
-                  <span className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-[#1E3A5F] text-xs font-bold text-white shadow">
+                  <span className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-[#ff5722] text-xs font-bold text-white shadow">
                     {idx}
                   </span>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -272,8 +272,8 @@ export function VehiclePhotos({
                     setLoadingAngle(angle);
                     setCameraAngle(angle);
                   }}
-                  className={`relative flex aspect-[4/3] flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#E5E7EB] bg-[#F4F6F8] text-center transition hover:border-[#2E75B6]/50 ${
-                    isHi ? 'ring-2 ring-[#2E75B6] ring-offset-2' : ''
+                  className={`relative flex aspect-[4/3] flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#E5E7EB] bg-[#F4F6F8] text-center transition hover:border-[#ff8a65]/50 ${
+                    isHi ? 'ring-2 ring-[#ff8a65] ring-offset-2' : ''
                   }`}
                 >
                   {isLoad ? (
@@ -295,7 +295,7 @@ export function VehiclePhotos({
               <div
                 key={angle}
                 className={`group relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#E5E7EB] bg-[#F4F6F8] ${
-                  isHi ? 'ring-2 ring-[#2E75B6] ring-offset-2' : ''
+                  isHi ? 'ring-2 ring-[#ff8a65] ring-offset-2' : ''
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -345,14 +345,14 @@ export function VehiclePhotos({
                   {capturedCount}/11 photos captured
                 </p>
               </div>
-              <div className="flex items-center gap-1 rounded-lg bg-[#EEF4FB] px-2 py-1 text-[11px] font-semibold text-[#1E3A5F]">
+              <div className="flex items-center gap-1 rounded-lg bg-[#EEF4FB] px-2 py-1 text-[11px] font-semibold text-[#ff5722]">
                 <Eye size={12} aria-hidden />
                 {capturedCount}/11
               </div>
             </div>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
               <div
-                className="h-full rounded-full bg-[#2E75B6] transition-all"
+                className="h-full rounded-full bg-[#ff8a65] transition-all"
                 style={{ width: `${(capturedCount / 11) * 100}%` }}
               />
             </div>
@@ -367,15 +367,15 @@ export function VehiclePhotos({
           </p>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#F4F6F8]">
             <div
-              className="h-full rounded-full bg-[#2E75B6] transition-all"
+              className="h-full rounded-full bg-[#ff8a65] transition-all"
               style={{ width: `${(capturedCount / 11) * 100}%` }}
             />
           </div>
           <p className="mt-1 text-xs text-[#9CA3AF]">Minimum {REQUIRED_VEHICLE_PHOTOS} required angles to proceed</p>
         </div>
       ) : (
-        <div className="mb-4 flex gap-2 rounded-xl border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-2.5 text-xs leading-snug text-[#1E3A5F]">
-          <Eye size={14} className="mt-0.5 shrink-0 text-[#2E75B6]" aria-hidden />
+        <div className="mb-4 flex gap-2 rounded-xl border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-2.5 text-xs leading-snug text-[#ff5722]">
+          <Eye size={14} className="mt-0.5 shrink-0 text-[#ff8a65]" aria-hidden />
           <p>Capture all 11 standard vehicle photos for the inspection report.</p>
         </div>
       )}
@@ -417,12 +417,12 @@ export function VehiclePhotos({
           ) : (
             <Link
               href={backHref}
-              className="flex w-full items-center justify-center rounded-2xl bg-[#1E3A5F] py-3.5 text-sm font-bold text-white shadow transition hover:bg-[#152d4a]"
+              className="flex w-full items-center justify-center rounded-2xl bg-[#ff5722] py-3.5 text-sm font-bold text-white shadow transition hover:bg-[#152d4a]"
             >
               All photos captured — continue
             </Link>
           )}
-          <Link href={backHref} className="mt-2 block text-center text-xs font-semibold text-[#2E75B6]">
+          <Link href={backHref} className="mt-2 block text-center text-xs font-semibold text-[#ff8a65]">
             ← Back to Sections
           </Link>
         </div>

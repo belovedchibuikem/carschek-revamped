@@ -10,7 +10,7 @@ export default function TwoFactorPage() {
         </p>
         <Link
           href="/authentication-screen"
-          className="inline-flex justify-center w-full py-3 rounded-xl bg-[#1E3A5F] text-white text-sm font-semibold hover:bg-[#16304F]"
+          className="inline-flex justify-center w-full py-3 rounded-xl bg-[#ff5722] text-white text-sm font-semibold hover:bg-[#e64a19]"
         >
           Go to sign in
         </Link>

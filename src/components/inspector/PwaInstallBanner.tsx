@@ -62,16 +62,16 @@ export default function PwaInstallBanner() {
 
   if (deferred) {
     return (
-      <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#1E3A5F]/30 bg-[#EEF2FF] px-4 py-3 text-sm text-[#1F2937] dark:bg-[#1E3A5F]/20 dark:text-[#E5E7EB]">
+      <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#ff5722]/30 bg-[#EEF2FF] px-4 py-3 text-sm text-[#1F2937] dark:bg-[#ff5722]/20 dark:text-[#E5E7EB]">
         <div className="flex items-center gap-2 min-w-0">
-          <Download size={18} className="shrink-0 text-[#1E3A5F]" />
+          <Download size={18} className="shrink-0 text-[#ff5722]" />
           <span className="font-medium">Install Carschek Inspector for offline access</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={install}
-            className="rounded-lg bg-[#1E3A5F] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#16304F]"
+            className="rounded-lg bg-[#ff5722] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#e64a19]"
           >
             Install
           </button>

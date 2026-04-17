@@ -42,11 +42,11 @@ export default function InspectorsPage() {
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">Email Address</label>
                 <input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="inspector@example.com"
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">Role</label>
-                <select className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+                <select className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                   <option>Inspector</option>
                 </select>
               </div>
@@ -54,7 +54,7 @@ export default function InspectorsPage() {
             <div className="flex gap-3 mt-5">
               <button onClick={() => setInviteModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8]">Cancel</button>
               <button onClick={() => { toast.success(`Invite sent to ${inviteEmail}`); setInviteModal(false); setInviteEmail(''); }}
-                className="flex-1 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F]">Send Invite</button>
+                className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]">Send Invite</button>
             </div>
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function InspectorsPage() {
               <button onClick={() => setViewMode('grid')} className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-[#6B7280]'}`}><Grid size={15} /></button>
               <button onClick={() => setViewMode('list')} className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-[#6B7280]'}`}><List size={15} /></button>
             </div>
-            <button onClick={() => setInviteModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px]">
+            <button onClick={() => setInviteModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
               <Plus size={16} /> Invite Inspector
             </button>
           </div>
@@ -80,7 +80,7 @@ export default function InspectorsPage() {
         <div className="relative max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search inspectors…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
           {search !== debouncedSearch && (
             <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
           )}
@@ -96,7 +96,7 @@ export default function InspectorsPage() {
               <div key={ins.id} className="bg-white rounded-xl border border-[#E5E7EB] p-5 hover:shadow-md transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-12 h-12 rounded-full bg-[#ff5722] flex items-center justify-center text-white font-bold text-lg">
                       {ins.avatar}
                     </div>
                     <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${statusColor(ins.status)}`} />
@@ -122,7 +122,7 @@ export default function InspectorsPage() {
                     {statusLabel(ins.status)}
                   </span>
                 </div>
-                <Link href={`/inspectors/${ins.id}`} className="block w-full text-center py-2 bg-[#F4F6F8] text-[#1E3A5F] text-xs font-semibold rounded-lg hover:bg-[#E5E7EB] transition-colors">
+                <Link href={`/inspectors/${ins.id}`} className="block w-full text-center py-2 bg-[#F4F6F8] text-[#ff5722] text-xs font-semibold rounded-lg hover:bg-[#E5E7EB] transition-colors">
                   View Profile
                 </Link>
               </div>
@@ -144,7 +144,7 @@ export default function InspectorsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="relative">
-                          <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">{ins.avatar}</div>
+                          <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">{ins.avatar}</div>
                           <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${statusColor(ins.status)}`} />
                         </div>
                         <div>
@@ -169,7 +169,7 @@ export default function InspectorsPage() {
                     <td className="px-4 py-3 text-[#1F2937]">{ins.totalJobs}</td>
                     <td className="px-4 py-3 text-[#1F2937] font-semibold">{ins.avgScore}</td>
                     <td className="px-4 py-3">
-                      <Link href={`/inspectors/${ins.id}`} className="text-xs text-[#2E75B6] hover:underline">View Profile</Link>
+                      <Link href={`/inspectors/${ins.id}`} className="text-xs text-[#ff8a65] hover:underline">View Profile</Link>
                     </td>
                   </tr>
                 ))}

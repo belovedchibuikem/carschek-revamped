@@ -286,7 +286,7 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
             )}
             <Link
               href="/appointments/new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] min-h-[44px]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] min-h-[44px]"
             >
               <Plus size={16} /> Create appointment
             </Link>
@@ -296,13 +296,13 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
         <div className="flex flex-wrap gap-2 border-b border-[#E5E7EB] pb-3">
           <Link
             href="/appointments"
-            className={`px-3 py-2 rounded-lg text-sm font-semibold ${pathname === '/appointments' ? 'bg-[#1E3A5F] text-white' : 'bg-[#F4F6F8] text-[#374151] hover:bg-[#E5E7EB]'}`}
+            className={`px-3 py-2 rounded-lg text-sm font-semibold ${pathname === '/appointments' ? 'bg-[#ff5722] text-white' : 'bg-[#F4F6F8] text-[#374151] hover:bg-[#E5E7EB]'}`}
           >
             All ({counts.all})
           </Link>
           <Link
             href="/appointments/confirmed"
-            className={`px-3 py-2 rounded-lg text-sm font-semibold ${pathname.startsWith('/appointments/confirmed') ? 'bg-[#1E3A5F] text-white' : 'bg-[#F4F6F8] text-[#374151] hover:bg-[#E5E7EB]'}`}
+            className={`px-3 py-2 rounded-lg text-sm font-semibold ${pathname.startsWith('/appointments/confirmed') ? 'bg-[#ff5722] text-white' : 'bg-[#F4F6F8] text-[#374151] hover:bg-[#E5E7EB]'}`}
           >
             Confirmed ({counts.conf})
           </Link>
@@ -314,7 +314,7 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
           </Link>
           <Link
             href="/appointments/inspected"
-            className={`px-3 py-2 rounded-lg text-sm font-semibold ${pathname.startsWith('/appointments/inspected') ? 'bg-[#1E3A5F] text-white' : 'bg-[#F4F6F8] text-[#374151] hover:bg-[#E5E7EB]'}`}
+            className={`px-3 py-2 rounded-lg text-sm font-semibold ${pathname.startsWith('/appointments/inspected') ? 'bg-[#ff5722] text-white' : 'bg-[#F4F6F8] text-[#374151] hover:bg-[#E5E7EB]'}`}
           >
             Inspected
           </Link>
@@ -333,7 +333,7 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search booking, email, phone, vehicle…"
-              className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+              className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
             />
           </div>
           <div>
@@ -451,7 +451,7 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
                       <td className="px-3 py-2 text-xs text-[#6B7280] max-w-[180px]">{formatSlotDisplay(a.slot)}</td>
                       <td className="px-3 py-2">{a.location}</td>
                       <td className="px-3 py-2 text-xs text-[#6B7280] max-w-[160px] truncate">{a.serviceAddress}</td>
-                      <td className="px-3 py-2 font-mono text-xs text-[#1E3A5F]">{a.bookingId}</td>
+                      <td className="px-3 py-2 font-mono text-xs text-[#ff5722]">{a.bookingId}</td>
                       <td className="px-3 py-2 text-xs">{a.serviceType}</td>
                       <td className="px-3 py-2">
                         <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.className}`}>
@@ -483,7 +483,7 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
                             {a.linkedInspectionId ? (
                               <Link
                                 href={a.linkedCarId ? `/inspector-app/inspect/${a.linkedCarId}/overview` : '#'}
-                                className="text-[#2E75B6] hover:underline"
+                                className="text-[#ff8a65] hover:underline"
                               >
                                 {a.linkedInspectionId}
                               </Link>

@@ -56,12 +56,12 @@ export default function BrandsPage() {
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">Brand Name *</label>
                 <input value={newBrand.name} onChange={e => setNewBrand(p => ({ ...p, name: e.target.value }))}
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">Country</label>
                 <input value={newBrand.country} onChange={e => setNewBrand(p => ({ ...p, country: e.target.value }))}
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={newBrand.active} onChange={e => setNewBrand(p => ({ ...p, active: e.target.checked }))} className="w-4 h-4 rounded" />
@@ -70,7 +70,7 @@ export default function BrandsPage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8] transition-colors">Cancel</button>
-              <button onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F] transition-colors">Add Brand</button>
+              <button onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors">Add Brand</button>
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function BrandsPage() {
               <button onClick={() => setViewMode('grid')} className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-[#6B7280]'}`}><Grid size={15} /></button>
               <button onClick={() => setViewMode('list')} className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-[#6B7280]'}`}><List size={15} /></button>
             </div>
-            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px]">
+            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
               <Plus size={16} /> Add Brand
             </button>
           </div>
@@ -110,14 +110,14 @@ export default function BrandsPage() {
         <div className="relative max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search brands…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
         </div>
 
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {filtered.map(brand => (
               <div key={brand.id} className="bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-md transition-all group relative">
-                <div className="w-12 h-12 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
+                <div className="w-12 h-12 rounded-full bg-[#ff5722] flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
                   {brand.logo}
                 </div>
                 <p className="text-sm font-semibold text-[#1F2937] text-center">{brand.name}</p>
@@ -154,7 +154,7 @@ export default function BrandsPage() {
                   <tr key={brand.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">{brand.logo}</div>
+                        <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">{brand.logo}</div>
                         <span className="font-medium text-[#1F2937]">{brand.name}</span>
                       </div>
                     </td>

@@ -80,7 +80,7 @@ export default function AuctionsPage() {
         <div className="relative max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search auctions…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
           {search !== debouncedSearch && (
             <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
           )}
@@ -105,12 +105,12 @@ export default function AuctionsPage() {
                 {filtered.map(auction => (
                   <tr key={auction.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-4 py-3">
-                      <Link href={`/auctions/${auction.id}`} className="font-mono text-xs font-semibold text-[#2E75B6] hover:underline">
+                      <Link href={`/auctions/${auction.id}`} className="font-mono text-xs font-semibold text-[#ff8a65] hover:underline">
                         {auction.id}
                       </Link>
                     </td>
                     <td className="px-4 py-3">
-                      <Link href={`/cars/${auction.carId}`} className="font-medium text-[#1F2937] hover:text-[#2E75B6] transition-colors">{auction.carName}</Link>
+                      <Link href={`/cars/${auction.carId}`} className="font-medium text-[#1F2937] hover:text-[#ff8a65] transition-colors">{auction.carName}</Link>
                     </td>
                     <td className="px-4 py-3 text-[#6B7280]">{formatNaira(auction.startingBid)}</td>
                     <td className="px-4 py-3">

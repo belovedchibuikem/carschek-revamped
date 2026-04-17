@@ -53,7 +53,7 @@ function EditInner() {
     return (
       <AppLayout currentPath={pathname}>
         <p className="p-8 text-sm text-[#C0392B]">Appointment not found.</p>
-        <Link href="/appointments" className="text-[#2E75B6] text-sm font-semibold">
+        <Link href="/appointments" className="text-[#ff8a65] text-sm font-semibold">
           Back to list
         </Link>
       </AppLayout>

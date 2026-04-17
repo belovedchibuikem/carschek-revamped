@@ -96,7 +96,7 @@ export function PhotoLightbox({
           <button
             type="button"
             onClick={() => onRetake(cur.id)}
-            className="text-sm font-semibold text-[#2E75B6] hover:underline"
+            className="text-sm font-semibold text-[#ff8a65] hover:underline"
           >
             Retake
           </button>
@@ -110,7 +110,7 @@ export function PhotoLightbox({
             type="button"
             onClick={() => setIdx(i)}
             className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 ${
-              i === idx ? 'border-[#2E75B6]' : 'border-transparent opacity-70'
+              i === idx ? 'border-[#ff8a65]' : 'border-transparent opacity-70'
             }`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}

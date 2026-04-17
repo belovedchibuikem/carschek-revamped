@@ -77,7 +77,7 @@ function NotificationsPageContent() {
         <div className="flex gap-1 border-b border-[#E5E7EB] overflow-x-auto">
           {FILTER_TABS.map(tab => (
             <button key={tab} type="button" onClick={() => setFilter(tab)}
-              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeFilter === tab ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeFilter === tab ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
               {tab}
             </button>
           ))}
@@ -96,7 +96,7 @@ function NotificationsPageContent() {
                     <p className="text-xs text-[#6B7280] mt-0.5">{n.description}</p>
                     <p className="text-xs text-[#9CA3AF] mt-1">{n.time}</p>
                   </div>
-                  {!n.read && <span className="w-2.5 h-2.5 bg-[#2E75B6] rounded-full flex-shrink-0 mt-1.5" />}
+                  {!n.read && <span className="w-2.5 h-2.5 bg-[#ff8a65] rounded-full flex-shrink-0 mt-1.5" />}
                 </Link>
               ))}
             </div>

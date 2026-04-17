@@ -82,7 +82,7 @@ const defects = [
 // ─── Status chip ──────────────────────────────────────────────────────────────
 function JobStatusChip({ status }: { status: JobStatus }) {
   const map: Record<JobStatus, string> = {
-    Upcoming: 'bg-[#1E3A5F] text-white',
+    Upcoming: 'bg-[#ff5722] text-white',
     'En Route': 'bg-purple-600 text-white',
     'In Progress': 'bg-[#D35400] text-white',
     'Awaiting QA': 'bg-teal-600 text-white',
@@ -102,7 +102,7 @@ function InspectorHome({ onJobSelect }: { onJobSelect: (job: Job) => void }) {
   return (
     <div className="bg-[#F4F6F8] min-h-screen flex flex-col" style={{ maxWidth: 375, margin: '0 auto' }}>
       {/* Header */}
-      <div className="bg-[#1E3A5F] px-4 pt-10 pb-4">
+      <div className="bg-[#ff5722] px-4 pt-10 pb-4">
         <div className="flex items-center justify-between mb-4">
           <span className="text-white font-bold text-lg tracking-tight">CARSCHEK</span>
           <div className="flex items-center gap-3">
@@ -110,7 +110,7 @@ function InspectorHome({ onJobSelect }: { onJobSelect: (job: Job) => void }) {
               <span className="w-2 h-2 bg-green-400 rounded-full" />
               <span className="text-white text-xs font-medium">Online</span>
             </div>
-            <div className="w-9 h-9 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-sm font-bold">EO</div>
+            <div className="w-9 h-9 rounded-full bg-[#ff8a65] flex items-center justify-center text-white text-sm font-bold">EO</div>
           </div>
         </div>
         {/* Greeting */}
@@ -123,10 +123,10 @@ function InspectorHome({ onJobSelect }: { onJobSelect: (job: Job) => void }) {
       {/* Stats strip */}
       <div className="bg-white mx-4 -mt-3 rounded-2xl shadow-sm border border-[#E5E7EB] p-4 grid grid-cols-4 gap-2">
         {[
-          { label: 'Jobs Today', value: '3', color: 'text-[#1E3A5F]' },
+          { label: 'Jobs Today', value: '3', color: 'text-[#ff5722]' },
           { label: 'Completed', value: '1', color: 'text-[#1A7A4A]' },
           { label: 'Pending', value: '2', color: 'text-[#D35400]' },
-          { label: 'Avg Score', value: '87', color: 'text-[#2E75B6]' },
+          { label: 'Avg Score', value: '87', color: 'text-[#ff8a65]' },
         ].map(s => (
           <div key={s.label} className="text-center">
             <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
@@ -145,13 +145,13 @@ function InspectorHome({ onJobSelect }: { onJobSelect: (job: Job) => void }) {
               <span className="text-xs text-[#6B7280] font-medium">{job.time}</span>
             </div>
             <p className="text-base font-bold text-[#1F2937]">{job.vehicle}</p>
-            <p className="text-sm font-mono font-semibold text-[#2E75B6]">{job.plate}</p>
+            <p className="text-sm font-mono font-semibold text-[#ff8a65]">{job.plate}</p>
             <div className="mt-2 space-y-1">
               <p className="text-sm text-[#6B7280]">👤 {job.customer} · {job.phone}</p>
               <p className="text-sm text-[#6B7280]">⏱ {job.timeFromNow}</p>
               <p className="text-sm text-[#6B7280] flex items-center gap-1">
                 <MapPin size={12} className="text-[#C0392B]" /> {job.location}
-                <span className="text-[#2E75B6] font-medium ml-1">{job.distance}</span>
+                <span className="text-[#ff8a65] font-medium ml-1">{job.distance}</span>
               </p>
             </div>
             <div className="flex gap-2 mt-3">
@@ -159,7 +159,7 @@ function InspectorHome({ onJobSelect }: { onJobSelect: (job: Job) => void }) {
                 <Navigation size={14} /> Navigate
               </button>
               <button onClick={() => onJobSelect(job)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 min-h-[48px] ${job.status === 'Completed' ? 'bg-[#F4F6F8] text-[#6B7280]' : 'bg-[#1E3A5F] text-white'}`}>
+                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 min-h-[48px] ${job.status === 'Completed' ? 'bg-[#F4F6F8] text-[#6B7280]' : 'bg-[#ff5722] text-white'}`}>
                 {job.status === 'Completed' ? <><Eye size={14} /> View</> : <><Play size={14} /> Start</>}
               </button>
             </div>
@@ -171,7 +171,7 @@ function InspectorHome({ onJobSelect }: { onJobSelect: (job: Job) => void }) {
       <div className="fixed bottom-0 bg-white border-t border-[#E5E7EB] px-4 py-2 grid grid-cols-4 gap-1" style={{ maxWidth: 375, width: '100%' }}>
         {navItems.map(n => (
           <button key={n.label} onClick={() => setActiveNav(n.label)}
-            className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all min-h-[48px] ${activeNav === n.label ? 'text-[#1E3A5F]' : 'text-[#6B7280]'}`}>
+            className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all min-h-[48px] ${activeNav === n.label ? 'text-[#ff5722]' : 'text-[#6B7280]'}`}>
             <n.icon size={20} />
             <span className="text-[10px] font-medium">{n.label}</span>
           </button>
@@ -188,7 +188,7 @@ function JobDetail({ job, onBack, onStart }: { job: Job; onBack: () => void; onS
 
   return (
     <div className="bg-[#F4F6F8] min-h-screen flex flex-col" style={{ maxWidth: 375, margin: '0 auto' }}>
-      <div className="bg-[#1E3A5F] px-4 pt-10 pb-4">
+      <div className="bg-[#ff5722] px-4 pt-10 pb-4">
         <div className="flex items-center gap-3 mb-3">
           <button onClick={onBack} className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center min-h-[48px] min-w-[48px]">
             <ChevronLeft size={20} className="text-white" />
@@ -201,7 +201,7 @@ function JobDetail({ job, onBack, onStart }: { job: Job; onBack: () => void; onS
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-28">
         {/* Vehicle card */}
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4">
-          <p className="text-3xl font-black text-[#1E3A5F] tracking-widest font-mono">{job.plate}</p>
+          <p className="text-3xl font-black text-[#ff5722] tracking-widest font-mono">{job.plate}</p>
           <p className="text-lg font-bold text-[#1F2937] mt-1">{job.vehicle}</p>
           <div className="flex items-center gap-2 mt-2">
             <span className="w-5 h-5 rounded-full bg-white border-2 border-[#E5E7EB]" style={{ backgroundColor: '#F5F5DC' }} />
@@ -213,7 +213,7 @@ function JobDetail({ job, onBack, onStart }: { job: Job; onBack: () => void; onS
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-widest mb-3">Customer</p>
           <p className="text-base font-bold text-[#1F2937]">{job.customer}</p>
-          <a href={`tel:${job.phone}`} className="flex items-center gap-2 mt-2 text-[#2E75B6] font-medium text-sm min-h-[48px]">
+          <a href={`tel:${job.phone}`} className="flex items-center gap-2 mt-2 text-[#ff8a65] font-medium text-sm min-h-[48px]">
             <Phone size={16} /> {job.phone}
           </a>
           <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
@@ -233,7 +233,7 @@ function JobDetail({ job, onBack, onStart }: { job: Job; onBack: () => void; onS
           </div>
           <div className="p-3 flex items-center justify-between">
             <p className="text-sm text-[#6B7280]">{job.location}</p>
-            <span className="text-xs font-semibold text-[#2E75B6]">{job.distance}</span>
+            <span className="text-xs font-semibold text-[#ff8a65]">{job.distance}</span>
           </div>
         </div>
 
@@ -245,7 +245,7 @@ function JobDetail({ job, onBack, onStart }: { job: Job; onBack: () => void; onS
               <p className="text-sm font-medium text-[#1F2937]">Last inspected: Jan 15, 2026</p>
               <p className="text-xs text-[#6B7280] mt-0.5">Score: 81/100 · Good Condition</p>
             </div>
-            <button className="px-3 py-2 bg-[#F4F6F8] text-[#2E75B6] text-xs rounded-xl font-medium min-h-[48px]">View Report</button>
+            <button className="px-3 py-2 bg-[#F4F6F8] text-[#ff8a65] text-xs rounded-xl font-medium min-h-[48px]">View Report</button>
           </div>
         </div>
 
@@ -254,7 +254,7 @@ function JobDetail({ job, onBack, onStart }: { job: Job; onBack: () => void; onS
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-widest mb-2">Inspector Notes</p>
           <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
             placeholder="Add job-specific notes before starting..."
-            className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 resize-none" />
+            className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 resize-none" />
         </div>
       </div>
 
@@ -262,13 +262,13 @@ function JobDetail({ job, onBack, onStart }: { job: Job; onBack: () => void; onS
       <div className="fixed bottom-0 bg-white border-t border-[#E5E7EB] p-4" style={{ maxWidth: 375, width: '100%' }}>
         {job.status !== 'Completed' ? (
           <button onClick={() => setConfirmStart(true)}
-            className="w-full py-4 bg-[#1E3A5F] text-white rounded-2xl text-base font-bold flex items-center justify-center gap-2 min-h-[56px]">
+            className="w-full py-4 bg-[#ff5722] text-white rounded-2xl text-base font-bold flex items-center justify-center gap-2 min-h-[56px]">
             <Play size={18} /> START INSPECTION
           </button>
         ) : (
           <div className="flex gap-3">
             <button className="flex-1 py-3 bg-[#F4F6F8] text-[#1F2937] rounded-2xl text-sm font-bold min-h-[48px]">View Report</button>
-            <button className="flex-1 py-3 bg-[#2E75B6] text-white rounded-2xl text-sm font-bold min-h-[48px] flex items-center justify-center gap-1.5">
+            <button className="flex-1 py-3 bg-[#ff8a65] text-white rounded-2xl text-sm font-bold min-h-[48px] flex items-center justify-center gap-1.5">
               <Share2 size={14} /> Share
             </button>
           </div>
@@ -283,7 +283,7 @@ function JobDetail({ job, onBack, onStart }: { job: Job; onBack: () => void; onS
             <p className="text-sm text-[#6B7280] mb-6">Starting timer and locking this job to you. Ready?</p>
             <div className="flex gap-3">
               <button onClick={() => setConfirmStart(false)} className="flex-1 py-3.5 border border-[#E5E7EB] rounded-2xl font-semibold text-[#6B7280] min-h-[48px]">Cancel</button>
-              <button onClick={() => { setConfirmStart(false); onStart(); }} className="flex-1 py-3.5 bg-[#1E3A5F] text-white rounded-2xl font-bold min-h-[48px]">Start</button>
+              <button onClick={() => { setConfirmStart(false); onStart(); }} className="flex-1 py-3.5 bg-[#ff5722] text-white rounded-2xl font-bold min-h-[48px]">Start</button>
             </div>
           </div>
         </div>
@@ -317,7 +317,7 @@ function SectionOverview({ onSectionSelect, onFinish }: { onSectionSelect: (s: S
   return (
     <div className="bg-[#F4F6F8] min-h-screen flex flex-col" style={{ maxWidth: 375, margin: '0 auto' }}>
       {/* Header */}
-      <div className="bg-[#1E3A5F] px-4 pt-10 pb-5">
+      <div className="bg-[#ff5722] px-4 pt-10 pb-5">
         <div className="flex items-center justify-between mb-4">
           <p className="text-white font-bold text-base">2019 Toyota Camry</p>
           <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
@@ -331,7 +331,7 @@ function SectionOverview({ onSectionSelect, onFinish }: { onSectionSelect: (s: S
           <div className="relative w-20 h-20 flex-shrink-0">
             <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
               <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8" />
-              <circle cx="40" cy="40" r="34" fill="none" stroke="#2E75B6" strokeWidth="8"
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#ff8a65" strokeWidth="8"
                 strokeDasharray={`${2 * Math.PI * 34}`}
                 strokeDashoffset={`${2 * Math.PI * 34 * (1 - pct / 100)}`}
                 strokeLinecap="round" />
@@ -374,7 +374,7 @@ function SectionOverview({ onSectionSelect, onFinish }: { onSectionSelect: (s: S
           </button>
         ) : (
           <>
-            <button onClick={onFinish} className="w-full py-3.5 bg-[#1E3A5F] text-white rounded-2xl text-sm font-bold min-h-[48px]">
+            <button onClick={onFinish} className="w-full py-3.5 bg-[#ff5722] text-white rounded-2xl text-sm font-bold min-h-[48px]">
               Finish & Review
             </button>
             <button onClick={() => setAllPassModal(true)} className="w-full py-3 border border-[#E5E7EB] text-[#6B7280] rounded-2xl text-sm font-medium min-h-[48px]">
@@ -446,7 +446,7 @@ function SectionChecklist({ section, onBack, onNext }: { section: Section; onBac
           <p className="text-xs text-[#6B7280]">💾 Saved 2s ago</p>
         </div>
         <div className="h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
-          <div className="h-full bg-[#2E75B6] rounded-full transition-all" style={{ width: `${(done / items.length) * 100}%` }} />
+          <div className="h-full bg-[#ff8a65] rounded-full transition-all" style={{ width: `${(done / items.length) * 100}%` }} />
         </div>
       </div>
 
@@ -522,7 +522,7 @@ function SectionChecklist({ section, onBack, onNext }: { section: Section; onBac
                   value={item.defectNote || ''}
                   onChange={e => setItems(prev => prev.map(x => x.id === item.id ? { ...x, defectNote: e.target.value } : x))}
                   rows={2} placeholder="Describe the defect..."
-                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 resize-none" />
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 resize-none" />
                 <div className="flex gap-2">
                   <button className="flex-1 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-xs font-semibold text-[#6B7280] flex items-center justify-center gap-1.5 min-h-[44px]">
                     <Mic size={13} /> Voice Note
@@ -572,7 +572,7 @@ function ReviewAndSubmit({ onSubmit }: { onSubmit: () => void }) {
 
   return (
     <div className="bg-[#F4F6F8] min-h-screen flex flex-col" style={{ maxWidth: 375, margin: '0 auto' }}>
-      <div className="bg-[#1E3A5F] px-4 pt-10 pb-5">
+      <div className="bg-[#ff5722] px-4 pt-10 pb-5">
         <p className="text-white font-bold text-xl mb-4">Review & Submit</p>
         {/* Score gauge */}
         <div className="flex flex-col items-center">
@@ -624,7 +624,7 @@ function ReviewAndSubmit({ onSubmit }: { onSubmit: () => void }) {
                   </span>
                 </div>
                 <p className="text-xs text-[#6B7280]">{d.desc}</p>
-                <button className="mt-2 text-xs text-[#2E75B6] flex items-center gap-1">
+                <button className="mt-2 text-xs text-[#ff8a65] flex items-center gap-1">
                   <Pen size={10} /> Edit
                 </button>
               </div>
@@ -640,7 +640,7 @@ function ReviewAndSubmit({ onSubmit }: { onSubmit: () => void }) {
             {signed ? (
               <div className="w-full h-full flex items-center justify-center">
                 <svg viewBox="0 0 280 100" className="w-full h-full p-4">
-                  <path d="M20,60 Q40,20 60,50 Q80,80 100,40 Q120,10 140,50 Q160,80 180,45 Q200,20 220,55 Q240,75 260,50" fill="none" stroke="#1E3A5F" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M20,60 Q40,20 60,50 Q80,80 100,40 Q120,10 140,50 Q160,80 180,45 Q200,20 220,55 Q240,75 260,50" fill="none" stroke="#ff5722" strokeWidth="3" strokeLinecap="round" />
                 </svg>
               </div>
             ) : (
@@ -689,7 +689,7 @@ function ReportPreview({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="bg-[#F4F6F8] min-h-screen flex flex-col" style={{ maxWidth: 375, margin: '0 auto' }}>
-      <div className="bg-[#1E3A5F] px-4 pt-10 pb-4 flex items-center justify-between">
+      <div className="bg-[#ff5722] px-4 pt-10 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={onBack} className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center min-h-[48px] min-w-[48px]">
             <ChevronLeft size={18} className="text-white" />
@@ -705,7 +705,7 @@ function ReportPreview({ onBack }: { onBack: () => void }) {
         {/* Report card */}
         <div className="bg-white mx-4 mt-4 rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-sm">
           {/* Header */}
-          <div className="bg-[#1E3A5F] p-4">
+          <div className="bg-[#ff5722] p-4">
             <div className="flex items-center justify-between">
               <span className="text-white font-black text-lg tracking-tight">CARSCHEK</span>
               <div className="text-right">
@@ -735,7 +735,7 @@ function ReportPreview({ onBack }: { onBack: () => void }) {
               {[{ label: 'Body', score: 68 }, { label: 'Engine', score: 72 }, { label: 'Interior', score: 85 }, { label: 'Electrical', score: 79 }].map(s => (
                 <div key={s.label} className="text-center">
                   <div className="h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden mb-1">
-                    <div className="h-full bg-[#2E75B6] rounded-full" style={{ width: `${s.score}%` }} />
+                    <div className="h-full bg-[#ff8a65] rounded-full" style={{ width: `${s.score}%` }} />
                   </div>
                   <p className="text-[9px] text-[#6B7280]">{s.label}</p>
                 </div>
@@ -783,7 +783,7 @@ function ReportPreview({ onBack }: { onBack: () => void }) {
           {/* Inspector footer */}
           <div className="p-4 bg-[#F9FAFB]">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-sm font-bold">EO</div>
+              <div className="w-10 h-10 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-sm font-bold">EO</div>
               <div>
                 <p className="text-sm font-bold text-[#1F2937]">Emeka Okonkwo</p>
                 <p className="text-xs text-[#6B7280]">Inspector ID: INS-001 · Certified</p>
@@ -815,12 +815,12 @@ function ReportPreview({ onBack }: { onBack: () => void }) {
             onClick={() => {
               window.open('sms:?body=' + encodeURIComponent('Your Carschek report is ready: https://carschek.com/reports/CS-2026-4521'), '_blank');
             }}
-            className="py-3 bg-[#2E75B6] text-white rounded-2xl text-xs font-bold min-h-[48px] flex items-center justify-center gap-1">
+            className="py-3 bg-[#ff8a65] text-white rounded-2xl text-xs font-bold min-h-[48px] flex items-center justify-center gap-1">
             📱 SMS
           </button>
           <button
             onClick={() => window.print()}
-            className="py-3 bg-[#1E3A5F] text-white rounded-2xl text-xs font-bold min-h-[48px] flex items-center justify-center gap-1">
+            className="py-3 bg-[#ff5722] text-white rounded-2xl text-xs font-bold min-h-[48px] flex items-center justify-center gap-1">
             ⬇ PDF
           </button>
         </div>
@@ -858,7 +858,7 @@ function SuccessScreen({ onViewReport }: { onViewReport: () => void }) {
       <h2 className="text-2xl font-black text-[#1F2937] mb-2">Report Submitted! 🎉</h2>
       <p className="text-[#6B7280] text-sm mb-8">Your QA team will review within 2 hours</p>
       <button onClick={onViewReport}
-        className="w-full py-4 bg-[#1E3A5F] text-white rounded-2xl text-base font-bold min-h-[56px]">
+        className="w-full py-4 bg-[#ff5722] text-white rounded-2xl text-base font-bold min-h-[56px]">
         View Report Preview
       </button>
     </div>
@@ -892,7 +892,7 @@ export default function InspectorPWAPage() {
                 if (s === 'section-checklist' && !selectedSection) setSelectedSection(sections[0]);
                 setScreen(s);
               }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${screen === s ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-[#E5E7EB] text-[#6B7280] hover:border-[#2E75B6]'}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${screen === s ? 'bg-[#ff5722] text-white' : 'bg-white border border-[#E5E7EB] text-[#6B7280] hover:border-[#ff8a65]'}`}>
                 {label}
               </button>
             ))}

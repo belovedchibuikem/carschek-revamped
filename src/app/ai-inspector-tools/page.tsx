@@ -67,12 +67,12 @@ function AIDefectDetection() {
             {/* Step 0: Idle */}
             {step === 'idle' && (
               <div className="h-full flex flex-col items-center justify-center bg-[#1F2937] p-6 text-center">
-                <div className="w-16 h-16 bg-[#2E75B6]/20 rounded-2xl flex items-center justify-center mb-4">
-                  <Camera size={32} className="text-[#2E75B6]" />
+                <div className="w-16 h-16 bg-[#ff8a65]/20 rounded-2xl flex items-center justify-center mb-4">
+                  <Camera size={32} className="text-[#ff8a65]" />
                 </div>
                 <p className="text-white font-semibold mb-2">Front Bumper</p>
                 <p className="text-white/50 text-xs mb-6">Tap the camera icon to capture and analyse</p>
-                <button onClick={startCapture} className="flex items-center gap-2 px-5 py-2.5 bg-[#2E75B6] text-white text-sm font-medium rounded-xl hover:bg-[#1E3A5F] transition-colors">
+                <button onClick={startCapture} className="flex items-center gap-2 px-5 py-2.5 bg-[#ff8a65] text-white text-sm font-medium rounded-xl hover:bg-[#ff5722] transition-colors">
                   <Camera size={16} />
                   Open Camera
                 </button>
@@ -118,8 +118,8 @@ function AIDefectDetection() {
                   {/* Scanning overlay */}
                   <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-4">
                     <div className="relative">
-                      <div className="w-16 h-16 rounded-full border-4 border-[#2E75B6]/30 border-t-[#2E75B6] animate-spin" />
-                      <Zap size={20} className="text-[#2E75B6] absolute inset-0 m-auto" />
+                      <div className="w-16 h-16 rounded-full border-4 border-[#ff8a65]/30 border-t-[#ff8a65] animate-spin" />
+                      <Zap size={20} className="text-[#ff8a65] absolute inset-0 m-auto" />
                     </div>
                     <p className="text-white text-sm font-semibold">Carschek AI is analysing this photo...</p>
 
@@ -134,7 +134,7 @@ function AIDefectDetection() {
                           {analysisProgress >= s.threshold && analysisProgress >= (i === 2 ? 100 : s.threshold + 1) ? (
                             <CheckCircle size={14} className="text-[#1A7A4A] flex-shrink-0" />
                           ) : analysisProgress >= s.threshold ? (
-                            <div className="w-3.5 h-3.5 rounded-full border-2 border-[#2E75B6] border-t-transparent animate-spin flex-shrink-0" />
+                            <div className="w-3.5 h-3.5 rounded-full border-2 border-[#ff8a65] border-t-transparent animate-spin flex-shrink-0" />
                           ) : (
                             <div className="w-3.5 h-3.5 rounded-full border-2 border-white/20 flex-shrink-0" />
                           )}
@@ -145,7 +145,7 @@ function AIDefectDetection() {
 
                     {/* Progress bar */}
                     <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#2E75B6] rounded-full transition-all duration-500" style={{ width: `${analysisProgress}%` }} />
+                      <div className="h-full bg-[#ff8a65] rounded-full transition-all duration-500" style={{ width: `${analysisProgress}%` }} />
                     </div>
                   </div>
                 </div>
@@ -210,7 +210,7 @@ function AIDefectDetection() {
                         <Check size={14} />
                         ✓ Looks Right — Apply
                       </button>
-                      <button onClick={reset} className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#2E75B6] text-white text-xs font-semibold rounded-xl hover:bg-[#1E3A5F] transition-colors">
+                      <button onClick={reset} className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#ff8a65] text-white text-xs font-semibold rounded-xl hover:bg-[#ff5722] transition-colors">
                         <Edit size={14} />
                         ✏ Edit Before Applying
                       </button>
@@ -276,7 +276,7 @@ function VoiceNoteInput() {
 
           {/* Textarea */}
           <textarea
-            className="w-full h-20 px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 focus:border-[#2E75B6] bg-white mb-4"
+            className="w-full h-20 px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 focus:border-[#ff8a65] bg-white mb-4"
             placeholder="Describe the defect..."
             value={voiceStep === 'result' ? 'There is a crack on the front bumper approximately 10cm long on the right side' : ''}
             readOnly
@@ -329,10 +329,10 @@ function VoiceNoteInput() {
             {/* Transcribing State */}
             {voiceStep === 'transcribing' && (
               <>
-                <div className="w-16 h-16 rounded-full bg-[#2E75B6]/10 flex items-center justify-center">
-                  <RefreshCw size={24} className="text-[#2E75B6] animate-spin" />
+                <div className="w-16 h-16 rounded-full bg-[#ff8a65]/10 flex items-center justify-center">
+                  <RefreshCw size={24} className="text-[#ff8a65] animate-spin" />
                 </div>
-                <p className="text-xs text-[#2E75B6] font-medium">Transcribing...</p>
+                <p className="text-xs text-[#ff8a65] font-medium">Transcribing...</p>
               </>
             )}
 
@@ -350,7 +350,7 @@ function VoiceNoteInput() {
                     <RotateCcw size={12} />
                     Re-record
                   </button>
-                  <button onClick={reset} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs bg-[#1E3A5F] text-white rounded-xl hover:bg-[#2E75B6] transition-colors font-medium">
+                  <button onClick={reset} className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs bg-[#ff5722] text-white rounded-xl hover:bg-[#ff8a65] transition-colors font-medium">
                     <Check size={12} />
                     Use this
                   </button>
@@ -364,7 +364,7 @@ function VoiceNoteInput() {
                 <div className="w-full bg-amber-50 rounded-xl p-3 border border-amber-100 text-center">
                   <p className="text-xs text-amber-700">No speech detected. Try again in a quieter environment.</p>
                 </div>
-                <button onClick={reset} className="flex items-center gap-2 px-4 py-2 text-xs bg-[#1E3A5F] text-white rounded-xl hover:bg-[#2E75B6] transition-colors">
+                <button onClick={reset} className="flex items-center gap-2 px-4 py-2 text-xs bg-[#ff5722] text-white rounded-xl hover:bg-[#ff8a65] transition-colors">
                   <RotateCcw size={12} />
                   Retry
                 </button>
@@ -442,7 +442,7 @@ function CombinedDemoFlow() {
   const currentStepIdx = STEPS.findIndex(s => demoStep.startsWith(s.key.split('-')[0]) || demoStep === s.key);
 
   return (
-    <div className="bg-gradient-to-br from-[#1E3A5F] to-[#2E75B6] rounded-2xl overflow-hidden">
+    <div className="bg-gradient-to-br from-[#ff5722] to-[#ff8a65] rounded-2xl overflow-hidden">
       <div className="px-6 py-5 border-b border-white/10">
         <div className="flex items-center justify-between">
           <div>
@@ -466,7 +466,7 @@ function CombinedDemoFlow() {
               return (
                 <React.Fragment key={s.key}>
                   <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all ${
-                    isDone ? 'bg-white/20 text-white' : isActive ? 'bg-white text-[#1E3A5F]' : 'bg-white/10 text-white/40'
+                    isDone ? 'bg-white/20 text-white' : isActive ? 'bg-white text-[#ff5722]' : 'bg-white/10 text-white/40'
                   }`}>
                     {isDone && <Check size={10} />}
                     {s.label}
@@ -488,7 +488,7 @@ function CombinedDemoFlow() {
             </div>
             <h3 className="text-white font-bold text-lg mb-2">Start the Demo</h3>
             <p className="text-white/60 text-sm mb-6 max-w-xs">Watch a complete inspector flow from photo capture to defect submission.</p>
-            <button onClick={runDemo} className="px-6 py-3 bg-white text-[#1E3A5F] font-semibold rounded-xl hover:bg-white/90 transition-colors">
+            <button onClick={runDemo} className="px-6 py-3 bg-white text-[#ff5722] font-semibold rounded-xl hover:bg-white/90 transition-colors">
               Begin Demo
             </button>
           </div>
@@ -524,12 +524,12 @@ function CombinedDemoFlow() {
                   <div className="flex-1 bg-gradient-to-br from-gray-700 via-gray-600 to-gray-800 relative">
                     <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-4">
                       <div className="relative">
-                        <div className="w-16 h-16 rounded-full border-4 border-[#2E75B6]/30 border-t-[#2E75B6] animate-spin" />
-                        <Zap size={20} className="text-[#2E75B6] absolute inset-0 m-auto" />
+                        <div className="w-16 h-16 rounded-full border-4 border-[#ff8a65]/30 border-t-[#ff8a65] animate-spin" />
+                        <Zap size={20} className="text-[#ff8a65] absolute inset-0 m-auto" />
                       </div>
                       <p className="text-white text-sm font-semibold text-center px-4">Carschek AI is analysing this photo...</p>
                       <div className="w-48 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#2E75B6] rounded-full transition-all duration-500" style={{ width: `${analysisProgress}%` }} />
+                        <div className="h-full bg-[#ff8a65] rounded-full transition-all duration-500" style={{ width: `${analysisProgress}%` }} />
                       </div>
                       <p className="text-white/60 text-xs">
                         {analysisProgress < 35 ? 'Detecting defects...' : analysisProgress < 70 ? 'Classifying severity...' : 'Done ✓'}
@@ -605,10 +605,10 @@ function CombinedDemoFlow() {
               {/* Voice Transcribing */}
               {demoStep === 'voice-transcribing' && (
                 <div className="h-full bg-white flex flex-col items-center justify-center p-5 gap-4">
-                  <div className="w-16 h-16 rounded-full bg-[#2E75B6]/10 flex items-center justify-center">
-                    <RefreshCw size={24} className="text-[#2E75B6] animate-spin" />
+                  <div className="w-16 h-16 rounded-full bg-[#ff8a65]/10 flex items-center justify-center">
+                    <RefreshCw size={24} className="text-[#ff8a65] animate-spin" />
                   </div>
-                  <p className="text-sm text-[#2E75B6] font-medium">Transcribing...</p>
+                  <p className="text-sm text-[#ff8a65] font-medium">Transcribing...</p>
                 </div>
               )}
 
@@ -625,7 +625,7 @@ function CombinedDemoFlow() {
                       <span className="text-[10px] font-semibold text-[#1A7A4A]">Transcribed with high confidence</span>
                     </div>
                   </div>
-                  <button onClick={submitDefect} className="w-full py-3 bg-[#1E3A5F] text-white text-sm font-bold rounded-xl hover:bg-[#2E75B6] transition-colors">
+                  <button onClick={submitDefect} className="w-full py-3 bg-[#ff5722] text-white text-sm font-bold rounded-xl hover:bg-[#ff8a65] transition-colors">
                     Submit Defect
                   </button>
                 </div>
@@ -639,7 +639,7 @@ function CombinedDemoFlow() {
                   </div>
                   <h3 className="text-lg font-bold text-[#1F2937] mb-2">Defect Submitted!</h3>
                   <p className="text-xs text-[#6B7280] mb-6">AI detection + voice note saved to inspection report.</p>
-                  <button onClick={resetDemo} className="px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-medium rounded-xl hover:bg-[#2E75B6] transition-colors">
+                  <button onClick={resetDemo} className="px-5 py-2.5 bg-[#ff5722] text-white text-sm font-medium rounded-xl hover:bg-[#ff8a65] transition-colors">
                     Run Demo Again
                   </button>
                 </div>

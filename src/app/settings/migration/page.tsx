@@ -217,7 +217,7 @@ export default function DataMigrationPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-[#6B7280] mb-1">Settings</p>
           <h1 className="text-2xl font-heading font-bold text-[#1F2937] flex items-center gap-2">
-            <ArrowRightLeft className="text-[#1E3A5F]" size={26} />
+            <ArrowRightLeft className="text-[#ff5722]" size={26} />
             Data Migration
           </h1>
           <p className="text-sm text-[#6B7280] mt-1">
@@ -234,9 +234,9 @@ export default function DataMigrationPage() {
                 onClick={() => s.id < step && setStep(s.id)}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors ${
                   step === s.id
-                    ? 'bg-[#1E3A5F] text-white'
+                    ? 'bg-[#ff5722] text-white'
                     : s.id < step
-                      ? 'text-[#1E3A5F] hover:bg-[#EEF2FF]'
+                      ? 'text-[#ff5722] hover:bg-[#EEF2FF]'
                       : 'text-[#9CA3AF] cursor-default'
                 }`}
               >
@@ -257,7 +257,7 @@ export default function DataMigrationPage() {
                     type="button"
                     onClick={() => setMethod('api')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border text-sm font-semibold ${
-                      method === 'api' ? 'border-[#1E3A5F] bg-[#EEF2FF] text-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280]'
+                      method === 'api' ? 'border-[#ff5722] bg-[#EEF2FF] text-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280]'
                     }`}
                   >
                     <Plug size={18} /> API Connection
@@ -266,7 +266,7 @@ export default function DataMigrationPage() {
                     type="button"
                     onClick={() => setMethod('csv')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border text-sm font-semibold ${
-                      method === 'csv' ? 'border-[#1E3A5F] bg-[#EEF2FF] text-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280]'
+                      method === 'csv' ? 'border-[#ff5722] bg-[#EEF2FF] text-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280]'
                     }`}
                   >
                     <FileSpreadsheet size={18} /> CSV Export Import
@@ -280,7 +280,7 @@ export default function DataMigrationPage() {
                       <input
                         value={baseUrl}
                         onChange={e => setBaseUrl(e.target.value)}
-                        className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 font-mono text-[13px]"
+                        className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 font-mono text-[13px]"
                       />
                     </div>
                     <div>
@@ -290,13 +290,13 @@ export default function DataMigrationPage() {
                         value={apiToken}
                         onChange={e => setApiToken(e.target.value)}
                         placeholder="Paste legacy API token"
-                        className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+                        className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={testConnection}
-                      className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-colors"
+                      className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-colors"
                     >
                       Test Connection
                     </button>
@@ -344,7 +344,7 @@ export default function DataMigrationPage() {
                     <button
                       type="button"
                       onClick={() => setSelected(Object.fromEntries(ENTITIES.map(e => [e.id, true])))}
-                      className="text-sm font-medium text-[#2E75B6] hover:underline"
+                      className="text-sm font-medium text-[#ff8a65] hover:underline"
                     >
                       Select All
                     </button>
@@ -399,7 +399,7 @@ export default function DataMigrationPage() {
                   <button
                     type="button"
                     onClick={() => setStep(3)}
-                    className="inline-flex items-center gap-1 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F]"
+                    className="inline-flex items-center gap-1 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19]"
                   >
                     Continue <ChevronRight size={18} />
                   </button>
@@ -414,7 +414,7 @@ export default function DataMigrationPage() {
                   type="button"
                   onClick={runValidation}
                   disabled={validating}
-                  className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] disabled:opacity-60 inline-flex items-center gap-2"
+                  className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] disabled:opacity-60 inline-flex items-center gap-2"
                 >
                   {validating && <Loader2 className="animate-spin" size={18} />}
                   Run Validation Checks
@@ -504,7 +504,7 @@ export default function DataMigrationPage() {
                   <button
                     type="button"
                     onClick={() => setStep(4)}
-                    className="inline-flex items-center gap-1 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F]"
+                    className="inline-flex items-center gap-1 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19]"
                   >
                     Continue <ChevronRight size={18} />
                   </button>
@@ -561,11 +561,11 @@ export default function DataMigrationPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-[#6B7280]">Progress</span>
-                      <span className="font-mono font-semibold text-[#1E3A5F]">{migrateProgress}%</span>
+                      <span className="font-mono font-semibold text-[#ff5722]">{migrateProgress}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-[#E5E7EB] overflow-hidden">
                       <div
-                        className="h-full bg-[#2E75B6] transition-all duration-300"
+                        className="h-full bg-[#ff8a65] transition-all duration-300"
                         style={{ width: `${migrateProgress}%` }}
                       />
                     </div>
@@ -591,7 +591,7 @@ export default function DataMigrationPage() {
                     { label: 'Imported', value: summary.imported, color: 'text-[#1A7A4A]' },
                     { label: 'Warnings', value: summary.warnings, color: 'text-[#D35400]' },
                     { label: 'Errors', value: summary.errors, color: 'text-[#C0392B]' },
-                    { label: 'Time', value: `${Math.round(summary.ms / 60000)}m`, color: 'text-[#1E3A5F]' },
+                    { label: 'Time', value: `${Math.round(summary.ms / 60000)}m`, color: 'text-[#ff5722]' },
                   ].map(c => (
                     <div key={c.label} className="p-4 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]">
                       <p className="text-xs text-[#6B7280] font-semibold uppercase">{c.label}</p>
@@ -603,7 +603,7 @@ export default function DataMigrationPage() {
                   <button
                     type="button"
                     onClick={downloadReport}
-                    className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg"
+                    className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg"
                   >
                     Download Migration Report
                   </button>

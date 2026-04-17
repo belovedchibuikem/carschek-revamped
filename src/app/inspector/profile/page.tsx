@@ -13,7 +13,7 @@ export default function InspectorProfilePage() {
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 text-center">
           <div className="relative inline-block mb-3">
-            <div className="w-16 h-16 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-2xl font-bold mx-auto">EO</div>
+            <div className="w-16 h-16 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-2xl font-bold mx-auto">EO</div>
             <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
           </div>
           <h2 className="text-lg font-heading font-bold text-[#1F2937]">Emeka Okonkwo</h2>

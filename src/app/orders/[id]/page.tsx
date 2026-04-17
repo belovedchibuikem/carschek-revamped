@@ -31,7 +31,7 @@ export default function OrderDetailPage() {
   const getActions = (): OrderAction[] => {
     switch (order.status) {
       case 'New': return [
-        { type: 'button', label: 'Assign Inspector', color: 'bg-[#1E3A5F]', action: () => setReassignModal(true) },
+        { type: 'button', label: 'Assign Inspector', color: 'bg-[#ff5722]', action: () => setReassignModal(true) },
         { type: 'button', label: 'Cancel Order', color: 'bg-[#C0392B]', action: () => toast.success('Order cancelled') },
       ];
       case 'Assigned': return [
@@ -39,13 +39,13 @@ export default function OrderDetailPage() {
         { type: 'button', label: 'Cancel Order', color: 'bg-[#C0392B]', action: () => toast.success('Order cancelled') },
       ];
       case 'In Progress': return [
-        { type: 'button', label: 'Message inspector', color: 'bg-[#2E75B6]', action: () => toast.success('Use the live panel above to message the inspector') },
+        { type: 'button', label: 'Message inspector', color: 'bg-[#ff8a65]', action: () => toast.success('Use the live panel above to message the inspector') },
       ];
       case 'Reported': return [
         {
           type: 'link',
           label: 'Review Report',
-          color: 'bg-[#1E3A5F]',
+          color: 'bg-[#ff5722]',
           href: order.reportId ? `/reports/${order.reportId}/review` : '/reports',
         },
       ];
@@ -57,7 +57,7 @@ export default function OrderDetailPage() {
         {
           type: 'button',
           label: 'Download Report PDF',
-          color: 'bg-[#1E3A5F]',
+          color: 'bg-[#ff5722]',
           action: () =>
             openPrintableReport({
               title: `Order ${order.id} — report`,
@@ -65,7 +65,7 @@ export default function OrderDetailPage() {
               bodyHtml: `<p><strong>Status:</strong> ${order.status}</p><p><strong>Zone:</strong> ${order.zone}</p><p>Print or save as PDF from the browser dialog.</p>`,
             }),
         },
-        { type: 'button', label: 'Resend to Customer', color: 'bg-[#2E75B6]', action: () => toast.success('Report resent to customer') },
+        { type: 'button', label: 'Resend to Customer', color: 'bg-[#ff8a65]', action: () => toast.success('Report resent to customer') },
       ];
       default: return [];
     }
@@ -81,8 +81,8 @@ export default function OrderDetailPage() {
             <div className="space-y-2 mb-5">
               {['Emeka Okonkwo', 'Chidinma Eze', 'Ngozi Obi'].map(name => (
                 <button key={name} onClick={() => { toast.success(`Inspector ${name} assigned`); setReassignModal(false); }}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:border-[#2E75B6] hover:bg-blue-50 transition-all text-left">
-                  <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">
+                  className="w-full flex items-center gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:border-[#ff8a65] hover:bg-blue-50 transition-all text-left">
+                  <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">
                     {name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
@@ -126,7 +126,7 @@ export default function OrderDetailPage() {
               <div className="space-y-6">
                 {TIMELINE_EVENTS.map((event, i) => (
                   <div key={i} className="relative flex gap-4 pl-10">
-                    <div className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${i === TIMELINE_EVENTS.length - 1 ? 'bg-[#1E3A5F]' : 'bg-[#F4F6F8] border-2 border-[#E5E7EB]'}`}>
+                    <div className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${i === TIMELINE_EVENTS.length - 1 ? 'bg-[#ff5722]' : 'bg-[#F4F6F8] border-2 border-[#E5E7EB]'}`}>
                       {i === TIMELINE_EVENTS.length - 1 ? (
                         <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                       ) : (
@@ -196,11 +196,11 @@ export default function OrderDetailPage() {
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-heading font-semibold text-[#1F2937]">Inspector</h2>
-                <button onClick={() => setReassignModal(true)} className="text-xs text-[#2E75B6] hover:underline">Reassign</button>
+                <button onClick={() => setReassignModal(true)} className="text-xs text-[#ff8a65] hover:underline">Reassign</button>
               </div>
               {order.inspectorName ? (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-sm font-bold">
+                  <div className="w-10 h-10 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-sm font-bold">
                     {order.inspectorName.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
@@ -211,7 +211,7 @@ export default function OrderDetailPage() {
               ) : (
                 <div className="text-center py-4">
                   <p className="text-sm text-[#6B7280] mb-3">No inspector assigned</p>
-                  <button onClick={() => setReassignModal(true)} className="px-4 py-2 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+                  <button onClick={() => setReassignModal(true)} className="px-4 py-2 bg-[#ff5722] text-white text-xs font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                     Assign Inspector
                   </button>
                 </div>

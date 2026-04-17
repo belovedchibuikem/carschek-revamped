@@ -89,20 +89,20 @@ export default function CustomersPage() {
                 <div key={f.key}>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">{f.label}</label>
                   <input type={f.type} value={newCustomer[f.key as keyof typeof newCustomer]} onChange={e => setNewCustomer(p => ({ ...p, [f.key]: e.target.value }))}
-                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
                 </div>
               ))}
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">Type</label>
                 <select value={newCustomer.type} onChange={e => setNewCustomer(p => ({ ...p, type: e.target.value }))}
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                   {['Individual', 'Dealer', 'Corporate'].map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
             </div>
             <div className="flex gap-3 mt-5">
               <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8]">Cancel</button>
-              <button type="button" onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F]">Add Customer</button>
+              <button type="button" onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]">Add Customer</button>
             </div>
           </div>
         </div>
@@ -114,7 +114,7 @@ export default function CustomersPage() {
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Customers</h1>
             <p className="text-sm text-[#6B7280]">{rows.length} customers</p>
           </div>
-          <button type="button" onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px]">
+          <button type="button" onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
             <Plus size={16} /> Add Customer
           </button>
         </div>
@@ -122,7 +122,7 @@ export default function CustomersPage() {
         <div className="relative max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search customers…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
           {search !== debouncedSearch && (
             <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
           )}
@@ -147,9 +147,9 @@ export default function CustomersPage() {
                   <tr key={customer.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">{customer.avatar}</div>
+                        <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">{customer.avatar}</div>
                         <div>
-                          <Link href={`/customers/${customer.id}`} className="font-medium text-[#1F2937] hover:text-[#2E75B6] transition-colors">{customer.name}</Link>
+                          <Link href={`/customers/${customer.id}`} className="font-medium text-[#1F2937] hover:text-[#ff8a65] transition-colors">{customer.name}</Link>
                           <p className="text-xs text-[#6B7280]">{customer.email}</p>
                         </div>
                       </div>

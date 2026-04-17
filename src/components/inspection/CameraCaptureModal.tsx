@@ -74,7 +74,7 @@ export function CameraCaptureModal({
           {subtitle ? <p className="truncate text-[11px] text-white/65">{subtitle}</p> : null}
         </div>
         {showAiBadge ? (
-          <div className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#2E75B6] px-2.5 py-1 text-[10px] font-bold text-white shadow-[0_0_12px_rgba(46,117,182,0.45)]">
+          <div className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#ff8a65] px-2.5 py-1 text-[10px] font-bold text-white shadow-[0_0_12px_rgba(46,117,182,0.45)]">
             <Sparkles size={12} className="text-white" />
             AI On
           </div>

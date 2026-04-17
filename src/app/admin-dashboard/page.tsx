@@ -25,7 +25,7 @@ export default function AdminDashboardPage() {
             </span>
             <Link
               href="/orders/new"
-              className="inline-flex items-center justify-center px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98] min-h-[44px]"
+              className="inline-flex items-center justify-center px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all active:scale-[0.98] min-h-[44px]"
             >
               + New Order
             </Link>

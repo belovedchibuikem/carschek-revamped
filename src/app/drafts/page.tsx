@@ -59,7 +59,7 @@ export default function DraftsPage() {
     <AppLayout currentPath={pathname}>
       <div className="max-w-3xl space-y-4">
         <h1 className="text-2xl font-heading font-bold text-[#1F2937] dark:text-slate-100 flex items-center gap-2">
-          <FileEdit className="text-[#1E3A5F]" size={26} />
+          <FileEdit className="text-[#ff5722]" size={26} />
           Draft recovery
         </h1>
         <p className="text-sm text-[#6B7280]">
@@ -78,7 +78,7 @@ export default function DraftsPage() {
                 className="flex flex-wrap items-start gap-3 bg-white dark:bg-slate-900 rounded-xl border border-[#E5E7EB] dark:border-slate-700 p-4"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-mono text-xs font-semibold text-[#1E3A5F] break-all">{d.key}</p>
+                  <p className="font-mono text-xs font-semibold text-[#ff5722] break-all">{d.key}</p>
                   <p className="text-[10px] text-[#9CA3AF] mt-1">
                     {d.savedAt ? new Date(d.savedAt).toLocaleString('en-NG') : 'Unknown time'}
                   </p>
@@ -91,7 +91,7 @@ export default function DraftsPage() {
                       toast.message('Open the target form to restore — draft key copied', { description: d.key });
                       void navigator.clipboard.writeText(d.key);
                     }}
-                    className="px-3 py-2 text-xs font-semibold rounded-lg bg-[#1E3A5F] text-white hover:bg-[#16304F]"
+                    className="px-3 py-2 text-xs font-semibold rounded-lg bg-[#ff5722] text-white hover:bg-[#e64a19]"
                   >
                     Copy key
                   </button>
@@ -108,7 +108,7 @@ export default function DraftsPage() {
           </ul>
         )}
 
-        <Link href="/dashboard" className="text-sm font-semibold text-[#2E75B6] hover:underline inline-block">
+        <Link href="/dashboard" className="text-sm font-semibold text-[#ff8a65] hover:underline inline-block">
           ← Back to dashboard
         </Link>
       </div>

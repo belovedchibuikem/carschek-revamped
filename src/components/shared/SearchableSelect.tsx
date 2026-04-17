@@ -86,7 +86,7 @@ export function SearchableSelect({
         onClick={() => !disabled && setOpen(o => !o)}
         className={[
           'w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm border rounded-lg text-left transition-colors',
-          disabled ? 'opacity-50 cursor-not-allowed bg-[#F9FAFB]' : 'bg-white hover:border-[#2E75B6]/40 cursor-pointer',
+          disabled ? 'opacity-50 cursor-not-allowed bg-[#F9FAFB]' : 'bg-white hover:border-[#ff8a65]/40 cursor-pointer',
           invalid ? 'border-[#C0392B]' : 'border-[#E5E7EB]',
           buttonClassName,
         ]
@@ -128,7 +128,7 @@ export function SearchableSelect({
                     className={[
                       'w-full text-left px-3 py-2 text-sm transition-colors',
                       o.value === value
-                        ? 'bg-[#1E3A5F]/10 font-semibold text-[#1E3A5F]'
+                        ? 'bg-[#ff5722]/10 font-semibold text-[#ff5722]'
                         : 'text-[#374151] hover:bg-[#F4F6F8]',
                     ].join(' ')}
                     onClick={() => {

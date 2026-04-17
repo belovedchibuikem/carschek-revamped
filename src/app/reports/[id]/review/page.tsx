@@ -167,7 +167,7 @@ export default function ReportReviewPage() {
                   type="button"
                   onClick={() => setQaRightTab('checklist')}
                   className={`flex-1 px-3 py-2 text-sm font-semibold rounded-t-lg border-b-2 -mb-px transition-colors ${
-                    qaRightTab === 'checklist' ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'
+                    qaRightTab === 'checklist' ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'
                   }`}
                 >
                   QA Checklist
@@ -176,7 +176,7 @@ export default function ReportReviewPage() {
                   type="button"
                   onClick={() => setQaRightTab('history')}
                   className={`flex-1 px-3 py-2 text-sm font-semibold rounded-t-lg border-b-2 -mb-px transition-colors ${
-                    qaRightTab === 'history' ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'
+                    qaRightTab === 'history' ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'
                   }`}
                 >
                   History
@@ -189,7 +189,7 @@ export default function ReportReviewPage() {
                   <div className="relative pl-4 border-l-2 border-[#E5E7EB] space-y-6">
                     {versionHistory.map((v, i) => (
                       <div key={v.version} className="relative">
-                        <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-[#1E3A5F] ring-4 ring-white" />
+                        <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-[#ff5722] ring-4 ring-white" />
                         <p className="text-sm font-semibold text-[#1F2937]">
                           v{v.version} {v.kind}
                           {i < versionHistory.length - 1 ? (
@@ -225,7 +225,7 @@ export default function ReportReviewPage() {
                       <label key={check.key} className="flex items-center gap-3 cursor-pointer group">
                         <button
                           onClick={() => setQaChecks(prev => ({ ...prev, [check.key]: !prev[check.key as keyof typeof prev] }))}
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${qaChecks[check.key as keyof typeof qaChecks] ? 'bg-[#1A7A4A] border-[#1A7A4A]' : 'border-[#E5E7EB] group-hover:border-[#2E75B6]'}`}>
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${qaChecks[check.key as keyof typeof qaChecks] ? 'bg-[#1A7A4A] border-[#1A7A4A]' : 'border-[#E5E7EB] group-hover:border-[#ff8a65]'}`}>
                           {qaChecks[check.key as keyof typeof qaChecks] && <Check size={11} className="text-white" />}
                         </button>
                         <span className="text-sm text-[#1F2937]">{check.label}</span>
@@ -237,7 +237,7 @@ export default function ReportReviewPage() {
                     <label className="block text-xs font-semibold text-[#374151] mb-1.5">Admin Comment</label>
                     <textarea value={adminComment} onChange={e => setAdminComment(e.target.value)}
                       placeholder="Add QA notes…" rows={3}
-                      className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                      className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
                   </div>
 
                   {!allChecked && (
@@ -279,7 +279,7 @@ export default function ReportReviewPage() {
                       <label className="block text-xs font-semibold text-[#374151] mb-1.5">Correction Notes</label>
                       <textarea value={correctionNote} onChange={e => setCorrectionNote(e.target.value)}
                         placeholder="Describe what needs to be corrected…" rows={3}
-                        className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 bg-white" />
+                        className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 bg-white" />
                       <div className="flex gap-2 mt-3">
                         <button onClick={() => setShowCorrectionForm(false)} className="flex-1 py-2 border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-white transition-colors">Cancel</button>
                         <button onClick={handleRequestCorrections} className="flex-1 py-2 bg-[#D35400] text-white rounded-lg text-xs font-semibold hover:bg-orange-700 transition-colors">Send</button>

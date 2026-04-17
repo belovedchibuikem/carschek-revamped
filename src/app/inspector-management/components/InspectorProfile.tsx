@@ -52,7 +52,7 @@ const SCHEDULE_SLOTS: Record<string, { customer: string; vehicle: string; zone: 
 };
 
 const SLOT_COLORS = {
-  confirmed: 'bg-[#2E75B6] text-white',
+  confirmed: 'bg-[#ff8a65] text-white',
   completed: 'bg-[#1A7A4A] text-white',
   cancelled: 'bg-[#C0392B] text-white',
 };
@@ -80,7 +80,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
       <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 shadow-sm">
         <div className="flex flex-wrap items-start gap-5">
           <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-2xl font-bold">{inspector.avatar}</div>
+            <div className="w-20 h-20 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-2xl font-bold">{inspector.avatar}</div>
             <span className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white ${inspector.status === 'available' ? 'bg-[#1A7A4A]' : inspector.status === 'busy' ? 'bg-[#D35400]' : 'bg-gray-400'}`} />
           </div>
           <div className="flex-1 min-w-0">
@@ -88,14 +88,14 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
               <div>
                 <h1 className="text-xl font-heading font-bold text-[#1F2937]">{inspector.name}</h1>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className="text-xs bg-[#1E3A5F] text-white px-2.5 py-0.5 rounded-full font-semibold">{inspector.certification}</span>
+                  <span className="text-xs bg-[#ff5722] text-white px-2.5 py-0.5 rounded-full font-semibold">{inspector.certification}</span>
                   <span className="text-xs text-[#6B7280]">Joined {inspector.joinedDate}</span>
                 </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5 mt-3">
               {inspector.zones.map(z => (
-                <span key={`pzone-${inspector.id}-${z}`} className="text-[10px] bg-blue-50 text-[#2E75B6] border border-blue-100 px-2 py-0.5 rounded-full font-medium">{z}</span>
+                <span key={`pzone-${inspector.id}-${z}`} className="text-[10px] bg-blue-50 text-[#ff8a65] border border-blue-100 px-2 py-0.5 rounded-full font-medium">{z}</span>
               ))}
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-[#F4F6F8]">
           {[
             { icon: Star, label: 'Rating', value: `${inspector.rating} ★`, color: 'text-amber-500' },
-            { icon: Briefcase, label: 'Jobs Completed', value: inspector.totalJobs.toString(), color: 'text-[#2E75B6]' },
+            { icon: Briefcase, label: 'Jobs Completed', value: inspector.totalJobs.toString(), color: 'text-[#ff8a65]' },
             { icon: Clock, label: 'On-Time Rate', value: `${inspector.onTimeRate}%`, color: 'text-[#1A7A4A]' },
             { icon: DollarSign, label: 'Earned This Month', value: `₦${inspector.earningsMTD.toLocaleString()}`, color: 'text-[#1A7A4A]' },
           ].map(stat => (
@@ -125,7 +125,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
             <button
               key={`tab-${tab.id}`}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2.5 text-sm font-semibold transition-all border-b-2 -mb-px ${activeTab === tab.id ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
+              className={`px-4 py-2.5 text-sm font-semibold transition-all border-b-2 -mb-px ${activeTab === tab.id ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
             >
               {tab.label}
             </button>
@@ -146,7 +146,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
                   <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB' }} />
-                  <Line type="monotone" dataKey="jobs" stroke="#1E3A5F" strokeWidth={2} dot={{ fill: '#1E3A5F', r: 3 }} />
+                  <Line type="monotone" dataKey="jobs" stroke="#ff5722" strokeWidth={2} dot={{ fill: '#ff5722', r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -160,7 +160,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
                   <YAxis domain={[7, 11]} tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB' }} />
                   <ReferenceLine y={10} stroke="#C0392B" strokeDasharray="4 4" label={{ value: 'Target', fontSize: 10, fill: '#C0392B' }} />
-                  <Line type="monotone" dataKey="turnaround" stroke="#2E75B6" strokeWidth={2} dot={{ fill: '#2E75B6', r: 3 }} />
+                  <Line type="monotone" dataKey="turnaround" stroke="#ff8a65" strokeWidth={2} dot={{ fill: '#ff8a65', r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -183,7 +183,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
               <tbody className="divide-y divide-[#F4F6F8]">
                 {RECENT_JOBS.map(job => (
                   <tr key={job.id} className="hover:bg-[#F4F6F8]/60 transition-colors">
-                    <td className="px-5 py-3 font-mono text-xs font-semibold text-[#1E3A5F]">{job.id}</td>
+                    <td className="px-5 py-3 font-mono text-xs font-semibold text-[#ff5722]">{job.id}</td>
                     <td className="px-4 py-3 text-sm text-[#1F2937]">{job.vehicle}</td>
                     <td className="px-4 py-3 text-xs text-[#6B7280]">{job.date}</td>
                     <td className="px-4 py-3 text-right">
@@ -209,7 +209,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
             <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Weekly Schedule — Fri 10 Apr 2026</h3>
             <div className="flex items-center gap-2">
               <span className="text-xs bg-[#F4F6F8] border border-[#E5E7EB] px-3 py-1.5 rounded-lg text-[#6B7280]">5/8 slots filled today</span>
-              <button className="px-3 py-1.5 text-xs font-semibold text-[#2E75B6] border border-[#2E75B6]/30 rounded-lg hover:bg-blue-50 transition-colors">
+              <button className="px-3 py-1.5 text-xs font-semibold text-[#ff8a65] border border-[#ff8a65]/30 rounded-lg hover:bg-blue-50 transition-colors">
                 + Add Block
               </button>
             </div>
@@ -233,7 +233,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
             ))}
           </div>
           <div className="flex gap-3 mt-4">
-            {[{ color: 'bg-[#2E75B6]', label: 'Confirmed' }, { color: 'bg-[#1A7A4A]', label: 'Completed' }, { color: 'bg-[#C0392B]', label: 'Cancelled' }].map(l => (
+            {[{ color: 'bg-[#ff8a65]', label: 'Confirmed' }, { color: 'bg-[#1A7A4A]', label: 'Completed' }, { color: 'bg-[#C0392B]', label: 'Cancelled' }].map(l => (
               <div key={`sched-legend-${l.label}`} className="flex items-center gap-1.5">
                 <span className={`w-2.5 h-2.5 rounded ${l.color}`} />
                 <span className="text-[10px] text-[#6B7280]">{l.label}</span>
@@ -263,7 +263,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
             <div className="px-5 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
               <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Earnings Breakdown</h3>
               <div className="flex gap-2">
-                <button onClick={() => toast.info('Generating payslip PDF…')} className="px-3 py-1.5 text-xs font-semibold text-[#2E75B6] border border-[#2E75B6]/30 rounded-lg hover:bg-blue-50 transition-colors">
+                <button onClick={() => toast.info('Generating payslip PDF…')} className="px-3 py-1.5 text-xs font-semibold text-[#ff8a65] border border-[#ff8a65]/30 rounded-lg hover:bg-blue-50 transition-colors">
                   Generate Payslip
                 </button>
                 <button onClick={() => toast.success('Period marked as paid')} className="px-3 py-1.5 text-xs font-semibold text-white bg-[#1A7A4A] rounded-lg hover:bg-[#155F3A] transition-colors">
@@ -285,7 +285,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
                 {EARNINGS.map(e => (
                   <tr key={e.id} className="hover:bg-[#F4F6F8]/60 transition-colors">
                     <td className="px-5 py-3 text-xs text-[#6B7280]">{e.date}</td>
-                    <td className="px-4 py-3 font-mono text-xs font-semibold text-[#1E3A5F]">{e.orderId}</td>
+                    <td className="px-4 py-3 font-mono text-xs font-semibold text-[#ff5722]">{e.orderId}</td>
                     <td className="px-4 py-3 text-sm text-[#1F2937]">{e.vehicle}</td>
                     <td className="px-4 py-3 text-right text-sm font-bold text-[#1F2937] tabular-nums">₦{e.amount.toLocaleString()}</td>
                     <td className="px-4 py-3">
@@ -315,11 +315,11 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
               ].map(field => (
                 <div key={`field-${field.label}`}>
                   <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">{field.label}</label>
-                  <input type={field.type} defaultValue={field.value} className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+                  <input type={field.type} defaultValue={field.value} className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
                 </div>
               ))}
             </div>
-            <button onClick={() => toast.success('Profile updated successfully')} className="mt-4 px-5 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98]">
+            <button onClick={() => toast.success('Profile updated successfully')} className="mt-4 px-5 py-2 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all active:scale-[0.98]">
               Save Changes
             </button>
           </div>
@@ -338,7 +338,7 @@ export default function InspectorProfile({ inspector, onBack }: Props) {
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${doc.status === 'approved' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
                     {doc.status === 'approved' ? 'Approved' : 'Pending Review'}
                   </span>
-                  <button className="flex items-center gap-1 text-xs text-[#2E75B6] hover:underline">
+                  <button className="flex items-center gap-1 text-xs text-[#ff8a65] hover:underline">
                     <Upload size={12} /> Upload
                   </button>
                 </div>

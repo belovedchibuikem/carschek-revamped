@@ -60,7 +60,7 @@ export default function ModelsPage() {
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">Brand *</label>
                 <select value={newModel.brandId} onChange={e => setNewModel(p => ({ ...p, brandId: e.target.value }))}
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                   <option value="">Select brand…</option>
                   {BRANDS.filter(b => b.active).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
@@ -68,14 +68,14 @@ export default function ModelsPage() {
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">Model Name *</label>
                 <input value={newModel.name} onChange={e => setNewModel(p => ({ ...p, name: e.target.value }))}
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-2">Body Types</label>
                 <div className="flex flex-wrap gap-2">
                   {BODY_TYPES.map(bt => (
                     <button key={bt} onClick={() => toggleBodyType(bt)}
-                      className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${newModel.bodyTypes.includes(bt) ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#2E75B6]'}`}>
+                      className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${newModel.bodyTypes.includes(bt) ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#ff8a65]'}`}>
                       {bt}
                     </button>
                   ))}
@@ -88,7 +88,7 @@ export default function ModelsPage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8]">Cancel</button>
-              <button onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F]">Add Model</button>
+              <button onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]">Add Model</button>
             </div>
           </div>
         </div>
@@ -102,10 +102,10 @@ export default function ModelsPage() {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setGroupByBrand(g => !g)}
-              className={`flex items-center gap-2 px-3 py-2.5 border rounded-lg text-sm font-medium transition-colors ${groupByBrand ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}>
+              className={`flex items-center gap-2 px-3 py-2.5 border rounded-lg text-sm font-medium transition-colors ${groupByBrand ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}>
               <Filter size={14} /> Group by Brand
             </button>
-            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px]">
+            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
               <Plus size={16} /> Add Model
             </button>
           </div>
@@ -115,10 +115,10 @@ export default function ModelsPage() {
           <div className="relative flex-1 min-w-[200px]">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search models…"
-              className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+              className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
           </div>
           <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)}
-            className="px-3 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+            className="px-3 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
             <option value="">All Brands</option>
             {BRANDS.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
@@ -130,7 +130,7 @@ export default function ModelsPage() {
               {groupedModels.map(g => (
                 <div key={g.brand.id}>
                   <div className="px-4 py-3 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">{g.brand.logo}</div>
+                    <div className="w-7 h-7 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">{g.brand.logo}</div>
                     <span className="text-sm font-semibold text-[#1F2937]">{g.brand.name}</span>
                     <span className="text-xs text-[#6B7280]">{g.models.length} models</span>
                   </div>
@@ -162,7 +162,7 @@ export default function ModelsPage() {
                     <td className="px-4 py-3 font-medium text-[#1F2937]">{m.name}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-[10px] font-bold">
+                        <div className="w-6 h-6 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-[10px] font-bold">
                           {BRANDS.find(b => b.id === m.brandId)?.logo}
                         </div>
                         <span className="text-[#6B7280]">{m.brandName}</span>

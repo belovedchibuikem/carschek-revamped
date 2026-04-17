@@ -226,7 +226,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
   if (!hydrated || !reportData) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center gap-2 text-[#6B7280]">
-        <Loader2 className="h-6 w-6 animate-spin text-[#1E3A5F]" />
+        <Loader2 className="h-6 w-6 animate-spin text-[#ff5722]" />
         Loading report…
       </div>
     );
@@ -256,7 +256,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
                 setReportFormat(inspectionId, 'modern');
                 setVariant('modern');
               }}
-              className="rounded-2xl border-2 border-[#E5E7EB] bg-[#FAFBFC] p-6 text-left transition hover:border-[#1E3A5F] hover:shadow-md"
+              className="rounded-2xl border-2 border-[#E5E7EB] bg-[#FAFBFC] p-6 text-left transition hover:border-[#ff5722] hover:shadow-md"
             >
               <p className="text-3xl">📊</p>
               <p className="mt-3 font-heading text-lg font-bold text-[#1F2937]">Modern Report</p>
@@ -267,7 +267,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
                 <li>• Mobile-friendly</li>
                 <li>• Shareable online</li>
               </ul>
-              <p className="mt-5 rounded-xl bg-[#1E3A5F] py-2.5 text-center text-sm font-bold text-white">Select Modern</p>
+              <p className="mt-5 rounded-xl bg-[#ff5722] py-2.5 text-center text-sm font-bold text-white">Select Modern</p>
             </button>
             <button
               type="button"
@@ -275,7 +275,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
                 setReportFormat(inspectionId, 'classic');
                 setVariant('classic');
               }}
-              className="rounded-2xl border-2 border-[#E5E7EB] bg-[#FAFBFC] p-6 text-left transition hover:border-[#1E3A5F] hover:shadow-md"
+              className="rounded-2xl border-2 border-[#E5E7EB] bg-[#FAFBFC] p-6 text-left transition hover:border-[#ff5722] hover:shadow-md"
             >
               <p className="text-3xl">📄</p>
               <p className="mt-3 font-heading text-lg font-bold text-[#1F2937]">Classic Report</p>
@@ -286,7 +286,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
                 <li>• Black & white</li>
                 <li>• Professional PDF</li>
               </ul>
-              <p className="mt-5 rounded-xl bg-[#1E3A5F] py-2.5 text-center text-sm font-bold text-white">Select Classic</p>
+              <p className="mt-5 rounded-xl bg-[#ff5722] py-2.5 text-center text-sm font-bold text-white">Select Classic</p>
             </button>
           </div>
           <p className="mt-6 text-center text-sm text-[#6B7280]">
@@ -317,7 +317,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
               type="button"
               onClick={() => transitionVariant('modern')}
               className={`flex flex-1 items-center justify-center gap-1 rounded-lg px-3 py-2 text-xs font-bold sm:flex-initial ${
-                variant === 'modern' ? 'bg-[#1E3A5F] text-white' : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                variant === 'modern' ? 'bg-[#ff5722] text-white' : 'text-[#6B7280] hover:bg-[#F9FAFB]'
               }`}
             >
               📊 Modern
@@ -326,7 +326,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
               type="button"
               onClick={() => transitionVariant('classic')}
               className={`flex flex-1 items-center justify-center gap-1 rounded-lg px-3 py-2 text-xs font-bold sm:flex-initial ${
-                variant === 'classic' ? 'bg-[#1E3A5F] text-white' : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                variant === 'classic' ? 'bg-[#ff5722] text-white' : 'text-[#6B7280] hover:bg-[#F9FAFB]'
               }`}
             >
               📄 Classic
@@ -339,7 +339,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
             type="button"
             disabled={downloading}
             onClick={() => void downloadPdf()}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#1E3A5F] px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#ff5722] px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
           >
             {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
             {downloading ? 'Preparing PDF…' : '⬇ Download PDF'}
@@ -433,7 +433,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
 
       <Link
         href={href('jobs')}
-        className="no-print mt-6 block w-full rounded-2xl bg-[#1E3A5F] py-3 text-center text-sm font-bold text-white"
+        className="no-print mt-6 block w-full rounded-2xl bg-[#ff5722] py-3 text-center text-sm font-bold text-white"
       >
         Back to Jobs
       </Link>
@@ -501,7 +501,7 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
               <button
                 type="button"
                 onClick={() => void submitFlag()}
-                className="flex-1 rounded-xl bg-[#1E3A5F] py-3 text-sm font-bold text-white"
+                className="flex-1 rounded-xl bg-[#ff5722] py-3 text-sm font-bold text-white"
               >
                 Submit Flag
               </button>

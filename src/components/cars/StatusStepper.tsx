@@ -100,10 +100,10 @@ export function StatusStepper({
                 type="button"
                 title={i < currentStageIndex ? 'Status cannot be reversed' : undefined}
                 onClick={() => handleStageClick(i)}
-                className="relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2E75B6]"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff8a65]"
                 style={
                   i < currentStageIndex
-                    ? { background: '#1E3A5F', borderColor: '#1E3A5F' }
+                    ? { background: '#ff5722', borderColor: '#ff5722' }
                     : i === currentStageIndex
                       ? { background: '#D35400', borderColor: '#D35400' }
                       : { background: 'white', borderColor: '#D1D5DB' }
@@ -127,7 +127,7 @@ export function StatusStepper({
               </button>
               <p
                 className={`mt-1.5 text-center text-[10px] sm:text-[11px] font-semibold leading-tight px-0.5 ${
-                  i === currentStageIndex ? 'text-[#D35400]' : i < currentStageIndex ? 'text-[#1E3A5F]' : 'text-[#9CA3AF]'
+                  i === currentStageIndex ? 'text-[#D35400]' : i < currentStageIndex ? 'text-[#ff5722]' : 'text-[#9CA3AF]'
                 }`}
               >
                 {stage}
@@ -136,7 +136,7 @@ export function StatusStepper({
             {i < STAGES.length - 1 ? (
               <div
                 className="h-0.5 flex-1 min-w-[8px] -mt-6 rounded-full"
-                style={{ background: i < currentStageIndex ? '#1E3A5F' : '#E5E7EB' }}
+                style={{ background: i < currentStageIndex ? '#ff5722' : '#E5E7EB' }}
                 aria-hidden
               />
             ) : null}
@@ -166,7 +166,7 @@ export function StatusStepper({
                 type="button"
                 disabled={pending}
                 onClick={() => void confirmAdvance()}
-                className="flex-1 rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#16304F] transition-colors disabled:opacity-60"
+                className="flex-1 rounded-lg bg-[#ff5722] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e64a19] transition-colors disabled:opacity-60"
               >
                 {pending ? 'Saving…' : 'Advance Status'}
               </button>

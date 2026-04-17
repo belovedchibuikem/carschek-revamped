@@ -228,7 +228,7 @@ export const getGaugeStrokeColor = (score: number): string => {
   if (score <= 40) return '#C0392B';
   if (score <= 60) return '#D35400';
   if (score <= 75) return '#1A7A4A';
-  if (score <= 90) return '#1E3A5F';
+  if (score <= 90) return '#ff5722';
   return '#0E6655';
 };
 

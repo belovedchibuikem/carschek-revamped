@@ -17,7 +17,7 @@ import type { InspectionLayoutMode } from '@/components/inspection/InspectionSes
 function statusChipClass(s: InspectorJobStatusUi): string {
   switch (s) {
     case 'upcoming':
-      return 'bg-[#1E3A5F] text-white';
+      return 'bg-[#ff5722] text-white';
     case 'en-route':
       return 'bg-purple-600 text-white';
     case 'in-progress':
@@ -104,7 +104,7 @@ export function JobsScreen({ layout }: Props) {
           <span className="text-[#9CA3AF]">{job.phoneMasked}</span>
         </p>
         <p className="mb-4 flex items-start gap-1.5 text-xs text-[#6B7280]">
-          <MapPin size={14} className="mt-0.5 shrink-0 text-[#2E75B6]" />
+          <MapPin size={14} className="mt-0.5 shrink-0 text-[#ff8a65]" />
           <span>
             {job.address} <span className="text-[#9CA3AF]">•</span> {job.distanceKm} km away
           </span>
@@ -115,11 +115,11 @@ export function JobsScreen({ layout }: Props) {
             onClick={() => window.open(`https://maps.google.com/?q=${job.lat},${job.lng}`, '_blank')}
             className="flex items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-xs font-semibold text-[#374151] transition-colors hover:bg-[#F4F6F8]"
           >
-            <Navigation size={14} className="text-[#2E75B6]" /> Navigate
+            <Navigation size={14} className="text-[#ff8a65]" /> Navigate
           </button>
           <Link
             href={href(`jobs/${job.id}`)}
-            className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#1E3A5F] py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#16304F]"
+            className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#ff5722] py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#e64a19]"
           >
             {job.status === 'completed' ? 'View' : 'Start / View'}
             <ChevronRight size={14} />
@@ -158,7 +158,7 @@ export function JobsScreen({ layout }: Props) {
           { label: 'Avg Score (wk)', value: stats.avgScore },
         ].map(s => (
           <div key={s.label} className="rounded-2xl border border-[#E5E7EB] bg-white p-3 text-center shadow-sm">
-            <p className="text-2xl font-bold text-[#1E3A5F]">{s.value}</p>
+            <p className="text-2xl font-bold text-[#ff5722]">{s.value}</p>
             <p className="text-[10px] font-medium uppercase tracking-wide text-[#9CA3AF]">{s.label}</p>
           </div>
         ))}
@@ -176,7 +176,7 @@ export function JobsScreen({ layout }: Props) {
         <aside className="hidden lg:block">
           <div className="sticky top-4 space-y-3 rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">This week</p>
-            <p className="font-heading text-2xl font-bold text-[#1E3A5F]">{stats.avgScore}</p>
+            <p className="font-heading text-2xl font-bold text-[#ff5722]">{stats.avgScore}</p>
             <p className="text-sm text-[#6B7280]">Average Carschek score across completed inspections.</p>
             <div className="rounded-xl bg-[#F4F6F8] p-3 text-xs text-[#6B7280]">
               Same data as PWA — inspector-app uses the admin shell only.

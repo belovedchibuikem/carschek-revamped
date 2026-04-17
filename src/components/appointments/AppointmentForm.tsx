@@ -207,13 +207,13 @@ export function AppointmentForm({
   };
 
   const field =
-    'w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 bg-white';
+    'w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 bg-white';
   const label = 'block text-xs font-semibold text-[#374151] mb-1.5';
 
   return (
     <form onSubmit={handleSubmit(submitInner)} className="space-y-8 max-w-4xl">
       <section className="space-y-4">
-        <h2 className="text-sm font-heading font-bold text-[#1E3A5F] border-b border-[#E5E7EB] pb-2">
+        <h2 className="text-sm font-heading font-bold text-[#ff5722] border-b border-[#E5E7EB] pb-2">
           Contact details
         </h2>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -265,7 +265,7 @@ export function AppointmentForm({
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-heading font-bold text-[#1E3A5F] border-b border-[#E5E7EB] pb-2">
+        <h2 className="text-sm font-heading font-bold text-[#ff5722] border-b border-[#E5E7EB] pb-2">
           Vehicle &amp; lead details
         </h2>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -366,7 +366,7 @@ export function AppointmentForm({
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-heading font-bold text-[#1E3A5F] border-b border-[#E5E7EB] pb-2">
+        <h2 className="text-sm font-heading font-bold text-[#ff5722] border-b border-[#E5E7EB] pb-2">
           Booking details
         </h2>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -438,7 +438,7 @@ export function AppointmentForm({
         <button
           type="submit"
           disabled={formState.isSubmitting}
-          className="px-5 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F] disabled:opacity-50"
+          className="px-5 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] disabled:opacity-50"
         >
           {submitLabel}
         </button>

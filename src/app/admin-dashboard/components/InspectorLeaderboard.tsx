@@ -31,7 +31,7 @@ export default function InspectorLeaderboard() {
           <h2 className="text-base font-heading font-semibold text-[#1F2937]">Inspector Performance</h2>
           <span className="text-xs text-[#6B7280] bg-[#F4F6F8] px-2 py-0.5 rounded-full">This Month</span>
         </div>
-        <Link href="/inspector-management" className="text-xs font-semibold text-[#2E75B6] hover:underline">View All Inspectors →</Link>
+        <Link href="/inspector-management" className="text-xs font-semibold text-[#ff8a65] hover:underline">View All Inspectors →</Link>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -55,7 +55,7 @@ export default function InspectorLeaderboard() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                       {insp.avatar}
                     </div>
                     <div>

@@ -49,12 +49,12 @@ function ServiceNextBanner({ a }: { a: Appointment }) {
   }
   if (a.serviceType === 'Buy a Car') {
     return (
-      <div className="rounded-xl border border-[#2E75B6]/30 bg-sky-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-[#1e3a5f]">This customer wants to buy a car. Link them to a listing?</p>
+      <div className="rounded-xl border border-[#ff8a65]/30 bg-sky-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-[#ff5722]">This customer wants to buy a car. Link them to a listing?</p>
         <div className="flex gap-2">
           <Link
             href="/listings"
-            className="text-xs font-semibold px-3 py-2 rounded-lg bg-[#1E3A5F] text-white hover:bg-[#16304F]"
+            className="text-xs font-semibold px-3 py-2 rounded-lg bg-[#ff5722] text-white hover:bg-[#e64a19]"
           >
             Browse listings
           </Link>
@@ -79,7 +79,7 @@ function ServiceNextBanner({ a }: { a: Appointment }) {
     <div className="rounded-xl border border-[#E5E7EB] bg-[#F4F6F8] px-4 py-3 text-sm text-[#374151]">
       This appointment is for a general service.
       {carId ? (
-        <Link href={`/cars/${carId}`} className="ml-2 font-semibold text-[#2E75B6]">
+        <Link href={`/cars/${carId}`} className="ml-2 font-semibold text-[#ff8a65]">
           View car record →
         </Link>
       ) : null}
@@ -131,7 +131,7 @@ export default function AppointmentDetailPage() {
     return (
       <AppLayout currentPath={pathname}>
         <p className="p-8 text-sm text-[#C0392B]">Appointment not found.</p>
-        <Link href="/appointments" className="text-[#2E75B6] font-semibold text-sm px-8">
+        <Link href="/appointments" className="text-[#ff8a65] font-semibold text-sm px-8">
           Back
         </Link>
       </AppLayout>
@@ -144,7 +144,7 @@ export default function AppointmentDetailPage() {
     <AppLayout currentPath={pathname}>
       <div className="space-y-5 max-w-6xl">
         <div className="flex items-center gap-2 text-[#6B7280] text-sm">
-          <Link href="/appointments" className="hover:text-[#1E3A5F]">
+          <Link href="/appointments" className="hover:text-[#ff5722]">
             Appointments
           </Link>
           <span>/</span>
@@ -153,8 +153,8 @@ export default function AppointmentDetailPage() {
 
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#1E3A5F]/10 flex items-center justify-center">
-              <Calendar className="text-[#1E3A5F]" size={24} />
+            <div className="w-12 h-12 rounded-xl bg-[#ff5722]/10 flex items-center justify-center">
+              <Calendar className="text-[#ff5722]" size={24} />
             </div>
             <div>
               <h1 className="text-2xl font-heading font-bold text-[#1F2937] font-mono">{a.bookingId}</h1>
@@ -186,7 +186,7 @@ export default function AppointmentDetailPage() {
         <div className="grid lg:grid-cols-2 gap-5">
           <div className="space-y-4">
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-              <h2 className="text-sm font-heading font-bold text-[#1E3A5F] mb-3">Booking details</h2>
+              <h2 className="text-sm font-heading font-bold text-[#ff5722] mb-3">Booking details</h2>
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between gap-2">
                   <dt className="text-[#6B7280]">Service type</dt>
@@ -226,7 +226,7 @@ export default function AppointmentDetailPage() {
             </div>
 
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-              <h2 className="text-sm font-heading font-bold text-[#1E3A5F] mb-3">Vehicle (lead)</h2>
+              <h2 className="text-sm font-heading font-bold text-[#ff5722] mb-3">Vehicle (lead)</h2>
               <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
                 <dt className="text-[#6B7280]">Make</dt>
                 <dd className="font-medium">{a.make}</dd>
@@ -248,7 +248,7 @@ export default function AppointmentDetailPage() {
 
           <div className="space-y-4">
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-              <h2 className="text-sm font-heading font-bold text-[#1E3A5F] mb-3">Customer contact</h2>
+              <h2 className="text-sm font-heading font-bold text-[#ff5722] mb-3">Customer contact</h2>
               <p className="text-sm font-semibold text-[#1F2937]">
                 {a.salutation}. {a.firstName} {a.lastName}
               </p>
@@ -263,7 +263,7 @@ export default function AppointmentDetailPage() {
             </div>
 
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-              <h2 className="text-sm font-heading font-bold text-[#1E3A5F] mb-3">Linked records</h2>
+              <h2 className="text-sm font-heading font-bold text-[#ff5722] mb-3">Linked records</h2>
               <div className="space-y-3 text-sm">
                 <div>
                   <p className="text-[#6B7280] text-xs font-semibold uppercase mb-1">Car record</p>
@@ -283,7 +283,7 @@ export default function AppointmentDetailPage() {
                   {a.linkedInspectionId && a.linkedCarId ? (
                     <Link
                       href={`/inspector-app/inspect/${a.linkedCarId}/overview`}
-                      className="inline-flex items-center gap-1 font-semibold text-[#2E75B6] hover:underline"
+                      className="inline-flex items-center gap-1 font-semibold text-[#ff8a65] hover:underline"
                     >
                       {a.linkedInspectionId} <ExternalLink size={12} />
                     </Link>

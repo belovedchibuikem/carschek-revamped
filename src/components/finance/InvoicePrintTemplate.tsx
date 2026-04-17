@@ -35,7 +35,7 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
       className="box-border bg-white text-[#1F2937]"
       style={{ width: 794, fontFamily: 'Inter, system-ui, sans-serif', fontSize: 13, lineHeight: 1.45 }}
     >
-      <div className="bg-[#1E3A5F] px-8 py-6 text-white">
+      <div className="bg-[#ff5722] px-8 py-6 text-white">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="brightness-0 invert">
@@ -52,7 +52,7 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
       <div className="px-8 py-6">
         <div className="flex flex-wrap justify-between gap-6 border-b border-[#E5E7EB] pb-6">
           <div>
-            <p className="font-semibold text-[#1E3A5F]">Carschek Automotive Platform</p>
+            <p className="font-semibold text-[#ff5722]">Carschek Automotive Platform</p>
             <p className="text-[#6B7280]">info@carschek.com</p>
             <p className="text-[#6B7280]">+234 817 362 4953</p>
             <p className="text-[#6B7280]">Lagos, Nigeria</p>
@@ -71,7 +71,7 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
 
         <div className="mt-6 grid grid-cols-2 gap-8 border-b border-[#E5E7EB] pb-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#1E3A5F]">Bill To</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#ff5722]">Bill To</p>
             <p className="mt-2 font-semibold text-[#1F2937]">{invoice.clientName}</p>
             {invoice.company ? <p className="text-[#6B7280]">{invoice.company}</p> : null}
             <p className="text-[#6B7280]">{invoice.email}</p>
@@ -79,14 +79,14 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
             <p className="mt-1 whitespace-pre-wrap text-[#6B7280]">{invoice.billingAddress}</p>
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#1E3A5F]">Invoice For</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#ff5722]">Invoice For</p>
             <p className="mt-2 font-semibold text-[#1F2937]">{invoice.invoiceFor}</p>
           </div>
         </div>
 
         <table className="mt-6 w-full border-collapse">
           <thead>
-            <tr className="bg-[#1E3A5F] text-left text-white">
+            <tr className="bg-[#ff5722] text-left text-white">
               <th className="px-3 py-2 text-xs font-bold uppercase">Description</th>
               <th className="px-3 py-2 text-xs font-bold uppercase">Qty</th>
               <th className="px-3 py-2 text-xs font-bold uppercase">Unit Price</th>
@@ -121,7 +121,7 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
               <span className="text-[#6B7280]">VAT ({vatPct}%)</span>
               <span className="tabular-nums">{formatInvoiceMoney(invoice.vat)}</span>
             </div>
-            <div className="mt-2 flex justify-between bg-[#1E3A5F] px-3 py-2 text-white">
+            <div className="mt-2 flex justify-between bg-[#ff5722] px-3 py-2 text-white">
               <span className="font-bold">TOTAL</span>
               <span className="font-bold tabular-nums">{formatInvoiceMoney(invoice.total)}</span>
             </div>
@@ -129,7 +129,7 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
         </div>
 
         <div className="mt-6 border-b border-[#E5E7EB] pb-6">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#1E3A5F]">Payment Details</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#ff5722]">Payment Details</p>
           <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm text-[#374151]">
             <p>
               <span className="text-[#6B7280]">Bank: </span>
@@ -156,7 +156,7 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
 
         {invoice.notes ? (
           <div className="mt-6 border-b border-[#E5E7EB] pb-6">
-            <p className="text-xs font-bold uppercase tracking-wide text-[#1E3A5F]">Notes</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#ff5722]">Notes</p>
             <p className="mt-2 text-sm text-[#6B7280]">{invoice.notes}</p>
           </div>
         ) : null}
@@ -167,7 +167,7 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
           </div>
           <div className="text-sm text-[#6B7280]">
             <p className="font-medium text-[#1F2937]">Verify this invoice</p>
-            <p className="break-all font-mono text-xs text-[#2E75B6]">{qrUrl.replace('https://', '')}</p>
+            <p className="break-all font-mono text-xs text-[#ff8a65]">{qrUrl.replace('https://', '')}</p>
           </div>
         </div>
 

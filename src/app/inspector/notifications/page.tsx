@@ -14,7 +14,7 @@ export default function InspectorNotificationsPage() {
         <h1 className="text-xl font-heading font-bold text-[#1F2937]">Notifications</h1>
         <div className="space-y-2">
           {myNotifs?.map(n => (
-            <div key={n?.id} className={`bg-white rounded-2xl border p-4 ${!n?.read ? 'border-[#2E75B6] bg-blue-50/30' : 'border-[#E5E7EB]'}`}>
+            <div key={n?.id} className={`bg-white rounded-2xl border p-4 ${!n?.read ? 'border-[#ff8a65] bg-blue-50/30' : 'border-[#E5E7EB]'}`}>
               <div className="flex items-start gap-3">
                 <span className="text-xl">{n?.type === 'order' ? '📋' : '⚙️'}</span>
                 <div className="flex-1">
@@ -22,7 +22,7 @@ export default function InspectorNotificationsPage() {
                   <p className="text-xs text-[#6B7280] mt-0.5">{n?.description}</p>
                   <p className="text-xs text-[#9CA3AF] mt-1">{n?.time}</p>
                 </div>
-                {!n?.read && <span className="w-2.5 h-2.5 bg-[#2E75B6] rounded-full flex-shrink-0 mt-1" />}
+                {!n?.read && <span className="w-2.5 h-2.5 bg-[#ff8a65] rounded-full flex-shrink-0 mt-1" />}
               </div>
             </div>
           ))}

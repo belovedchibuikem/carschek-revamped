@@ -58,7 +58,7 @@ function AdminNavDemo() {
   };
 
   const bg = darkMode ? 'bg-[#0F172A]' : 'bg-[#F4F6F8]';
-  const sidebarBg = darkMode ? 'bg-[#1E293B]' : 'bg-[#1E3A5F]';
+  const sidebarBg = darkMode ? 'bg-[#1E293B]' : 'bg-[#ff5722]';
   const headerBg = darkMode ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]';
   const cardBg = darkMode ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]';
   const textPrimary = darkMode ? 'text-white' : 'text-[#1F2937]';
@@ -98,7 +98,7 @@ function AdminNavDemo() {
               { label: 'Inspections Today', value: '47', trend: '+12%', color: 'text-[#1A7A4A]' },
               { label: 'Pending Orders', value: '12', trend: 'Needs attention', color: 'text-[#D35400]' },
               { label: 'Revenue MTD', value: '₦2.4M', trend: '+8%', color: 'text-[#1A7A4A]' },
-              { label: 'Active Inspectors', value: '11/15', trend: 'Online', color: 'text-[#2E75B6]' },
+              { label: 'Active Inspectors', value: '11/15', trend: 'Online', color: 'text-[#ff8a65]' },
             ].map((kpi, i) => (
               <div key={i} className={`${cardBg} border rounded-xl p-3`}>
                 <p className={`text-[10px] ${textMuted} mb-1`}>{kpi.label}</p>
@@ -111,7 +111,7 @@ function AdminNavDemo() {
             <p className={`text-xs font-semibold ${textMuted} mb-2`}>Recent Activity</p>
             {['Order #1234 assigned to Emeka O.', 'Report #445 approved', 'New booking from Adaeze M.'].map((a, i) => (
               <div key={i} className={`flex items-center gap-2 py-1.5 border-b last:border-0 ${darkMode ? 'border-slate-700' : 'border-[#F4F6F8]'}`}>
-                <div className="w-1.5 h-1.5 rounded-full bg-[#2E75B6] flex-shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#ff8a65] flex-shrink-0" />
                 <p className={`text-xs ${textPrimary}`}>{a}</p>
               </div>
             ))}
@@ -125,7 +125,7 @@ function AdminNavDemo() {
         <div className={contentClass}>
           <div className="flex items-center justify-between mb-4">
             <h2 className={`text-lg font-bold ${textPrimary}`}>Inspection Orders</h2>
-            <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1E3A5F] text-white text-xs font-medium rounded-lg hover:bg-[#2E75B6] transition-colors">
+            <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ff5722] text-white text-xs font-medium rounded-lg hover:bg-[#ff8a65] transition-colors">
               <Plus size={13} />
               New Order
             </button>
@@ -138,7 +138,7 @@ function AdminNavDemo() {
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={`px-2.5 py-1 text-[10px] font-medium rounded-full whitespace-nowrap transition-all ${
-                  statusFilter === s ? 'bg-[#1E3A5F] text-white' : `${darkMode ? 'bg-slate-700 text-slate-300' : 'bg-[#F4F6F8] text-[#6B7280]'} hover:bg-[#1E3A5F]/10`
+                  statusFilter === s ? 'bg-[#ff5722] text-white' : `${darkMode ? 'bg-slate-700 text-slate-300' : 'bg-[#F4F6F8] text-[#6B7280]'} hover:bg-[#ff5722]/10`
                 }`}
               >
                 {s}
@@ -176,7 +176,7 @@ function AdminNavDemo() {
           <h2 className={`text-lg font-bold mb-4 ${textPrimary}`}>Inspector Profile</h2>
           <div className={`${cardBg} border rounded-xl p-3 mb-3`}>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-[#2E75B6] flex items-center justify-center text-white font-bold">EO</div>
+              <div className="w-12 h-12 rounded-full bg-[#ff8a65] flex items-center justify-center text-white font-bold">EO</div>
               <div>
                 <p className={`text-sm font-bold ${textPrimary}`}>Emeka Okonkwo</p>
                 <p className={`text-[10px] ${textMuted}`}>Senior Inspector · Lagos Island</p>
@@ -240,7 +240,7 @@ function AdminNavDemo() {
                 <button
                   type="button"
                   onClick={() => toast.success('Opening report review…', { description: 'Prototype: use Inspection → Reports QA in the live app.' })}
-                  className="px-2.5 py-1 bg-[#1E3A5F] text-white text-[10px] font-medium rounded-lg hover:bg-[#2E75B6] transition-colors"
+                  className="px-2.5 py-1 bg-[#ff5722] text-white text-[10px] font-medium rounded-lg hover:bg-[#ff8a65] transition-colors"
                 >
                   Review
                 </button>
@@ -273,7 +273,7 @@ function AdminNavDemo() {
                 <button
                   key={key}
                   onClick={() => setBreakpoint(key)}
-                  className={`p-1.5 rounded-md transition-all ${breakpoint === key ? 'bg-white shadow-sm text-[#1E3A5F]' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+                  className={`p-1.5 rounded-md transition-all ${breakpoint === key ? 'bg-white shadow-sm text-[#ff5722]' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
                 >
                   <Icon size={16} />
                 </button>
@@ -309,7 +309,7 @@ function AdminNavDemo() {
             {breakpoint === 'desktop' && (
               <aside className={`${sidebarBg} text-white flex flex-col transition-all duration-300 flex-shrink-0 ${sidebarCollapsed ? 'w-14' : 'w-48'}`}>
                 <div className={`flex items-center h-12 px-3 border-b border-white/10 ${sidebarCollapsed ? 'justify-center' : 'gap-2'}`}>
-                  <div className="w-7 h-7 bg-[#2E75B6] rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 bg-[#ff8a65] rounded-lg flex items-center justify-center flex-shrink-0">
                     <Car size={14} className="text-white" />
                   </div>
                   {!sidebarCollapsed && <span className="font-bold text-sm tracking-tight">CARSCHEK</span>}
@@ -330,11 +330,11 @@ function AdminNavDemo() {
                               active ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
                             } ${sidebarCollapsed ? 'justify-center' : ''}`}
                           >
-                            {active && !sidebarCollapsed && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#2E75B6] rounded-r-full" />}
+                            {active && !sidebarCollapsed && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#ff8a65] rounded-r-full" />}
                             <item.icon size={15} className="flex-shrink-0" />
                             {!sidebarCollapsed && <span className="text-xs font-medium flex-1 truncate">{item.label}</span>}
                             {!sidebarCollapsed && item.badge && (
-                              <span className="bg-[#2E75B6] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{item.badge}</span>
+                              <span className="bg-[#ff8a65] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{item.badge}</span>
                             )}
                           </button>
                         );
@@ -354,7 +354,7 @@ function AdminNavDemo() {
             {breakpoint === 'tablet' && (
               <aside className={`${sidebarBg} text-white flex flex-col flex-shrink-0 w-14`}>
                 <div className="flex items-center justify-center h-12 border-b border-white/10">
-                  <div className="w-7 h-7 bg-[#2E75B6] rounded-lg flex items-center justify-center">
+                  <div className="w-7 h-7 bg-[#ff8a65] rounded-lg flex items-center justify-center">
                     <Car size={14} className="text-white" />
                   </div>
                 </div>
@@ -395,7 +395,7 @@ function AdminNavDemo() {
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     Online
                   </div>
-                  <div className="w-7 h-7 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-[10px] font-bold">PN</div>
+                  <div className="w-7 h-7 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-[10px] font-bold">PN</div>
                 </div>
               </header>
 
@@ -451,7 +451,7 @@ function AdminNavDemo() {
                       key={tab.path}
                       onClick={() => navigateTo(tab.path)}
                       className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
-                        activeModule === tab.path ? 'text-[#1E3A5F]' : textMuted
+                        activeModule === tab.path ? 'text-[#ff5722]' : textMuted
                       }`}
                     >
                       <tab.icon size={18} />
@@ -462,7 +462,7 @@ function AdminNavDemo() {
                     type="button"
                     onClick={() => setShowCreateModal(true)}
                     aria-label="Create new order"
-                    className="w-9 h-9 rounded-full bg-[#1E3A5F] flex items-center justify-center shadow-lg hover:bg-[#16304F] transition-colors"
+                    className="w-9 h-9 rounded-full bg-[#ff5722] flex items-center justify-center shadow-lg hover:bg-[#e64a19] transition-colors"
                   >
                     <Plus size={18} className="text-white" />
                   </button>
@@ -491,13 +491,13 @@ function AdminNavDemo() {
               ].map(f => (
                 <div key={f.label}>
                   <label className="block text-sm font-medium text-[#374151] mb-1.5">{f.label}</label>
-                  <input placeholder={f.placeholder} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 focus:border-[#2E75B6]" />
+                  <input placeholder={f.placeholder} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 focus:border-[#ff8a65]" />
                 </div>
               ))}
             </div>
             <div className="flex gap-3 px-6 py-4 border-t border-[#E5E7EB]">
               <button onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg hover:bg-[#F4F6F8] transition-colors">Cancel</button>
-              <button onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2.5 text-sm font-medium bg-[#1E3A5F] text-white rounded-lg hover:bg-[#2E75B6] transition-colors">Create Order</button>
+              <button onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2.5 text-sm font-medium bg-[#ff5722] text-white rounded-lg hover:bg-[#ff8a65] transition-colors">Create Order</button>
             </div>
           </div>
         </div>
@@ -528,7 +528,7 @@ function InspectorPWANav() {
             {/* Progress bar during inspection */}
             {inInspection && (
               <div className="h-1 bg-[#E5E7EB]">
-                <div className="h-full bg-[#1E3A5F] rounded-full" style={{ width: '44%' }} />
+                <div className="h-full bg-[#ff5722] rounded-full" style={{ width: '44%' }} />
               </div>
             )}
 
@@ -541,7 +541,7 @@ function InspectorPWANav() {
                       <p className="text-xs text-[#6B7280]">Good morning 👋</p>
                       <p className="text-sm font-bold text-[#1F2937]">Emeka Okonkwo</p>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-xs font-bold">EO</div>
+                    <div className="w-8 h-8 rounded-full bg-[#ff8a65] flex items-center justify-center text-white text-xs font-bold">EO</div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 mb-4">
                     {[{ v: '3', l: 'Jobs Today' }, { v: '1', l: 'Completed' }].map((s, i) => (
@@ -563,7 +563,7 @@ function InspectorPWANav() {
                         </div>
                         <p className="text-xs font-semibold text-[#1F2937]">{job.vehicle}</p>
                         {i === 0 && (
-                          <button onClick={() => setInInspection(true)} className="mt-2 w-full py-1.5 bg-[#1E3A5F] text-white text-[10px] font-medium rounded-lg hover:bg-[#2E75B6] transition-colors">
+                          <button onClick={() => setInInspection(true)} className="mt-2 w-full py-1.5 bg-[#ff5722] text-white text-[10px] font-medium rounded-lg hover:bg-[#ff8a65] transition-colors">
                             Continue Inspection
                           </button>
                         )}
@@ -594,7 +594,7 @@ function InspectorPWANav() {
                   </div>
                   <div className="flex items-center justify-center gap-1 mt-3">
                     {[0, 1, 2].map(i => (
-                      <div key={i} className={`h-1 rounded-full transition-all ${i === 1 ? 'w-4 bg-[#1E3A5F]' : 'w-2 bg-gray-300'}`} />
+                      <div key={i} className={`h-1 rounded-full transition-all ${i === 1 ? 'w-4 bg-[#ff5722]' : 'w-2 bg-gray-300'}`} />
                     ))}
                   </div>
                   <p className="text-[9px] text-center text-[#6B7280] mt-1">Swipe to navigate sections</p>
@@ -609,7 +609,7 @@ function InspectorPWANav() {
                   <button
                     key={i}
                     onClick={() => setActiveTab(i)}
-                    className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${activeTab === i ? 'text-[#1E3A5F]' : 'text-[#6B7280]'}`}
+                    className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${activeTab === i ? 'text-[#ff5722]' : 'text-[#6B7280]'}`}
                   >
                     <tab.icon size={18} />
                     <span className="text-[9px] font-medium">{tab.label}</span>
@@ -617,7 +617,7 @@ function InspectorPWANav() {
                 ))}
               </div>
             ) : (
-              <div className="h-12 bg-[#1E3A5F] flex items-center justify-between px-4">
+              <div className="h-12 bg-[#ff5722] flex items-center justify-between px-4">
                 <button onClick={() => setInInspection(false)} className="flex items-center gap-1.5 text-white/70 text-[10px] hover:text-white transition-colors">
                   <ArrowLeft size={14} />
                   Back to Overview
@@ -709,7 +709,7 @@ function ErrorStates() {
             key={e.key}
             onClick={() => setActiveError(activeError === e.key ? null : e.key)}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all border ${
-              activeError === e.key ? 'border-[#1E3A5F] bg-[#EEF2FF] text-[#1E3A5F]' : `${e.color} border-transparent`
+              activeError === e.key ? 'border-[#ff5722] bg-[#EEF2FF] text-[#ff5722]' : `${e.color} border-transparent`
             }`}
           >
             {e.label}
@@ -724,7 +724,7 @@ function ErrorStates() {
               <div className="text-6xl mb-4">🚗</div>
               <h3 className="text-xl font-bold text-[#1F2937] mb-2">This page went off-road</h3>
               <p className="text-sm text-[#6B7280] mb-5">The page you're looking for doesn't exist or has been moved.</p>
-              <Link href="/admin-dashboard" className="px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-medium rounded-xl hover:bg-[#2E75B6] transition-colors">
+              <Link href="/admin-dashboard" className="px-5 py-2.5 bg-[#ff5722] text-white text-sm font-medium rounded-xl hover:bg-[#ff8a65] transition-colors">
                 Back to Dashboard
               </Link>
             </>
@@ -737,7 +737,7 @@ function ErrorStates() {
               <button
                 type="button"
                 onClick={retryDemo}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-medium rounded-xl hover:bg-[#2E75B6] transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#ff5722] text-white text-sm font-medium rounded-xl hover:bg-[#ff8a65] transition-colors"
               >
                 <RefreshCw size={15} />
                 Retry
@@ -766,7 +766,7 @@ function ErrorStates() {
               <button
                 type="button"
                 onClick={retryDemo}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-medium rounded-xl hover:bg-[#2E75B6] transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#ff5722] text-white text-sm font-medium rounded-xl hover:bg-[#ff8a65] transition-colors"
               >
                 <RefreshCw size={15} />
                 Retry
@@ -816,7 +816,7 @@ function PageTransitions() {
               <button
                 onClick={() => play(t.key)}
                 disabled={playing}
-                className={`p-1.5 rounded-lg transition-all ${playing && activeTransition === t.key ? 'bg-[#1E3A5F] text-white' : 'hover:bg-[#F4F6F8] text-[#6B7280]'}`}
+                className={`p-1.5 rounded-lg transition-all ${playing && activeTransition === t.key ? 'bg-[#ff5722] text-white' : 'hover:bg-[#F4F6F8] text-[#6B7280]'}`}
               >
                 <Play size={12} />
               </button>
@@ -825,13 +825,13 @@ function PageTransitions() {
             {/* Mini animation preview */}
             <div className="mt-3 h-8 bg-[#F4F6F8] rounded-lg overflow-hidden relative">
               {playing && activeTransition === t.key && (
-                <div className={`absolute inset-0 bg-[#2E75B6]/20 rounded-lg ${
+                <div className={`absolute inset-0 bg-[#ff8a65]/20 rounded-lg ${
                   t.key === 'route' ? 'animate-pulse' :
                   t.key === 'modal'? 'animate-ping' : 'animate-pulse'
                 }`} />
               )}
               <div className="absolute inset-0 flex items-center justify-center">
-                <Zap size={14} className={`transition-all ${playing && activeTransition === t.key ? 'text-[#2E75B6]' : 'text-[#E5E7EB]'}`} />
+                <Zap size={14} className={`transition-all ${playing && activeTransition === t.key ? 'text-[#ff8a65]' : 'text-[#E5E7EB]'}`} />
               </div>
             </div>
           </div>

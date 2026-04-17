@@ -62,7 +62,7 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
       <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm flex flex-wrap items-center gap-4 justify-between">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="font-mono text-base font-bold text-[#1E3A5F]">{report.id}</span>
+            <span className="font-mono text-base font-bold text-[#ff5722]">{report.id}</span>
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
               report.qaStatus === 'approved' ? 'bg-green-50 text-green-700' :
               report.qaStatus === 'rejected' ? 'bg-red-50 text-red-700' :
@@ -74,7 +74,7 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
         </div>
         <div className="flex gap-2">
           {(['review', 'history', 'delivery'] as const).map(v => (
-            <button key={`view-${v}`} onClick={() => setActiveView(v)} className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition-all ${activeView === v ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}>
+            <button key={`view-${v}`} onClick={() => setActiveView(v)} className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition-all ${activeView === v ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}>
               {v === 'review' ? 'Review' : v === 'history' ? 'Version History' : 'Delivery Log'}
             </button>
           ))}
@@ -191,11 +191,11 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
             {/* Photo gallery */}
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
               <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-3 flex items-center gap-2">
-                <Camera size={15} className="text-[#2E75B6]" /> Defect Photo Gallery ({report.defectsFound} photos)
+                <Camera size={15} className="text-[#ff8a65]" /> Defect Photo Gallery ({report.defectsFound} photos)
               </h3>
               <div className="grid grid-cols-3 gap-2">
                 {Array.from({ length: report.defectsFound }, (_, i) => (
-                  <div key={`photo-${report.id}-${i}`} className="aspect-square bg-[#F4F6F8] rounded-lg border border-[#E5E7EB] flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#2E75B6] transition-colors">
+                  <div key={`photo-${report.id}-${i}`} className="aspect-square bg-[#F4F6F8] rounded-lg border border-[#E5E7EB] flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#ff8a65] transition-colors">
                     <Camera size={20} className="text-[#6B7280]" />
                     <span className="text-[9px] text-[#6B7280]">Photo {i + 1}</span>
                   </div>
@@ -255,7 +255,7 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
               <textarea
                 rows={3}
                 placeholder="Add a QA note visible to the inspector team…"
-                className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] resize-none"
+                className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] resize-none"
               />
             </div>
 
@@ -297,7 +297,7 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
             {VERSION_HISTORY.map((ver, idx) => (
               <div key={ver.id} className="flex gap-4">
                 <div className="flex flex-col items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${ver.status === 'rejected' ? 'bg-[#C0392B]' : 'bg-[#2E75B6]'}`}>v{ver.version}</div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${ver.status === 'rejected' ? 'bg-[#C0392B]' : 'bg-[#ff8a65]'}`}>v{ver.version}</div>
                   {idx < VERSION_HISTORY.length - 1 && <div className="w-0.5 h-8 bg-[#E5E7EB]" />}
                 </div>
                 <div className="flex-1 pb-4">
@@ -317,7 +317,7 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
                           setActiveView('review');
                           toast.info(`Version ${ver.version} snapshot`, { description: 'Switched to Review tab — compare with current submission.' });
                         }}
-                        className="text-xs text-[#2E75B6] hover:underline rounded-sm"
+                        className="text-xs text-[#ff8a65] hover:underline rounded-sm"
                       >
                         View
                       </button>
@@ -351,14 +351,14 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
             ))}
           </div>
           <div className="flex flex-wrap gap-3 pt-2">
-            <button onClick={() => toast.info('Resending PDF to customer…')} className="px-4 py-2 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+            <button onClick={() => toast.info('Resending PDF to customer…')} className="px-4 py-2 bg-[#ff5722] text-white text-xs font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
               Resend PDF
             </button>
             <button
               onClick={() => {
                 const printWindow = window.open('', '_blank');
                 if (!printWindow) { toast.error('Pop-up blocked. Please allow pop-ups to download.'); return; }
-                printWindow.document.write(`<!DOCTYPE html><html><head><title>Carschek Report ${report.id}</title><style>body{font-family:Arial,sans-serif;padding:40px;color:#1F2937;max-width:800px;margin:0 auto}h1{color:#1E3A5F;border-bottom:3px solid #1E3A5F;padding-bottom:12px}table{width:100%;border-collapse:collapse;margin:16px 0}th{background:#1E3A5F;color:white;padding:8px 12px;text-align:left}td{padding:8px 12px;border-bottom:1px solid #E5E7EB}.score{font-size:48px;font-weight:900;color:#1A7A4A;text-align:center}.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}.critical{background:#FEE2E2;color:#B91C1C}.high{background:#FFEDD5;color:#C2410C}@media print{body{padding:20px}}</style></head><body><h1>CARSCHEK — Vehicle Inspection Report</h1><p><strong>Report #:</strong> ${report.id} &nbsp;&nbsp; <strong>Order:</strong> ${report.orderId} &nbsp;&nbsp; <strong>Version:</strong> v${report.version}</p><p><strong>Vehicle:</strong> ${report.vehicle}</p><p><strong>Inspector:</strong> ${report.inspector} &nbsp;&nbsp; <strong>Submitted:</strong> ${report.submittedAt}</p><div class="score">${report.score}<span style="font-size:20px;color:#6B7280">/100</span></div><p style="text-align:center;color:#1A7A4A;font-weight:700">${report.score >= 71 ? 'GOOD CONDITION' : report.score >= 41 ? 'FAIR CONDITION' : 'POOR CONDITION'}</p><h2>Defects Found (${report.defectsFound})</h2><table><tr><th>Section</th><th>Item</th><th>Severity</th><th>Description</th></tr><tr><td>Exterior Body</td><td>Front bumper</td><td><span class="badge critical">Critical</span></td><td>Deep crack, structural damage</td></tr><tr><td>Engine Bay</td><td>Valve cover gasket</td><td><span class="badge high">High</span></td><td>Active oil leak</td></tr></table><p style="font-size:11px;color:#6B7280;margin-top:40px;border-top:1px solid #E5E7EB;padding-top:12px">This report is valid for 90 days from inspection date. Verify at carschek.com · info@carschek.com · +234 817 362 4953</p><script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}<\/script></body></html>`);
+                printWindow.document.write(`<!DOCTYPE html><html><head><title>Carschek Report ${report.id}</title><style>body{font-family:Arial,sans-serif;padding:40px;color:#1F2937;max-width:800px;margin:0 auto}h1{color:#ff5722;border-bottom:3px solid #ff5722;padding-bottom:12px}table{width:100%;border-collapse:collapse;margin:16px 0}th{background:#ff5722;color:white;padding:8px 12px;text-align:left}td{padding:8px 12px;border-bottom:1px solid #E5E7EB}.score{font-size:48px;font-weight:900;color:#1A7A4A;text-align:center}.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}.critical{background:#FEE2E2;color:#B91C1C}.high{background:#FFEDD5;color:#C2410C}@media print{body{padding:20px}}</style></head><body><h1>CARSCHEK — Vehicle Inspection Report</h1><p><strong>Report #:</strong> ${report.id} &nbsp;&nbsp; <strong>Order:</strong> ${report.orderId} &nbsp;&nbsp; <strong>Version:</strong> v${report.version}</p><p><strong>Vehicle:</strong> ${report.vehicle}</p><p><strong>Inspector:</strong> ${report.inspector} &nbsp;&nbsp; <strong>Submitted:</strong> ${report.submittedAt}</p><div class="score">${report.score}<span style="font-size:20px;color:#6B7280">/100</span></div><p style="text-align:center;color:#1A7A4A;font-weight:700">${report.score >= 71 ? 'GOOD CONDITION' : report.score >= 41 ? 'FAIR CONDITION' : 'POOR CONDITION'}</p><h2>Defects Found (${report.defectsFound})</h2><table><tr><th>Section</th><th>Item</th><th>Severity</th><th>Description</th></tr><tr><td>Exterior Body</td><td>Front bumper</td><td><span class="badge critical">Critical</span></td><td>Deep crack, structural damage</td></tr><tr><td>Engine Bay</td><td>Valve cover gasket</td><td><span class="badge high">High</span></td><td>Active oil leak</td></tr></table><p style="font-size:11px;color:#6B7280;margin-top:40px;border-top:1px solid #E5E7EB;padding-top:12px">This report is valid for 90 days from inspection date. Verify at carschek.com · info@carschek.com · +234 817 362 4953</p><script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}<\/script></body></html>`);
                 printWindow.document.close();
                 toast.success('Opening print dialog — choose "Save as PDF" to download');
               }}
@@ -390,7 +390,7 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md animate-fade-in p-6">
             <h3 className="font-heading font-semibold text-[#1F2937] mb-4">Reject Report</h3>
             <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Rejection reason</label>
-            <textarea rows={4} value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="Describe why this report is being rejected…" className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 resize-none" />
+            <textarea rows={4} value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="Describe why this report is being rejected…" className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 resize-none" />
             <div className="flex gap-3 mt-4">
               <button onClick={() => setShowRejectModal(false)} className="flex-1 py-2 border border-[#E5E7EB] text-sm font-semibold text-[#6B7280] rounded-lg hover:bg-[#F4F6F8]">Cancel</button>
               <button onClick={() => { setShowRejectModal(false); toast.error(`Report ${report.id} rejected — inspector notified`); }} className="flex-1 py-2 bg-[#C0392B] text-white text-sm font-semibold rounded-lg hover:bg-[#A93226]">Reject Report</button>
@@ -406,7 +406,7 @@ export default function ReportReviewPanel({ report, onBack }: Props) {
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md animate-fade-in p-6">
             <h3 className="font-heading font-semibold text-[#1F2937] mb-4">Request Corrections</h3>
             <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">What needs to be corrected?</label>
-            <textarea rows={4} value={correctionsNote} onChange={e => setCorrectionsNote(e.target.value)} placeholder="Describe the corrections needed for the inspector…" className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 resize-none" />
+            <textarea rows={4} value={correctionsNote} onChange={e => setCorrectionsNote(e.target.value)} placeholder="Describe the corrections needed for the inspector…" className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 resize-none" />
             <div className="flex gap-3 mt-4">
               <button onClick={() => setShowCorrectionsModal(false)} className="flex-1 py-2 border border-[#E5E7EB] text-sm font-semibold text-[#6B7280] rounded-lg hover:bg-[#F4F6F8]">Cancel</button>
               <button onClick={() => { setShowCorrectionsModal(false); toast.warning(`Corrections requested from ${report.inspector}`); }} className="flex-1 py-2 bg-[#D35400] text-white text-sm font-semibold rounded-lg hover:bg-[#B84600]">Send to Inspector</button>

@@ -57,8 +57,8 @@ const heatmapData: Record<string, Record<string, number>> = {
 };
 
 const zones = [
-  { name: 'Lagos', inspections: 1840, inspectors: 22, color: '#1E3A5F' },
-  { name: 'Abuja', inspections: 920, inspectors: 12, color: '#2E75B6' },
+  { name: 'Lagos', inspections: 1840, inspectors: 22, color: '#ff5722' },
+  { name: 'Abuja', inspections: 920, inspectors: 12, color: '#ff8a65' },
   { name: 'Port Harcourt', inspections: 580, inspectors: 8, color: '#1A7A4A' },
   { name: 'Ibadan', inspections: 340, inspectors: 4, color: '#D35400' },
   { name: 'Kano', inspections: 220, inspectors: 3, color: '#6B7280' },
@@ -102,7 +102,7 @@ function HeatCell({ value }: { value: number }) {
   const bg = `rgba(192, 57, 43, ${0.1 + intensity * 0.8})`;
   const textColor = intensity > 0.5 ? 'white' : '#1F2937';
   return (
-    <div className="w-full h-9 rounded flex items-center justify-center text-xs font-bold cursor-pointer hover:ring-2 hover:ring-[#1E3A5F] transition-all"
+    <div className="w-full h-9 rounded flex items-center justify-center text-xs font-bold cursor-pointer hover:ring-2 hover:ring-[#ff5722] transition-all"
       style={{ backgroundColor: bg, color: textColor }}
       title={`${value}% failure rate`}>
       {value}%
@@ -121,7 +121,7 @@ export default function InvestorDashboardPage() {
     <AppLayout currentPath="/investor-dashboard">
       <div className="space-y-8">
         {/* Header */}
-        <div className="bg-[#1E3A5F] rounded-2xl p-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-[#ff5722] rounded-2xl p-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-white">Investor & Management Dashboard</h1>
             <p className="text-white/60 text-sm mt-0.5">Business performance, market intelligence & revenue forecasting</p>
@@ -129,7 +129,7 @@ export default function InvestorDashboardPage() {
           <div className="flex items-center gap-2">
             {periods.map(p => (
               <button key={p} onClick={() => setPeriod(p)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${period === p ? 'bg-white text-[#1E3A5F]' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${period === p ? 'bg-white text-[#ff5722]' : 'bg-white/10 text-white hover:bg-white/20'}`}>
                 {p}
               </button>
             ))}
@@ -138,8 +138,8 @@ export default function InvestorDashboardPage() {
 
         {/* Hero metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <MetricCard label="Total Inspections" value="4,234" change="+18% MoM" icon={Target} color="bg-[#1E3A5F]" />
-          <MetricCard label="Gross Merchandise Value" value="₦287.4M" change="+22% MoM" icon={DollarSign} color="bg-[#2E75B6]" />
+          <MetricCard label="Total Inspections" value="4,234" change="+18% MoM" icon={Target} color="bg-[#ff5722]" />
+          <MetricCard label="Gross Merchandise Value" value="₦287.4M" change="+22% MoM" icon={DollarSign} color="bg-[#ff8a65]" />
           <MetricCard label="Revenue" value="₦34.4M" change="+15% MoM" icon={TrendingUp} color="bg-[#1A7A4A]" />
           <MetricCard label="Active Inspectors" value="47" sub="+6 new this quarter" icon={Users} color="bg-[#D35400]" />
           <MetricCard label="Customer NPS" value="72" sub="Industry avg: 45" icon={Star} color="bg-purple-600" />
@@ -160,7 +160,7 @@ export default function InvestorDashboardPage() {
                   <YAxis yAxisId="right" orientation="right" tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} tick={{ fontSize: 10, fill: chartTheme.tickFill }} width={44} />
                   <Tooltip formatter={(v: number, name: string) => name === 'revenue' ? `₦${v.toLocaleString()}` : v} contentStyle={chartTheme.tooltipContentStyle} />
                   <Legend wrapperStyle={{ ...chartTheme.legendWrapperStyle, fontSize: '11px' }} />
-                  <Bar yAxisId="left" dataKey="inspections" name="Inspections" fill="#1E3A5F" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="left" dataKey="inspections" name="Inspections" fill="#ff5722" radius={[4, 4, 0, 0]} />
                   <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="#1A7A4A" strokeWidth={2.5} dot={false} />
                   <ReferenceLine yAxisId="left" x="Oct" stroke="#D35400" strokeDasharray="4 4" label={{ value: 'Abuja Launch', position: 'top', fontSize: 9, fill: '#D35400' }} />
                 </BarChart>
@@ -263,7 +263,7 @@ export default function InvestorDashboardPage() {
             <div className="flex gap-2 flex-wrap">
               {(['conservative', 'base', 'optimistic'] as const).map(s => (
                 <button key={s} onClick={() => setScenario(s)}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold capitalize transition-all min-h-[36px] ${scenario === s ? 'bg-[#1E3A5F] text-white' : 'bg-[#F4F6F8] text-[#6B7280] hover:bg-[#E5E7EB]'}`}>
+                  className={`px-3 py-2 rounded-lg text-xs font-semibold capitalize transition-all min-h-[36px] ${scenario === s ? 'bg-[#ff5722] text-white' : 'bg-[#F4F6F8] text-[#6B7280] hover:bg-[#E5E7EB]'}`}>
                   {s}
                 </button>
               ))}
@@ -278,9 +278,9 @@ export default function InvestorDashboardPage() {
                   <YAxis tickFormatter={v => `₦${(v / 1000000).toFixed(0)}M`} tick={{ fontSize: 10, fill: chartTheme.tickFill }} width={48} />
                   <Tooltip formatter={(v: number) => v ? `₦${v.toLocaleString()}` : '—'} contentStyle={chartTheme.tooltipContentStyle} />
                   <Legend wrapperStyle={{ ...chartTheme.legendWrapperStyle, fontSize: '11px' }} />
-                  <Line type="monotone" dataKey="actual" name="Actual" stroke="#1E3A5F" strokeWidth={2.5} dot={{ r: 4 }} connectNulls={false} />
+                  <Line type="monotone" dataKey="actual" name="Actual" stroke="#ff5722" strokeWidth={2.5} dot={{ r: 4 }} connectNulls={false} />
                   <Line type="monotone" dataKey={scenario} name={`${scenario.charAt(0).toUpperCase() + scenario.slice(1)} Forecast`}
-                    stroke={scenario === 'optimistic' ? '#1A7A4A' : scenario === 'conservative' ? '#C0392B' : '#2E75B6'}
+                    stroke={scenario === 'optimistic' ? '#1A7A4A' : scenario === 'conservative' ? '#C0392B' : '#ff8a65'}
                     strokeWidth={2} strokeDasharray="6 3" dot={false} connectNulls={false} />
                 </LineChart>
               </ResponsiveContainer>
@@ -321,7 +321,7 @@ export default function InvestorDashboardPage() {
                   </div>
                   <div className="h-6 bg-[#F4F6F8] rounded-lg overflow-hidden">
                     <div className="h-full rounded-lg flex items-center px-2 transition-all"
-                      style={{ width: `${f.pct}%`, background: `linear-gradient(90deg, #1E3A5F, #2E75B6)` }}>
+                      style={{ width: `${f.pct}%`, background: `linear-gradient(90deg, #ff5722, #ff8a65)` }}>
                       {f.pct > 20 && <span className="text-white text-[10px] font-bold">{f.pct}%</span>}
                     </div>
                   </div>
@@ -344,8 +344,8 @@ export default function InvestorDashboardPage() {
                     <YAxis tick={{ fontSize: 10, fill: chartTheme.tickFill }} width={32} />
                     <Tooltip contentStyle={chartTheme.tooltipContentStyle} />
                     <Legend wrapperStyle={{ ...chartTheme.legendWrapperStyle, fontSize: '11px' }} />
-                    <Bar dataKey="deals" name="Deals Closed" fill="#1E3A5F" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="conversion" name="Conversion %" fill="#2E75B6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="deals" name="Deals Closed" fill="#ff5722" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="conversion" name="Conversion %" fill="#ff8a65" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -357,7 +357,7 @@ export default function InvestorDashboardPage() {
         <div className="bg-[#F9FAFB] rounded-2xl border border-[#E5E7EB] p-4 sm:p-5 flex flex-wrap gap-3">
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 sm:px-5 py-3 bg-[#1E3A5F] text-white rounded-xl text-sm font-semibold hover:bg-[#2E75B6] transition-colors min-h-[48px]">
+            className="flex items-center gap-2 px-4 sm:px-5 py-3 bg-[#ff5722] text-white rounded-xl text-sm font-semibold hover:bg-[#ff8a65] transition-colors min-h-[48px]">
             <Download size={16} /> Export PDF Report
           </button>
           <button

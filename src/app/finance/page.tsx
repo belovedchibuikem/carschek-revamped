@@ -170,7 +170,7 @@ export default function FinancePage() {
                 value={markPaidRef}
                 onChange={e => setMarkPaidRef(e.target.value)}
                 placeholder="e.g. NIP-TRF-20260416-88421"
-                className="mt-1 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                className="mt-1 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               />
             </label>
             <div className="mt-5 flex justify-end gap-2">
@@ -226,7 +226,7 @@ export default function FinancePage() {
         <div className="flex gap-1 border-b border-[#E5E7EB] overflow-x-auto">
           {TABS.map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === tab ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === tab ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
               {tab}
             </button>
           ))}
@@ -237,11 +237,11 @@ export default function FinancePage() {
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {[
                 { label: 'Revenue MTD', value: formatNaira(FINANCE_SUMMARY.revenueMTD), icon: TrendingUp, color: '#1A7A4A' },
-                { label: 'Revenue YTD', value: formatNaira(FINANCE_SUMMARY.revenueYTD), icon: DollarSign, color: '#1E3A5F' },
-                { label: 'Monthly Target', value: formatNaira(FINANCE_SUMMARY.revenueTarget), icon: TrendingUp, color: '#2E75B6' },
+                { label: 'Revenue YTD', value: formatNaira(FINANCE_SUMMARY.revenueYTD), icon: DollarSign, color: '#ff5722' },
+                { label: 'Monthly Target', value: formatNaira(FINANCE_SUMMARY.revenueTarget), icon: TrendingUp, color: '#ff8a65' },
                 { label: 'Pending Payments', value: String(FINANCE_SUMMARY.pendingPayments), icon: CreditCard, color: '#D35400' },
                 { label: 'Pending Amount', value: formatNaira(FINANCE_SUMMARY.pendingAmount), icon: DollarSign, color: '#D35400' },
-                { label: 'Inspector Payouts', value: formatNaira(FINANCE_SUMMARY.inspectorPayouts), icon: Users, color: '#2E75B6' },
+                { label: 'Inspector Payouts', value: formatNaira(FINANCE_SUMMARY.inspectorPayouts), icon: Users, color: '#ff8a65' },
               ].map(kpi => (
                 <div key={kpi.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4">
                   <kpi.icon size={18} style={{ color: kpi.color }} className="mb-2" />
@@ -329,7 +329,7 @@ export default function FinancePage() {
                 <tbody>
                   {paymentsFiltered.map(p => (
                     <tr key={p.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs font-semibold text-[#2E75B6]">{p.id}</td>
+                      <td className="px-4 py-3 font-mono text-xs font-semibold text-[#ff8a65]">{p.id}</td>
                       <td className="px-4 py-3 font-medium text-[#1F2937]">{p.customer}</td>
                       <td className="px-4 py-3 font-semibold text-[#1F2937]">{formatNaira(p.amount)}</td>
                       <td className="px-4 py-3 text-[#6B7280]">{p.method}</td>
@@ -350,7 +350,7 @@ export default function FinancePage() {
         {activeTab === 'Inspector Payouts' && (
           <div className="space-y-4">
             <div className="flex justify-end">
-              <button onClick={() => toast.success('Bulk payouts processing…')} className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+              <button onClick={() => toast.success('Bulk payouts processing…')} className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                 Bulk Process Payouts
               </button>
             </div>
@@ -409,7 +409,7 @@ export default function FinancePage() {
               <button
                 type="button"
                 onClick={() => setCreateInvoiceOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all"
               >
                 <FileText size={15} /> Create Invoice
               </button>
@@ -426,7 +426,7 @@ export default function FinancePage() {
                 <tbody>
                   {invoices.map(inv => (
                     <tr key={inv.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs font-semibold text-[#2E75B6]">{inv.id}</td>
+                      <td className="px-4 py-3 font-mono text-xs font-semibold text-[#ff8a65]">{inv.id}</td>
                       <td className="px-4 py-3 font-medium text-[#1F2937]">{inv.customer}</td>
                       <td className="px-4 py-3 font-semibold text-[#1F2937]">{formatNaira(inv.amount)}</td>
                       <td className="px-4 py-3 text-xs text-[#6B7280]">{inv.date}</td>
@@ -450,14 +450,14 @@ export default function FinancePage() {
                         <div className="flex flex-wrap gap-1">
                           <Link
                             href={`/finance/invoices/${encodeURIComponent(inv.id)}`}
-                            className="px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#2E75B6] rounded-lg hover:bg-[#F4F6F8] transition-colors"
+                            className="px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#ff8a65] rounded-lg hover:bg-[#F4F6F8] transition-colors"
                           >
                             View
                           </Link>
                           <button
                             type="button"
                             onClick={() => void downloadInvoicePdf(inv)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#1E3A5F] rounded-lg hover:bg-[#F4F6F8] transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 border border-[#E5E7EB] text-xs font-medium text-[#ff5722] rounded-lg hover:bg-[#F4F6F8] transition-colors"
                           >
                             <Download size={12} /> Download
                           </button>

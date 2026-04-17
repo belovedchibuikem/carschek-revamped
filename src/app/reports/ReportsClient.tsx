@@ -81,7 +81,7 @@ export default function ReportsClient() {
         <div className="flex gap-1 border-b border-[#E5E7EB] overflow-x-auto">
           {TAB_CONFIG.map(({ param, label }) => (
             <button key={param} onClick={() => setTab(param)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeParam === param ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeParam === param ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
               {label}
               {param === 'qa' && qaCount > 0 && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#C0392B] text-white">
@@ -95,7 +95,7 @@ export default function ReportsClient() {
         <div className="relative max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
           {isFiltering && (
             <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
           )}
@@ -116,7 +116,7 @@ export default function ReportsClient() {
                 return (
                   <tr key={report.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-4 py-3">
-                      <Link href={`/reports/${report.id}`} className="font-mono text-xs font-semibold text-[#2E75B6] hover:underline">{report.id}</Link>
+                      <Link href={`/reports/${report.id}`} className="font-mono text-xs font-semibold text-[#ff8a65] hover:underline">{report.id}</Link>
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-[#1F2937]">{report.carName}</p>
@@ -151,7 +151,7 @@ export default function ReportsClient() {
                       <div className="flex items-center gap-1">
                         {report.status === 'QA Review' && (
                           <Link href={`/reports/${report.id}/review`}
-                            className="px-3 py-1.5 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+                            className="px-3 py-1.5 bg-[#ff5722] text-white text-xs font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                             Review
                           </Link>
                         )}

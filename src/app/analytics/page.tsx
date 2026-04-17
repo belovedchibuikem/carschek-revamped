@@ -15,8 +15,8 @@ const GMV_DATA = Array.from({ length: 12 }, (_, i) => ({
 }));
 
 const GEO_DATA = [
-  { name: 'Lagos', value: 45, color: '#1E3A5F' },
-  { name: 'Abuja', value: 28, color: '#2E75B6' },
+  { name: 'Lagos', value: 45, color: '#ff5722' },
+  { name: 'Abuja', value: 28, color: '#ff8a65' },
   { name: 'Port Harcourt', value: 18, color: '#1A7A4A' },
   { name: 'Ibadan', value: 12, color: '#D35400' },
   { name: 'Kano', value: 8, color: '#C0392B' },
@@ -34,15 +34,15 @@ export default function AnalyticsPage() {
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Analytics</h1>
             <p className="text-sm text-[#6B7280]">Investor & management analytics dashboard</p>
           </div>
-          <button onClick={() => toast.success('Investor report PDF generating…')} className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+          <button onClick={() => toast.success('Investor report PDF generating…')} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
             <Download size={15} /> Export Investor Report
           </button>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Total GMV', value: '₦284M', sub: 'YTD 2026', color: '#1E3A5F' },
-            { label: 'Inspections', value: '1,247', sub: 'YTD 2026', color: '#2E75B6' },
+            { label: 'Total GMV', value: '₦284M', sub: 'YTD 2026', color: '#ff5722' },
+            { label: 'Inspections', value: '1,247', sub: 'YTD 2026', color: '#ff8a65' },
             { label: 'Avg Deal Size', value: '₦8.2M', sub: 'Per transaction', color: '#1A7A4A' },
             { label: 'NPS Score', value: '72', sub: 'Customer satisfaction', color: '#D35400' },
           ].map(kpi => (
@@ -60,8 +60,8 @@ export default function AnalyticsPage() {
             <AreaChart data={GMV_DATA}>
               <defs>
                 <linearGradient id="gmv" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1E3A5F" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#1E3A5F" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#ff5722" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#ff5722" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
@@ -70,8 +70,8 @@ export default function AnalyticsPage() {
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: chartTheme.tickFill }} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={chartTheme.tooltipContentStyle} />
               <Legend wrapperStyle={chartTheme.legendWrapperStyle} />
-              <Area yAxisId="left" type="monotone" dataKey="gmv" stroke="#1E3A5F" strokeWidth={2} fill="url(#gmv)" name="GMV (₦)" />
-              <Bar yAxisId="right" dataKey="inspections" fill="#2E75B6" opacity={0.6} name="Inspections" radius={[4, 4, 0, 0]} />
+              <Area yAxisId="left" type="monotone" dataKey="gmv" stroke="#ff5722" strokeWidth={2} fill="url(#gmv)" name="GMV (₦)" />
+              <Bar yAxisId="right" dataKey="inspections" fill="#ff8a65" opacity={0.6} name="Inspections" radius={[4, 4, 0, 0]} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -105,7 +105,7 @@ export default function AnalyticsPage() {
             <div className="space-y-3">
               {[
                 { label: 'Q2 2026 Forecast', value: '₦38M', confidence: 85, color: '#1A7A4A' },
-                { label: 'Q3 2026 Forecast', value: '₦52M', confidence: 72, color: '#2E75B6' },
+                { label: 'Q3 2026 Forecast', value: '₦52M', confidence: 72, color: '#ff8a65' },
                 { label: 'Q4 2026 Forecast', value: '₦68M', confidence: 61, color: '#D35400' },
               ].map(f => (
                 <div key={f.label}>

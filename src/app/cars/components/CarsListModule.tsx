@@ -15,7 +15,7 @@ const MOCK_CARS = [
 ];
 
 const STATUS_STYLES: Record<string, string> = {
-  'Acquired': 'bg-[#1E3A5F] text-white',
+  'Acquired': 'bg-[#ff5722] text-white',
   'At Inspector': 'bg-purple-100 text-purple-700',
   'At Buyer': 'bg-amber-100 text-amber-700',
   'Listed': 'bg-teal-100 text-teal-700',
@@ -106,8 +106,8 @@ export default function CarsListModule() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[#1E3A5F]">Cars</h1>
-          <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-sm font-semibold px-2.5 py-0.5 rounded-full">{MOCK_CARS.length} vehicles</span>
+          <h1 className="text-2xl font-bold text-[#ff5722]">Cars</h1>
+          <span className="bg-[#ff5722]/10 text-[#ff5722] text-sm font-semibold px-2.5 py-0.5 rounded-full">{MOCK_CARS.length} vehicles</span>
         </div>
         <div className="flex items-center gap-2">
           <button className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
@@ -116,7 +116,7 @@ export default function CarsListModule() {
           <button className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
             <Download size={15} /> Export
           </button>
-          <a href="/cars/register" className="flex items-center gap-2 px-4 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">
+          <a href="/cars/register" className="flex items-center gap-2 px-4 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors">
             <Plus size={15} /> Register New Car
           </a>
         </div>
@@ -131,7 +131,7 @@ export default function CarsListModule() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by VIN, plate, make, model..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20"
+              className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20"
             />
           </div>
           {(['Brand', 'Model', 'Year', 'Status', 'Purchase Channel', 'Sales Channel'] as const).map(f => (
@@ -150,7 +150,7 @@ export default function CarsListModule() {
 
       {/* Bulk Action Bar */}
       {selectedRows.length > 0 && (
-        <div className="bg-[#1E3A5F] text-white rounded-xl px-4 py-3 flex items-center gap-4 shadow-lg">
+        <div className="bg-[#ff5722] text-white rounded-xl px-4 py-3 flex items-center gap-4 shadow-lg">
           <span className="font-semibold text-sm">{selectedRows.length} car{selectedRows.length > 1 ? 's' : ''} selected</span>
           <div className="flex items-center gap-2 ml-2">
             {['Assign Inspector', 'Export Selected', 'Change Status'].map(a => (
@@ -169,8 +169,8 @@ export default function CarsListModule() {
             <thead className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
               <tr>
                 <th className="w-10 px-3 py-3">
-                  <button onClick={toggleAll} className="text-gray-400 hover:text-[#1E3A5F]">
-                    {selectedRows.length === filtered.length && filtered.length > 0 ? <CheckSquare size={16} className="text-[#1E3A5F]" /> : <Square size={16} />}
+                  <button onClick={toggleAll} className="text-gray-400 hover:text-[#ff5722]">
+                    {selectedRows.length === filtered.length && filtered.length > 0 ? <CheckSquare size={16} className="text-[#ff5722]" /> : <Square size={16} />}
                   </button>
                 </th>
                 {['CK ID', 'Vehicle', 'VIN', 'Plate', 'Physical Status', 'Purchase', 'Sold', 'Score', 'Flags', 'Docs', 'Created', 'Actions'].map(h => (
@@ -195,7 +195,7 @@ export default function CarsListModule() {
                       </div>
                       <p className="font-semibold text-gray-500">No cars found</p>
                       <p className="text-xs text-gray-400">Try adjusting your search or filters</p>
-                      <a href="/cars/register" className="mt-1 px-4 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">Register First Car</a>
+                      <a href="/cars/register" className="mt-1 px-4 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors">Register First Car</a>
                     </div>
                   </td>
                 </tr>
@@ -206,8 +206,8 @@ export default function CarsListModule() {
                   className={`group hover:bg-gray-50/80 hover:shadow-sm transition-all cursor-pointer ${car.duplicate ? 'border-l-2 border-amber-400' : ''} ${selectedRows.includes(car.id) ? 'bg-blue-50/40' : ''}`}
                 >
                   <td className="px-3 py-3">
-                    <button onClick={e => { e.stopPropagation(); toggleRow(car.id); }} className="text-gray-400 hover:text-[#1E3A5F]">
-                      {selectedRows.includes(car.id) ? <CheckSquare size={16} className="text-[#1E3A5F]" /> : <Square size={16} />}
+                    <button onClick={e => { e.stopPropagation(); toggleRow(car.id); }} className="text-gray-400 hover:text-[#ff5722]">
+                      {selectedRows.includes(car.id) ? <CheckSquare size={16} className="text-[#ff5722]" /> : <Square size={16} />}
                     </button>
                   </td>
                   <td className="px-3 py-3">
@@ -361,13 +361,13 @@ export default function CarsListModule() {
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               Per page:
               {[25, 50, 100].map(n => (
-                <button key={n} onClick={() => setPerPage(n)} className={`px-2 py-1 rounded-md transition-colors ${perPage === n ? 'bg-[#1E3A5F] text-white' : 'hover:bg-gray-100'}`}>{n}</button>
+                <button key={n} onClick={() => setPerPage(n)} className={`px-2 py-1 rounded-md transition-colors ${perPage === n ? 'bg-[#ff5722] text-white' : 'hover:bg-gray-100'}`}>{n}</button>
               ))}
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"><ChevronLeft size={15} /></button>
               {[1, 2].map(p => (
-                <button key={p} onClick={() => setPage(p)} className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${page === p ? 'bg-[#1E3A5F] text-white' : 'hover:bg-gray-100 text-gray-600'}`}>{p}</button>
+                <button key={p} onClick={() => setPage(p)} className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${page === p ? 'bg-[#ff5722] text-white' : 'hover:bg-gray-100 text-gray-600'}`}>{p}</button>
               ))}
               <button onClick={() => setPage(p => p + 1)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"><ChevronRight size={15} /></button>
             </div>
@@ -435,7 +435,7 @@ export default function CarsListModule() {
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-[#1E3A5F]">Start Auction</h2>
+                  <h2 className="text-lg font-bold text-[#ff5722]">Start Auction</h2>
                   <p className="text-xs text-gray-500 mt-0.5">
                     {carForModal(showAuctionModal)?.make} {carForModal(showAuctionModal)?.model} {carForModal(showAuctionModal)?.year} — {showAuctionModal}
                   </p>
@@ -448,26 +448,26 @@ export default function CarsListModule() {
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Auction Starting Price (₦) *</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₦</span>
-                  <input type="number" value={auctionPrice} onChange={e => setAuctionPrice(e.target.value)} placeholder="0" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-3 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                  <input type="number" value={auctionPrice} onChange={e => setAuctionPrice(e.target.value)} placeholder="0" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-3 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-2">Platform Fee %</label>
                 <div className="flex rounded-lg border border-gray-200 overflow-hidden">
                   {[1, 5, 10, 15, 20].map(f => (
-                    <button key={f} onClick={() => setPlatformFee(f)} className={`flex-1 py-2 text-xs font-bold transition-colors ${platformFee === f ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{f}%</button>
+                    <button key={f} onClick={() => setPlatformFee(f)} className={`flex-1 py-2 text-xs font-bold transition-colors ${platformFee === f ? 'bg-[#ff5722] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{f}%</button>
                   ))}
                 </div>
                 {auctionPrice && (
                   <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-500">₦{parseInt(auctionPrice).toLocaleString()} × (1 - {platformFee}%) = <span className="font-bold text-[#1E3A5F]">₦{(parseInt(auctionPrice) * (1 - platformFee / 100)).toLocaleString()}</span></p>
+                    <p className="text-xs text-gray-500">₦{parseInt(auctionPrice).toLocaleString()} × (1 - {platformFee}%) = <span className="font-bold text-[#ff5722]">₦{(parseInt(auctionPrice) * (1 - platformFee / 100)).toLocaleString()}</span></p>
                     <p className="text-[10px] text-gray-400 mt-0.5">Amount after platform fee (visible to bidders)</p>
                   </div>
                 )}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Auction End Date & Time</label>
-                <input type="datetime-local" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                <input type="datetime-local" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
               </div>
               {auctionPrice && (
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
@@ -478,7 +478,7 @@ export default function CarsListModule() {
             </div>
             <div className="p-6 border-t border-gray-100 flex gap-3">
               <button onClick={() => setShowAuctionModal(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Close</button>
-              <button className="flex-1 py-2.5 border border-[#1E3A5F] text-[#1E3A5F] rounded-xl text-sm font-semibold hover:bg-[#1E3A5F]/5 transition-colors">Save Draft</button>
+              <button className="flex-1 py-2.5 border border-[#ff5722] text-[#ff5722] rounded-xl text-sm font-semibold hover:bg-[#ff5722]/5 transition-colors">Save Draft</button>
               <button
                 onClick={() => { setShowAuctionModal(null); router.push('/auctions'); }}
                 className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-colors"

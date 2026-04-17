@@ -174,7 +174,7 @@ export function ReviewScreen({ layout, jobId }: Props) {
         <span className="sr-only">Back to overview</span>
       </div>
 
-      <div className="overflow-hidden rounded-b-3xl bg-[#1E3A5F] px-5 pb-6 pt-2 text-white shadow-lg">
+      <div className="overflow-hidden rounded-b-3xl bg-[#ff5722] px-5 pb-6 pt-2 text-white shadow-lg">
         <h1 className="mb-4 font-heading text-lg font-bold">Review &amp; Submit</h1>
         <div className="flex flex-col items-center">
           <div className="relative h-36 w-36">
@@ -219,8 +219,8 @@ export function ReviewScreen({ layout, jobId }: Props) {
 
       <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
         <div className="flex items-center gap-2 border-b border-[#E8EDF3] bg-[#EEF4FB] px-4 py-3">
-          <Camera className="text-[#2E75B6]" size={18} aria-hidden />
-          <h2 className="text-sm font-semibold text-[#1E3A5F]">Photo Documentation</h2>
+          <Camera className="text-[#ff8a65]" size={18} aria-hidden />
+          <h2 className="text-sm font-semibold text-[#ff5722]">Photo Documentation</h2>
         </div>
         <div className="divide-y divide-[#F4F6F8]">
           <div className="flex items-center justify-between px-4 py-3">
@@ -284,7 +284,7 @@ export function ReviewScreen({ layout, jobId }: Props) {
                   </span>
                   <p className="mt-1 text-xs text-[#6B7280]">{d.note}</p>
                 </div>
-                <Link href={href(`inspect/${jobId}/section/${d.sectionId}`)} className="shrink-0 text-xs font-semibold text-[#2E75B6] hover:underline">
+                <Link href={href(`inspect/${jobId}/section/${d.sectionId}`)} className="shrink-0 text-xs font-semibold text-[#ff8a65] hover:underline">
                   ✏ Edit
                 </Link>
               </div>
@@ -309,7 +309,7 @@ export function ReviewScreen({ layout, jobId }: Props) {
           <button type="button" onClick={clearSig} className="rounded-xl border border-[#E5E7EB] px-4 py-2 text-xs font-semibold text-[#6B7280]">
             Clear
           </button>
-          <button type="button" onClick={() => void saveSig()} className="rounded-xl bg-[#1E3A5F] px-4 py-2 text-xs font-bold text-white">
+          <button type="button" onClick={() => void saveSig()} className="rounded-xl bg-[#ff5722] px-4 py-2 text-xs font-bold text-white">
             Save signature
           </button>
         </div>
@@ -326,7 +326,7 @@ export function ReviewScreen({ layout, jobId }: Props) {
         </button>
         <Link
           href={href(`inspect/${jobId}/report`)}
-          className="block text-center text-sm font-semibold text-[#2E75B6] hover:underline"
+          className="block text-center text-sm font-semibold text-[#ff8a65] hover:underline"
         >
           Preview report &amp; PDF
         </Link>

@@ -49,7 +49,7 @@ export default function CustomerDetailClient() {
 
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
           <div className="flex flex-wrap items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-lg">{customer.avatar}</div>
+            <div className="w-12 h-12 rounded-full bg-[#ff5722] flex items-center justify-center text-white font-bold text-lg">{customer.avatar}</div>
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h2 className="text-lg font-heading font-bold text-[#1F2937]">{customer.name}</h2>
@@ -72,7 +72,7 @@ export default function CustomerDetailClient() {
         <div className="flex gap-1 border-b border-[#E5E7EB] overflow-x-auto">
           {TABS.map((tab, i) => (
             <button key={tab} onClick={() => setTab(i)}
-              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === i ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === i ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
               {tab}
             </button>
           ))}

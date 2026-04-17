@@ -164,7 +164,7 @@ function OrdersPageInner() {
             </button>
             <Link
               href="/orders/new"
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px]"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]"
             >
               <Plus size={16} /> New Order
             </Link>
@@ -177,12 +177,12 @@ function OrdersPageInner() {
               key={tab}
               type="button"
               onClick={() => setTabInUrl(tab)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === tab ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === tab ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
             >
               {tab}
               {tabCounts[tab] > 0 && (
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === tab ? 'bg-[#1E3A5F] text-white' : 'bg-[#F4F6F8] text-[#6B7280]'}`}
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === tab ? 'bg-[#ff5722] text-white' : 'bg-[#F4F6F8] text-[#6B7280]'}`}
                 >
                   {tabCounts[tab]}
                 </span>
@@ -200,7 +200,7 @@ function OrdersPageInner() {
               setPage(1);
             }}
             placeholder="Search orders… (debounced 300ms)"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white dark:bg-slate-900 border border-[#E5E7EB] dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white dark:bg-slate-900 border border-[#E5E7EB] dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
           />
         </div>
 
@@ -221,7 +221,7 @@ function OrdersPageInner() {
                   {paginated.map(order => (
                     <tr key={order.id} className="border-b border-[#F4F6F8] dark:border-slate-800 hover:bg-[#F9FAFB] dark:hover:bg-slate-800/30 transition-colors">
                       <td className="px-4 py-3">
-                        <Link href={`/orders/${order.id}`} className="font-mono text-xs font-semibold text-[#2E75B6] hover:underline">
+                        <Link href={`/orders/${order.id}`} className="font-mono text-xs font-semibold text-[#ff8a65] hover:underline">
                           {order.id}
                         </Link>
                       </td>
@@ -236,7 +236,7 @@ function OrdersPageInner() {
                       <td className="px-4 py-3">
                         {order.inspectorName ? (
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-[10px] font-bold">
+                            <div className="w-6 h-6 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-[10px] font-bold">
                               {order.inspectorName.split(' ').map(n => n[0]).join('')}
                             </div>
                             <span className="text-xs text-[#1F2937] dark:text-slate-100">{order.inspectorName.split(' ')[0]}</span>
@@ -330,10 +330,10 @@ function OrdersPageInner() {
                         >
                           <Link
                             href={`/orders/${order.id}`}
-                            className="block bg-white dark:bg-slate-900 rounded-xl border border-[#E5E7EB] dark:border-slate-700 p-4 hover:shadow-md transition-all hover:border-[#2E75B6]/30 cursor-grab active:cursor-grabbing"
+                            className="block bg-white dark:bg-slate-900 rounded-xl border border-[#E5E7EB] dark:border-slate-700 p-4 hover:shadow-md transition-all hover:border-[#ff8a65]/30 cursor-grab active:cursor-grabbing"
                           >
                             <div className="flex items-center justify-between mb-2">
-                              <span className="font-mono text-xs font-semibold text-[#2E75B6]">{order.id}</span>
+                              <span className="font-mono text-xs font-semibold text-[#ff8a65]">{order.id}</span>
                               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[order.status]}`}>{order.status}</span>
                             </div>
                             <p className="text-sm font-medium text-[#1F2937] dark:text-slate-100 mb-1">{order.customerName}</p>

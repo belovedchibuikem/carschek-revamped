@@ -91,10 +91,10 @@ export default function DocumentCompliancePanel({
                 onChange={e => setComment(doc.name, e.target.value)}
                 placeholder="Comment…"
                 rows={2}
-                className="w-full text-sm border border-[#E5E7EB] rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+                className="w-full text-sm border border-[#E5E7EB] rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
               />
               {(doc.status === 'Missing' || doc.status === 'Rejected') && (
-                <label className="flex flex-col items-center justify-center gap-2 w-full py-6 border-2 border-dashed border-[#E5E7EB] rounded-lg text-xs text-[#6B7280] hover:border-[#2E75B6] cursor-pointer">
+                <label className="flex flex-col items-center justify-center gap-2 w-full py-6 border-2 border-dashed border-[#E5E7EB] rounded-lg text-xs text-[#6B7280] hover:border-[#ff8a65] cursor-pointer">
                   <Upload size={16} />
                   Drag & drop or Select File(s)
                   <input type="file" className="hidden" onChange={() => setStatus(doc.name, 'Uploaded-Awaiting')} />

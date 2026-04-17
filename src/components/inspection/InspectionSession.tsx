@@ -40,7 +40,7 @@ export function InspectionSession({ layout, children, breadcrumb, className = ''
             </div>
           )}
           {online && syncing && (
-            <div className="rounded-xl border border-[#2E75B6]/25 bg-[#EEF4FB] px-3 py-2 text-sm text-[#1E3A5F]">
+            <div className="rounded-xl border border-[#ff8a65]/25 bg-[#EEF4FB] px-3 py-2 text-sm text-[#ff5722]">
               Back online — syncing queued changes…
             </div>
           )}
@@ -56,7 +56,7 @@ export function InspectionSession({ layout, children, breadcrumb, className = ''
             <React.Fragment key={`${b.label}-${i}`}>
               {i > 0 && <ChevronRight size={12} className="text-[#D1D5DB]" />}
               {b.href ? (
-                <Link href={b.href} className="hover:text-[#1E3A5F] font-medium">
+                <Link href={b.href} className="hover:text-[#ff5722] font-medium">
                   {b.label}
                 </Link>
               ) : (

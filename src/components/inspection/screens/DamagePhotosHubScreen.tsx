@@ -122,7 +122,7 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
               <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-amber-50">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.url} alt="" className="h-full w-full object-cover" />
-                <span className="absolute bottom-1 left-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#1E3A5F] text-[9px] font-bold text-white">
+                <span className="absolute bottom-1 left-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#ff5722] text-[9px] font-bold text-white">
                   #{i + 1}
                 </span>
               </div>
@@ -163,7 +163,7 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
         <div className="fixed inset-0 z-[250] flex items-end justify-center bg-black/50 sm:items-center" role="dialog" aria-modal="true">
           <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-heading text-base font-bold text-[#1E3A5F]">Add Damage Photo</h2>
+              <h2 className="font-heading text-base font-bold text-[#ff5722]">Add Damage Photo</h2>
               <button type="button" onClick={() => setAddOpen(false)} className="rounded-full p-2 hover:bg-[#F4F6F8]" aria-label="Close">
                 <X size={18} />
               </button>
@@ -219,8 +219,8 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
               Captured Photo
             </div>
             <div className="flex flex-col items-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#2E75B6] shadow-[0_0_24px_rgba(46,117,182,0.5)]">
-                <Sparkles className="text-[#2E75B6]" size={28} />
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#ff8a65] shadow-[0_0_24px_rgba(46,117,182,0.5)]">
+                <Sparkles className="text-[#ff8a65]" size={28} />
               </div>
               <p className="text-center text-lg font-bold">Carschek AI is analysing…</p>
               <ul className="mt-4 w-full max-w-xs space-y-2 text-sm text-white/90">
@@ -232,7 +232,7 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
                 ))}
               </ul>
               <div className="mt-6 h-1 w-full max-w-xs overflow-hidden rounded-full bg-white/10">
-                <div className="h-full w-3/4 animate-pulse rounded-full bg-[#2E75B6]" />
+                <div className="h-full w-3/4 animate-pulse rounded-full bg-[#ff8a65]" />
               </div>
             </div>
           </div>
@@ -249,7 +249,7 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-[#1E3A5F]">
+            <div className="flex items-center gap-2 text-[#ff5722]">
               <AlertTriangle className="text-[#D35400]" size={18} />
               <p className="font-bold">AI Detected: possible defect</p>
             </div>

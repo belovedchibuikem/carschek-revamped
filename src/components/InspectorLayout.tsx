@@ -33,8 +33,8 @@ export default function InspectorLayout({ children }: InspectorLayoutProps) {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <Link key={item.href} href={item.href}
-                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px] ${active ? 'text-[#1E3A5F]' : 'text-[#9CA3AF]'}`}>
-                <item.icon size={22} className={active ? 'text-[#1E3A5F]' : 'text-[#9CA3AF]'} />
+                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px] ${active ? 'text-[#ff5722]' : 'text-[#9CA3AF]'}`}>
+                <item.icon size={22} className={active ? 'text-[#ff5722]' : 'text-[#9CA3AF]'} />
                 <span className="text-[10px] font-semibold">{item.label}</span>
               </Link>
             );

@@ -35,7 +35,7 @@ function CategoryMiniBar({ label, pct }: { label: string; pct: number }) {
     <div className="flex items-center gap-2 text-xs text-[#374151]">
       <span className="w-[4.5rem] shrink-0 font-medium">{label}</span>
       <div className="h-2 min-w-0 flex-1 overflow-hidden rounded bg-[#F4F6F8]">
-        <div className="h-full rounded bg-[#1E3A5F]" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded bg-[#ff5722]" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -434,7 +434,7 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
             />
           ) : (
             <div
-              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#1E3A5F] text-sm font-bold text-white"
+              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#ff5722] text-sm font-bold text-white"
               aria-hidden
             >
               {data.inspector.initials}
@@ -446,7 +446,7 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
             <p className={`text-[#6B7280] ${classic ? 'text-[9px]' : 'text-xs'}`}>Carschek Certified Inspector</p>
           </div>
         </div>
-        <blockquote className={`mt-4 border-l-4 border-[#1E3A5F] pl-3 italic text-[#374151] ${classic ? 'text-[10px]' : 'text-sm'}`}>
+        <blockquote className={`mt-4 border-l-4 border-[#ff5722] pl-3 italic text-[#374151] ${classic ? 'text-[10px]' : 'text-sm'}`}>
           &quot;I certify that this vehicle inspection was conducted by me on {data.inspection.inspectionDateLong} in accordance with
           Carschek Automotive Platform inspection standards.&quot;
         </blockquote>
@@ -479,7 +479,7 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
           </div>
           <div className={`min-w-0 flex-1 text-[#374151] ${classic ? 'text-[9px]' : 'text-xs'}`}>
             <p className="font-semibold text-[#1F2937]">Scan to verify this report at</p>
-            <p className="break-all font-mono text-[11px] text-[#2E75B6]">{data.inspection.qrVerifyUrl.replace(/^https:\/\//, '')}</p>
+            <p className="break-all font-mono text-[11px] text-[#ff8a65]">{data.inspection.qrVerifyUrl.replace(/^https:\/\//, '')}</p>
             <p className="mt-3 text-[#6B7280]">
               This report is valid for 90 days from the inspection date. Re-inspection recommended after this period.
             </p>

@@ -84,7 +84,7 @@ function OTPInput({ onComplete }: { onComplete: (code: string) => void }) {
           value={d}
           onChange={e => handleChange(i, e.target.value)}
           onKeyDown={e => handleKeyDown(i, e)}
-          className="w-12 h-14 text-center text-xl font-bold border-2 rounded-xl text-[#1F2937] transition-all focus:outline-none focus:border-[#1E3A5F] focus:ring-2 focus:ring-[#1E3A5F]/20 border-[#E5E7EB] bg-white"
+          className="w-12 h-14 text-center text-xl font-bold border-2 rounded-xl text-[#1F2937] transition-all focus:outline-none focus:border-[#ff5722] focus:ring-2 focus:ring-[#ff5722]/20 border-[#E5E7EB] bg-white"
         />
       ))}
     </div>
@@ -107,7 +107,7 @@ function CountdownTimer({ seconds, onExpire }: { seconds: number; onExpire: () =
     <div className="flex items-center gap-2">
       <svg width="48" height="48" className="-rotate-90">
         <circle cx="24" cy="24" r={r} fill="none" stroke="#E5E7EB" strokeWidth="3" />
-        <circle cx="24" cy="24" r={r} fill="none" stroke="#1E3A5F" strokeWidth="3"
+        <circle cx="24" cy="24" r={r} fill="none" stroke="#ff5722" strokeWidth="3"
           strokeDasharray={circ} strokeDashoffset={circ * (1 - pct / 100)}
           strokeLinecap="round" className="transition-all duration-1000" />
       </svg>
@@ -208,14 +208,14 @@ export default function AuthenticationScreen() {
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex">
       {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-[480px] xl:w-[560px] bg-[#1E3A5F] flex-col relative overflow-hidden flex-shrink-0">
+      <div className="hidden lg:flex lg:w-[480px] xl:w-[560px] bg-[#ff5722] flex-col relative overflow-hidden flex-shrink-0">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-[#2E75B6] rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-48 h-48 bg-[#2E75B6] rounded-full blur-2xl" />
+          <div className="absolute top-20 left-10 w-64 h-64 bg-[#ff8a65] rounded-full blur-3xl" />
+          <div className="absolute bottom-20 right-10 w-48 h-48 bg-[#ff8a65] rounded-full blur-2xl" />
         </div>
         <div className="relative z-10 flex flex-col h-full p-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#2E75B6] rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#ff8a65] rounded-xl flex items-center justify-center">
               <Car size={20} className="text-white" />
             </div>
             <span className="text-white font-heading text-xl font-bold tracking-tight">CARSCHEK</span>
@@ -223,7 +223,7 @@ export default function AuthenticationScreen() {
           <div className="flex-1 flex flex-col justify-center">
             <div className="mb-8">
               <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
-                <Shield size={40} className="text-[#2E75B6]" />
+                <Shield size={40} className="text-[#ff8a65]" />
               </div>
               <h1 className="text-3xl xl:text-4xl font-heading font-bold text-white leading-tight mb-4">
                 Nigeria&apos;s Trusted Vehicle Inspection Platform
@@ -260,10 +260,10 @@ export default function AuthenticationScreen() {
           {step === 'login' && (
             <div className="animate-fade-in">
               <div className="lg:hidden flex items-center gap-2 mb-8">
-                <div className="w-8 h-8 bg-[#1E3A5F] rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-[#ff5722] rounded-lg flex items-center justify-center">
                   <Car size={16} className="text-white" />
                 </div>
-                <span className="font-heading font-bold text-[#1E3A5F] text-lg">CARSCHEK</span>
+                <span className="font-heading font-bold text-[#ff5722] text-lg">CARSCHEK</span>
               </div>
               <h2 className="text-2xl font-heading font-bold text-[#1F2937] mb-1">Welcome back</h2>
               <p className="text-[#6B7280] text-sm mb-8">Sign in to your Carschek admin account</p>
@@ -296,7 +296,7 @@ export default function AuthenticationScreen() {
                     <input
                       type="email"
                       {...loginForm.register('email', { required: 'Email is required' })}
-                      className="w-full pl-9 pr-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all"
+                      className="w-full pl-9 pr-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all"
                       placeholder="you@carschek.com"
                     />
                   </div>
@@ -308,14 +308,14 @@ export default function AuthenticationScreen() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs font-semibold text-[#1F2937]">Password</label>
-                    <button type="button" onClick={() => setStep('forgot-1')} className="text-xs text-[#2E75B6] hover:underline">Forgot password?</button>
+                    <button type="button" onClick={() => setStep('forgot-1')} className="text-xs text-[#ff8a65] hover:underline">Forgot password?</button>
                   </div>
                   <div className="relative">
                     <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
                     <input
                       type={showPass ? 'text' : 'password'}
                       {...loginForm.register('password', { required: 'Password is required' })}
-                      className="w-full pl-9 pr-10 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all"
+                      className="w-full pl-9 pr-10 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all"
                       placeholder="••••••••"
                     />
                     <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2937]">
@@ -328,14 +328,14 @@ export default function AuthenticationScreen() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" id="remember" {...loginForm.register('remember')} className="w-4 h-4 rounded border-[#E5E7EB] text-[#1E3A5F] focus:ring-[#1E3A5F]" />
+                  <input type="checkbox" id="remember" {...loginForm.register('remember')} className="w-4 h-4 rounded border-[#E5E7EB] text-[#ff5722] focus:ring-[#ff5722]" />
                   <label htmlFor="remember" className="text-xs text-[#6B7280]">Remember me for 30 days</label>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting || !!lockedUntil}
-                  className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#16304F] disabled:opacity-50 text-white font-semibold text-sm rounded-lg transition-all duration-150 active:scale-[0.99] flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-[#ff5722] hover:bg-[#e64a19] disabled:opacity-50 text-white font-semibold text-sm rounded-lg transition-all duration-150 active:scale-[0.99] flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <><RefreshCw size={16} className="animate-spin" />Signing in…</>
@@ -358,7 +358,7 @@ export default function AuthenticationScreen() {
                       <button
                         type="button"
                         onClick={() => fillDemo(acc)}
-                        className="text-[10px] font-semibold text-[#2E75B6] hover:text-[#1E3A5F] px-2 py-1 rounded border border-[#2E75B6]/30 hover:bg-blue-50 transition-colors"
+                        className="text-[10px] font-semibold text-[#ff8a65] hover:text-[#ff5722] px-2 py-1 rounded border border-[#ff8a65]/30 hover:bg-blue-50 transition-colors"
                       >
                         Use
                       </button>
@@ -369,7 +369,7 @@ export default function AuthenticationScreen() {
 
               <p className="mt-4 text-center text-xs text-[#6B7280]">
                 Having trouble?{' '}
-                <a href="mailto:support@carschek.com" className="text-[#2E75B6] hover:underline">Contact support</a>
+                <a href="mailto:support@carschek.com" className="text-[#ff8a65] hover:underline">Contact support</a>
               </p>
             </div>
           )}
@@ -380,8 +380,8 @@ export default function AuthenticationScreen() {
               <button onClick={() => setStep('login')} className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] mb-8 transition-colors">
                 <ArrowLeft size={14} /> Back to login
               </button>
-              <div className="w-14 h-14 bg-[#1E3A5F]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield size={28} className="text-[#1E3A5F]" />
+              <div className="w-14 h-14 bg-[#ff5722]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Shield size={28} className="text-[#ff5722]" />
               </div>
               <h2 className="text-2xl font-heading font-bold text-[#1F2937] mb-2">Two-Factor Authentication</h2>
               <p className="text-[#6B7280] text-sm mb-8">Enter the 6-digit code from your authenticator app</p>
@@ -399,7 +399,7 @@ export default function AuthenticationScreen() {
               <div className="mt-4 flex flex-col items-center gap-3">
                 <button
                   disabled={!otpExpired}
-                  className="text-sm text-[#2E75B6] hover:underline disabled:opacity-40 disabled:no-underline flex items-center gap-1"
+                  className="text-sm text-[#ff8a65] hover:underline disabled:opacity-40 disabled:no-underline flex items-center gap-1"
                 >
                   <RefreshCw size={14} /> Resend code
                 </button>
@@ -415,7 +415,7 @@ export default function AuthenticationScreen() {
           {/* WELCOME */}
           {step === 'welcome' && (
             <div className="animate-fade-in text-center">
-              <div className="w-16 h-16 bg-[#1E3A5F] rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-[#ff5722] rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Car size={32} className="text-white" />
               </div>
               <p className="text-[#6B7280] text-sm mb-1">Welcome back</p>
@@ -433,7 +433,7 @@ export default function AuthenticationScreen() {
               </div>
               <a
                 href="/dashboard"
-                className="block w-full py-2.5 bg-[#1E3A5F] hover:bg-[#16304F] text-white font-semibold text-sm rounded-lg transition-all duration-150 active:scale-[0.99] text-center"
+                className="block w-full py-2.5 bg-[#ff5722] hover:bg-[#e64a19] text-white font-semibold text-sm rounded-lg transition-all duration-150 active:scale-[0.99] text-center"
               >
                 Go to Dashboard →
               </a>
@@ -454,7 +454,7 @@ export default function AuthenticationScreen() {
                   <input
                     type="email"
                     {...forgotForm.register('email', { required: 'Email is required' })}
-                    className="w-full px-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all"
+                    className="w-full px-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all"
                     placeholder="you@carschek.com"
                   />
                   {forgotForm.formState.errors.email && (
@@ -464,7 +464,7 @@ export default function AuthenticationScreen() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#16304F] disabled:opacity-50 text-white font-semibold text-sm rounded-lg transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-[#ff5722] hover:bg-[#e64a19] disabled:opacity-50 text-white font-semibold text-sm rounded-lg transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <><RefreshCw size={16} className="animate-spin" />Sending…</> : 'Send Reset Link'}
                 </button>
@@ -482,11 +482,11 @@ export default function AuthenticationScreen() {
               <p className="text-[#6B7280] text-sm mb-2">We sent a password reset link to</p>
               <p className="font-mono text-sm font-semibold text-[#1F2937] mb-6">{maskEmail(forgotEmail || 'you@carschek.com')}</p>
               <p className="text-xs text-[#6B7280] mb-6">Didn&apos;t receive it? Check your spam folder or{' '}
-                <button onClick={() => setStep('forgot-1')} className="text-[#2E75B6] hover:underline">try again</button>
+                <button onClick={() => setStep('forgot-1')} className="text-[#ff8a65] hover:underline">try again</button>
               </p>
               <button
                 onClick={() => setStep('forgot-3')}
-                className="w-full py-2.5 bg-[#1E3A5F] text-white font-semibold text-sm rounded-lg hover:bg-[#16304F] transition-all"
+                className="w-full py-2.5 bg-[#ff5722] text-white font-semibold text-sm rounded-lg hover:bg-[#e64a19] transition-all"
               >
                 I&apos;ve received the link →
               </button>
@@ -505,7 +505,7 @@ export default function AuthenticationScreen() {
                     <input
                       type={showNewPass ? 'text' : 'password'}
                       {...newPassForm.register('password', { required: 'Password is required', minLength: { value: 8, message: 'Minimum 8 characters' } })}
-                      className="w-full pl-4 pr-10 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all"
+                      className="w-full pl-4 pr-10 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all"
                       placeholder="••••••••"
                     />
                     <button type="button" onClick={() => setShowNewPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]">
@@ -522,7 +522,7 @@ export default function AuthenticationScreen() {
                       required: 'Please confirm your password',
                       validate: v => v === newPassword || 'Passwords do not match',
                     })}
-                    className="w-full px-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all"
+                    className="w-full px-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all"
                     placeholder="••••••••"
                   />
                   {newPassForm.formState.errors.confirmPassword && (
@@ -532,7 +532,7 @@ export default function AuthenticationScreen() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#16304F] disabled:opacity-50 text-white font-semibold text-sm rounded-lg transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-[#ff5722] hover:bg-[#e64a19] disabled:opacity-50 text-white font-semibold text-sm rounded-lg transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <><RefreshCw size={16} className="animate-spin" />Updating…</> : 'Update Password'}
                 </button>

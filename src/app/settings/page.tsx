@@ -62,7 +62,7 @@ function SettingsPageContent() {
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-2">
               {SETTINGS_NAV.map(item => (
                 <button key={item.id} type="button" onClick={() => goSection(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${activeSection === item.id ? 'bg-[#1E3A5F] text-white' : 'text-[#6B7280] hover:bg-[#F4F6F8] hover:text-[#1F2937]'}`}>
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${activeSection === item.id ? 'bg-[#ff5722] text-white' : 'text-[#6B7280] hover:bg-[#F4F6F8] hover:text-[#1F2937]'}`}>
                   <item.icon size={16} className="flex-shrink-0" />
                   {item.label}
                 </button>
@@ -76,7 +76,7 @@ function SettingsPageContent() {
               <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-base font-heading font-semibold text-[#1F2937]">Roles & Permissions</h2>
-                  <button onClick={() => toast.success('Permission changes saved')} className="px-4 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+                  <button onClick={() => toast.success('Permission changes saved')} className="px-4 py-2 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                     Save Changes
                   </button>
                 </div>
@@ -122,10 +122,10 @@ function SettingsPageContent() {
                     <div key={f.key}>
                       <label className="block text-xs font-semibold text-[#374151] mb-1.5">{f.label}</label>
                       <input value={generalForm[f.key as keyof typeof generalForm]} onChange={e => setGeneralForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                        className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
                     </div>
                   ))}
-                  <button onClick={() => toast.success('Settings saved')} className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+                  <button onClick={() => toast.success('Settings saved')} className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                     Save Settings
                   </button>
                 </div>
@@ -150,12 +150,12 @@ function SettingsPageContent() {
                   <div>
                     <label className="block text-xs font-semibold text-[#374151] mb-2">Session Timeout: {sessionTimeout} minutes</label>
                     <input type="range" min="5" max="120" value={sessionTimeout} onChange={e => setSessionTimeout(parseInt(e.target.value))}
-                      className="w-full accent-[#1E3A5F]" />
+                      className="w-full accent-[#ff5722]" />
                     <div className="flex justify-between text-xs text-[#9CA3AF] mt-1">
                       <span>5 min</span><span>120 min</span>
                     </div>
                   </div>
-                  <button onClick={() => toast.success('Security settings saved')} className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+                  <button onClick={() => toast.success('Security settings saved')} className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                     Save Security Settings
                   </button>
                 </div>
@@ -182,7 +182,7 @@ function SettingsPageContent() {
                 <Settings size={40} className="mx-auto mb-3 text-[#E5E7EB]" />
                 <p className="font-medium text-[#1F2937]">{SETTINGS_NAV.find(n => n.id === activeSection)?.label}</p>
                 <p className="text-sm text-[#6B7280] mt-1">Configuration options for this section</p>
-                <button onClick={() => toast.success('Settings saved')} className="mt-4 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+                <button onClick={() => toast.success('Settings saved')} className="mt-4 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                   Save Changes
                 </button>
               </div>

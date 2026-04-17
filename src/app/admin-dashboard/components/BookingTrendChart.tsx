@@ -49,7 +49,7 @@ export default function BookingTrendChart() {
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 sm:p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4 sm:mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <Calendar size={18} className="text-[#2E75B6]" />
+          <Calendar size={18} className="text-[#ff8a65]" />
           <h2 className="text-base font-heading font-semibold text-[#1F2937]">Inspection Bookings</h2>
         </div>
         <div className="flex gap-1 bg-[#F4F6F8] p-1 rounded-lg">
@@ -57,7 +57,7 @@ export default function BookingTrendChart() {
             <button
               key={`period-${p}`}
               onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all min-h-[32px] ${period === p ? 'bg-white text-[#1E3A5F] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all min-h-[32px] ${period === p ? 'bg-white text-[#ff5722] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
             >
               {p === '7d' ? '7D' : p === '30d' ? '30D' : '90D'}
             </button>
@@ -70,8 +70,8 @@ export default function BookingTrendChart() {
             <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="gradBooked" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1E3A5F" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#1E3A5F" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#ff5722" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#ff5722" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gradCompleted" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#1A7A4A" stopOpacity={0.15} />
@@ -83,7 +83,7 @@ export default function BookingTrendChart() {
               <YAxis tick={{ fontSize: 10, fill: t.tickFill }} tickLine={false} axisLine={false} width={28} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ ...t.legendWrapperStyle, fontSize: '11px', paddingTop: '12px' }} />
-              <Area type="monotone" dataKey="booked" name="Booked" stroke="#1E3A5F" strokeWidth={2} fill="url(#gradBooked)" />
+              <Area type="monotone" dataKey="booked" name="Booked" stroke="#ff5722" strokeWidth={2} fill="url(#gradBooked)" />
               <Area type="monotone" dataKey="completed" name="Completed" stroke="#1A7A4A" strokeWidth={2} fill="url(#gradCompleted)" />
             </AreaChart>
           </ResponsiveContainer>

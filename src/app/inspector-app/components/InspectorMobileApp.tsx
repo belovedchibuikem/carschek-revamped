@@ -229,7 +229,7 @@ const GRADE_CATEGORIES: GradeCategory[] = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getJobStatusStyle(status: JobStatus) {
   const map: Record<JobStatus, string> = {
-    Upcoming: 'bg-[#1E3A5F] text-white',
+    Upcoming: 'bg-[#ff5722] text-white',
     'En Route': 'bg-purple-600 text-white',
     'In Progress': 'bg-amber-500 text-white',
     'Awaiting QA': 'bg-teal-600 text-white',
@@ -300,7 +300,7 @@ function BottomNav({ active, onChange }: { active: TabName; onChange: (t: TabNam
       <div className="flex items-stretch max-w-lg mx-auto">
         {items.map(item => (
           <button key={item.label} onClick={() => onChange(item.label)}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 relative transition-all active:scale-95 ${active === item.label ? 'text-[#1E3A5F]' : 'text-gray-400'}`}>
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 relative transition-all active:scale-95 ${active === item.label ? 'text-[#ff5722]' : 'text-gray-400'}`}>
             <div className="relative">
               <item.icon size={22} strokeWidth={active === item.label ? 2.5 : 1.8} />
               {item.badge && (
@@ -311,7 +311,7 @@ function BottomNav({ active, onChange }: { active: TabName; onChange: (t: TabNam
             </div>
             <span className={`text-[10px] font-medium ${active === item.label ? 'font-bold' : ''}`}>{item.label}</span>
             {active === item.label && (
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#1E3A5F] rounded-full" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#ff5722] rounded-full" />
             )}
           </button>
         ))}
@@ -327,7 +327,7 @@ function HomeScreen({ onNavigate }: { onNavigate: (tab: TabName) => void }) {
   const dateStr = today.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long' });
 
   const stats = [
-    { label: 'Today', value: '2', sub: 'jobs assigned', color: '#1E3A5F', bg: '#EFF6FF' },
+    { label: 'Today', value: '2', sub: 'jobs assigned', color: '#ff5722', bg: '#EFF6FF' },
     { label: 'Completed', value: '1', sub: 'this week', color: '#1A7A4A', bg: '#F0FDF4' },
     { label: 'Pending Sync', value: '1', sub: 'report', color: '#D35400', bg: '#FFF7ED' },
     { label: 'Rating', value: '4.9', sub: 'avg score', color: '#7C3AED', bg: '#F5F3FF' },
@@ -338,7 +338,7 @@ function HomeScreen({ onNavigate }: { onNavigate: (tab: TabName) => void }) {
   return (
     <div className="flex-1 overflow-y-auto pb-24">
       {/* Hero Header */}
-      <div className="bg-[#1E3A5F] px-5 pt-12 pb-6">
+      <div className="bg-[#ff5722] px-5 pt-12 pb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <p className="text-blue-200 text-xs font-medium mb-1">{dateStr}</p>
@@ -350,7 +350,7 @@ function HomeScreen({ onNavigate }: { onNavigate: (tab: TabName) => void }) {
               {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
               {isOnline ? 'Online' : 'Offline'}
             </button>
-            <div className="w-10 h-10 rounded-full bg-[#2E75B6] flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-10 h-10 rounded-full bg-[#ff8a65] flex items-center justify-center text-white font-bold text-sm">
               EO
             </div>
           </div>
@@ -389,16 +389,16 @@ function HomeScreen({ onNavigate }: { onNavigate: (tab: TabName) => void }) {
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-gray-500 text-xs mb-1">
-                <MapPin size={12} className="text-[#1E3A5F] flex-shrink-0" />
+                <MapPin size={12} className="text-[#ff5722] flex-shrink-0" />
                 <span className="truncate">{activeJob.location}</span>
               </div>
               <div className="flex items-center gap-1.5 text-gray-500 text-xs mb-4">
-                <Clock size={12} className="text-[#1E3A5F] flex-shrink-0" />
+                <Clock size={12} className="text-[#ff5722] flex-shrink-0" />
                 <span>{activeJob.time} · {activeJob.distance}</span>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => onNavigate('Jobs')}
-                  className="flex-1 bg-[#1E3A5F] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:opacity-90">
+                  className="flex-1 bg-[#ff5722] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:opacity-90">
                   <Clipboard size={13} /> Start Inspection
                 </button>
                 <a href={`tel:${activeJob.phone}`}
@@ -418,7 +418,7 @@ function HomeScreen({ onNavigate }: { onNavigate: (tab: TabName) => void }) {
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Quick Actions</p>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { icon: Camera, label: 'Capture Photos', sub: 'Vehicle & damage', color: '#2E75B6', bg: '#EFF6FF', tab: 'Inspect' as TabName },
+              { icon: Camera, label: 'Capture Photos', sub: 'Vehicle & damage', color: '#ff8a65', bg: '#EFF6FF', tab: 'Inspect' as TabName },
               { icon: Clipboard, label: 'Fill Checklist', sub: '12 sections', color: '#1A7A4A', bg: '#F0FDF4', tab: 'Inspect' as TabName },
               { icon: Star, label: 'Grade Car', sub: 'Score & submit', color: '#7C3AED', bg: '#F5F3FF', tab: 'Inspect' as TabName },
               { icon: RefreshCw, label: 'Sync Reports', sub: '1 pending', color: '#D35400', bg: '#FFF7ED', tab: 'Jobs' as TabName },
@@ -454,13 +454,13 @@ function HomeScreen({ onNavigate }: { onNavigate: (tab: TabName) => void }) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Today's Schedule</p>
-            <button onClick={() => onNavigate('Jobs')} className="text-[#1E3A5F] text-xs font-semibold">View all</button>
+            <button onClick={() => onNavigate('Jobs')} className="text-[#ff5722] text-xs font-semibold">View all</button>
           </div>
           <div className="space-y-2">
             {MOCK_JOBS.filter(j => j.status !== 'Completed').slice(0, 2).map(job => (
               <div key={job.id} className="bg-white rounded-xl border border-gray-100 p-3 flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#EFF6FF] rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Car size={18} className="text-[#1E3A5F]" />
+                  <Car size={18} className="text-[#ff5722]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900 text-sm truncate">{job.vehicle} {job.year}</p>
@@ -492,7 +492,7 @@ function JobsScreen({ onStartInspection }: { onStartInspection: (job: Job) => vo
       <div className="px-4 py-3 overflow-x-auto flex gap-2 no-scrollbar border-b border-gray-100 bg-white">
         {filters.map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filter === f ? 'bg-[#1E3A5F] text-white' : 'bg-gray-100 text-gray-600'}`}>
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filter === f ? 'bg-[#ff5722] text-white' : 'bg-gray-100 text-gray-600'}`}>
             {f}
           </button>
         ))}
@@ -504,7 +504,7 @@ function JobsScreen({ onStartInspection }: { onStartInspection: (job: Job) => vo
             <div className="p-4">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-[#1E3A5F] bg-[#EFF6FF] px-2 py-0.5 rounded-lg">{job.ckId}</span>
+                  <span className="font-mono text-xs font-bold text-[#ff5722] bg-[#EFF6FF] px-2 py-0.5 rounded-lg">{job.ckId}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getPriorityStyle(job.priority)}`}>
                     {job.priority}
                   </span>
@@ -545,7 +545,7 @@ function JobsScreen({ onStartInspection }: { onStartInspection: (job: Job) => vo
               <div className="flex gap-2">
                 {(job.status === 'En Route' || job.status === 'Upcoming' || job.status === 'In Progress') && (
                   <button onClick={() => onStartInspection(job)}
-                    className="flex-1 bg-[#1E3A5F] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:opacity-90">
+                    className="flex-1 bg-[#ff5722] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:opacity-90">
                     <Clipboard size={13} />
                     {job.status === 'In Progress' ? 'Continue Inspection' : 'Start Inspection'}
                   </button>
@@ -603,7 +603,7 @@ function InspectionHub({ job, onBack, onGoTo }: {
       />
 
       {/* Vehicle summary */}
-      <div className="bg-[#1E3A5F] px-4 py-4">
+      <div className="bg-[#ff5722] px-4 py-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
             <Car size={24} className="text-white" />
@@ -634,7 +634,7 @@ function InspectionHub({ job, onBack, onGoTo }: {
           <button key={section.key} onClick={() => onGoTo(section.key)}
             className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4 active:scale-[0.98] transition-transform text-left">
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${section.done ? 'bg-green-50' : 'bg-[#EFF6FF]'}`}>
-              <section.icon size={22} className={section.done ? 'text-[#1A7A4A]' : 'text-[#1E3A5F]'} />
+              <section.icon size={22} className={section.done ? 'text-[#1A7A4A]' : 'text-[#ff5722]'} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
@@ -662,7 +662,7 @@ function InspectionHub({ job, onBack, onGoTo }: {
         <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Customer</p>
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-[#1E3A5F] rounded-full flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-10 h-10 bg-[#ff5722] rounded-full flex items-center justify-center text-white font-bold text-sm">
               {job.customer.split(' ').map(n => n[0]).join('').slice(0, 2)}
             </div>
             <div>
@@ -716,8 +716,8 @@ function VehiclePhotosScreen({ onBack }: { onBack: () => void }) {
         onBack={onBack}
         rightAction={
           <div className="flex items-center gap-1.5 bg-[#EFF6FF] px-2.5 py-1.5 rounded-xl">
-            <Camera size={13} className="text-[#1E3A5F]" />
-            <span className="text-[#1E3A5F] text-xs font-bold">{captured}/{photos.length}</span>
+            <Camera size={13} className="text-[#ff5722]" />
+            <span className="text-[#ff5722] text-xs font-bold">{captured}/{photos.length}</span>
           </div>
         }
       />
@@ -726,10 +726,10 @@ function VehiclePhotosScreen({ onBack }: { onBack: () => void }) {
       <div className="px-4 py-3 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
           <span>{capturedRequired}/{required} required photos</span>
-          <span className="font-semibold text-[#1E3A5F]">{Math.round((captured / photos.length) * 100)}%</span>
+          <span className="font-semibold text-[#ff5722]">{Math.round((captured / photos.length) * 100)}%</span>
         </div>
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-[#1E3A5F] rounded-full transition-all duration-500"
+          <div className="h-full bg-[#ff5722] rounded-full transition-all duration-500"
             style={{ width: `${(captured / photos.length) * 100}%` }} />
         </div>
       </div>
@@ -748,7 +748,7 @@ function VehiclePhotosScreen({ onBack }: { onBack: () => void }) {
             <div className={`h-28 flex items-center justify-center relative ${photo.captured ? 'bg-gradient-to-br from-green-50 to-emerald-50' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
               {capturing === photo.id ? (
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-8 h-8 border-2 border-[#1E3A5F] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-2 border-[#ff5722] border-t-transparent rounded-full animate-spin" />
                   <span className="text-[10px] text-gray-500">Capturing...</span>
                 </div>
               ) : photo.captured ? (
@@ -765,7 +765,7 @@ function VehiclePhotosScreen({ onBack }: { onBack: () => void }) {
                 </div>
               )}
               {/* Number badge */}
-              <div className="absolute top-2 left-2 w-5 h-5 bg-[#1E3A5F] rounded-full flex items-center justify-center">
+              <div className="absolute top-2 left-2 w-5 h-5 bg-[#ff5722] rounded-full flex items-center justify-center">
                 <span className="text-white text-[9px] font-bold">{idx + 1}</span>
               </div>
               {/* Required badge */}
@@ -786,7 +786,7 @@ function VehiclePhotosScreen({ onBack }: { onBack: () => void }) {
               ) : (
                 <button onClick={() => handleCapture(photo.id)}
                   disabled={capturing !== null}
-                  className="w-full py-2 bg-[#1E3A5F] rounded-lg text-[10px] font-bold text-white flex items-center justify-center gap-1.5 active:opacity-90 disabled:opacity-50">
+                  className="w-full py-2 bg-[#ff5722] rounded-lg text-[10px] font-bold text-white flex items-center justify-center gap-1.5 active:opacity-90 disabled:opacity-50">
                   <Camera size={11} /> Capture
                 </button>
               )}
@@ -846,7 +846,7 @@ function DamagePhotosScreen({ onBack }: { onBack: () => void }) {
         onBack={onBack}
         rightAction={
           <button onClick={() => setShowAdd(true)}
-            className="w-9 h-9 bg-[#1E3A5F] rounded-xl flex items-center justify-center active:opacity-90">
+            className="w-9 h-9 bg-[#ff5722] rounded-xl flex items-center justify-center active:opacity-90">
             <Plus size={18} className="text-white" />
           </button>
         }
@@ -866,14 +866,14 @@ function DamagePhotosScreen({ onBack }: { onBack: () => void }) {
               <label className="text-xs font-semibold text-gray-600 block mb-1.5">Damage Location / Label *</label>
               <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
                 placeholder="e.g. Front bumper dent, Left door scratch"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A5F] focus:ring-1 focus:ring-[#1E3A5F]" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#ff5722] focus:ring-1 focus:ring-[#ff5722]" />
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 block mb-1.5">Description / Notes</label>
               <textarea value={newComment} onChange={e => setNewComment(e.target.value)}
                 placeholder="Describe the damage in detail..."
                 rows={3}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A5F] focus:ring-1 focus:ring-[#1E3A5F] resize-none" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#ff5722] focus:ring-1 focus:ring-[#ff5722] resize-none" />
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShowAdd(false)}
@@ -881,7 +881,7 @@ function DamagePhotosScreen({ onBack }: { onBack: () => void }) {
                 Cancel
               </button>
               <button onClick={addDamage}
-                className="flex-1 py-3 bg-[#1E3A5F] rounded-xl text-sm font-bold text-white active:opacity-90 flex items-center justify-center gap-2">
+                className="flex-1 py-3 bg-[#ff5722] rounded-xl text-sm font-bold text-white active:opacity-90 flex items-center justify-center gap-2">
                 <Camera size={15} /> Capture Photo
               </button>
             </div>
@@ -897,7 +897,7 @@ function DamagePhotosScreen({ onBack }: { onBack: () => void }) {
           <p className="font-bold text-gray-700 text-base mb-2">No Damage Documented</p>
           <p className="text-gray-400 text-sm mb-6">Tap the + button to add damage photos with AI severity detection</p>
           <button onClick={() => setShowAdd(true)}
-            className="bg-[#1E3A5F] text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 active:opacity-90">
+            className="bg-[#ff5722] text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 active:opacity-90">
             <Plus size={16} /> Add First Damage
           </button>
         </div>
@@ -915,7 +915,7 @@ function DamagePhotosScreen({ onBack }: { onBack: () => void }) {
               <div className={`h-36 flex items-center justify-center relative ${damage.captured ? 'bg-gradient-to-br from-orange-50 to-amber-50' : 'bg-gray-50'}`}>
                 {capturing === damage.id ? (
                   <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-8 border-2 border-[#1E3A5F] border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-2 border-[#ff5722] border-t-transparent rounded-full animate-spin" />
                     <span className="text-xs text-gray-500">AI Analyzing...</span>
                   </div>
                 ) : damage.captured ? (
@@ -1048,7 +1048,7 @@ function ChecklistScreen({ onBack }: { onBack: () => void }) {
               <textarea value={noteText} onChange={e => setNoteText(e.target.value)}
                 placeholder="Describe the defect in detail..."
                 rows={4}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A5F] resize-none" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#ff5722] resize-none" />
               <div className="flex gap-3">
                 <button onClick={() => { setNoteModal(null); setNoteText(''); }}
                   className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600">Cancel</button>
@@ -1060,7 +1060,7 @@ function ChecklistScreen({ onBack }: { onBack: () => void }) {
                   setNoteModal(null);
                   setNoteText('');
                 }}
-                  className="flex-1 py-3 bg-[#1E3A5F] rounded-xl text-sm font-bold text-white">Save Note</button>
+                  className="flex-1 py-3 bg-[#ff5722] rounded-xl text-sm font-bold text-white">Save Note</button>
               </div>
             </div>
           </div>
@@ -1121,7 +1121,7 @@ function ChecklistScreen({ onBack }: { onBack: () => void }) {
 
         <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-4 max-w-lg mx-auto">
           <button onClick={() => setActiveSection(null)}
-            className={`w-full py-3.5 rounded-2xl text-sm font-bold ${sectionAnswered === activeSectionData.items.length ? 'bg-[#1A7A4A] text-white' : 'bg-[#1E3A5F] text-white'}`}>
+            className={`w-full py-3.5 rounded-2xl text-sm font-bold ${sectionAnswered === activeSectionData.items.length ? 'bg-[#1A7A4A] text-white' : 'bg-[#ff5722] text-white'}`}>
             {sectionAnswered === activeSectionData.items.length ? '✓ Section Complete' : `Save & Continue (${sectionAnswered}/${activeSectionData.items.length})`}
           </button>
         </div>
@@ -1141,10 +1141,10 @@ function ChecklistScreen({ onBack }: { onBack: () => void }) {
       <div className="px-4 py-3 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
           <span>{sections.filter(s => s.status === 'complete').length} / {sections.length} sections done</span>
-          <span className="font-semibold text-[#1E3A5F]">{Math.round((answeredItems / totalItems) * 100)}%</span>
+          <span className="font-semibold text-[#ff5722]">{Math.round((answeredItems / totalItems) * 100)}%</span>
         </div>
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-[#1E3A5F] rounded-full transition-all duration-500"
+          <div className="h-full bg-[#ff5722] rounded-full transition-all duration-500"
             style={{ width: `${(answeredItems / totalItems) * 100}%` }} />
         </div>
       </div>
@@ -1238,7 +1238,7 @@ function GradingScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: () 
           </div>
         </div>
         <button onClick={onSubmit}
-          className="w-full bg-[#1E3A5F] text-white py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 active:opacity-90">
+          className="w-full bg-[#ff5722] text-white py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 active:opacity-90">
           <Send size={16} /> Proceed to Sync & Submit
         </button>
       </div>
@@ -1254,8 +1254,8 @@ function GradingScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: () 
         rightAction={
           allScored ? (
             <div className="flex items-center gap-1.5 bg-[#EFF6FF] px-3 py-1.5 rounded-xl">
-              <span className="font-bold text-[#1E3A5F] text-sm">{percentage}</span>
-              <span className="text-[#1E3A5F] text-xs">/100</span>
+              <span className="font-bold text-[#ff5722] text-sm">{percentage}</span>
+              <span className="text-[#ff5722] text-xs">/100</span>
             </div>
           ) : undefined
         }
@@ -1317,7 +1317,7 @@ function GradingScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: () 
             <div className="flex gap-1.5 mb-3">
               {[0, Math.round(cat.maxScore * 0.25), Math.round(cat.maxScore * 0.5), Math.round(cat.maxScore * 0.75), cat.maxScore].map(v => (
                 <button key={v} onClick={() => setScore(cat.id, v)}
-                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${cat.score === v ? 'bg-[#1E3A5F] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${cat.score === v ? 'bg-[#ff5722] text-white' : 'bg-gray-100 text-gray-500'}`}>
                   {v}
                 </button>
               ))}
@@ -1328,7 +1328,7 @@ function GradingScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: () 
               onChange={e => setNote(cat.id, e.target.value)}
               placeholder="Notes for this category (optional)..."
               rows={2}
-              className="w-full border border-gray-100 rounded-xl px-3 py-2 text-xs text-gray-600 focus:outline-none focus:border-[#1E3A5F] resize-none bg-gray-50"
+              className="w-full border border-gray-100 rounded-xl px-3 py-2 text-xs text-gray-600 focus:outline-none focus:border-[#ff5722] resize-none bg-gray-50"
             />
           </div>
         ))}
@@ -1341,7 +1341,7 @@ function GradingScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: () 
             onChange={e => setOverallNote(e.target.value)}
             placeholder="General observations, recommendations, or notes for the admin..."
             rows={4}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A5F] resize-none"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#ff5722] resize-none"
           />
         </div>
       </div>
@@ -1391,7 +1391,7 @@ function SyncReviewScreen({ job, onBack }: { job: Job; onBack: () => void }) {
         </div>
         <h2 className="font-bold text-gray-900 text-2xl mb-2">Synced!</h2>
         <p className="text-gray-500 text-sm mb-1">Report submitted to admin dashboard</p>
-        <p className="font-bold text-[#1E3A5F] text-base mb-6">{job.ckId} · {job.vehicle} {job.year}</p>
+        <p className="font-bold text-[#ff5722] text-base mb-6">{job.ckId} · {job.vehicle} {job.year}</p>
 
         <div className="w-full bg-green-50 border border-green-100 rounded-2xl p-4 mb-6 text-left space-y-2">
           {[
@@ -1408,7 +1408,7 @@ function SyncReviewScreen({ job, onBack }: { job: Job; onBack: () => void }) {
         </div>
 
         <button onClick={onBack}
-          className="w-full bg-[#1E3A5F] text-white py-4 rounded-2xl text-sm font-bold active:opacity-90">
+          className="w-full bg-[#ff5722] text-white py-4 rounded-2xl text-sm font-bold active:opacity-90">
           Back to Jobs
         </button>
       </div>
@@ -1425,7 +1425,7 @@ function SyncReviewScreen({ job, onBack }: { job: Job; onBack: () => void }) {
 
       <div className="px-4 py-4 space-y-4">
         {/* Job summary */}
-        <div className="bg-[#1E3A5F] rounded-2xl p-4 text-white">
+        <div className="bg-[#ff5722] rounded-2xl p-4 text-white">
           <p className="text-blue-200 text-xs font-medium mb-1">Inspection Report</p>
           <p className="font-bold text-lg">{job.vehicle} {job.year}</p>
           <p className="text-blue-200 text-xs mt-0.5">{job.ckId} · {job.plate}</p>
@@ -1467,7 +1467,7 @@ function SyncReviewScreen({ job, onBack }: { job: Job; onBack: () => void }) {
             ].map(dest => (
               <div key={dest.label} className="flex items-center gap-3 py-2">
                 <div className="w-9 h-9 bg-[#EFF6FF] rounded-xl flex items-center justify-center flex-shrink-0">
-                  <dest.icon size={16} className="text-[#1E3A5F]" />
+                  <dest.icon size={16} className="text-[#ff5722]" />
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900 text-sm">{dest.label}</p>
@@ -1482,14 +1482,14 @@ function SyncReviewScreen({ job, onBack }: { job: Job; onBack: () => void }) {
         {syncing && (
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-5 h-5 border-2 border-[#1E3A5F] border-t-transparent rounded-full animate-spin" />
-              <p className="font-bold text-[#1E3A5F] text-sm">Syncing to admin dashboard...</p>
+              <div className="w-5 h-5 border-2 border-[#ff5722] border-t-transparent rounded-full animate-spin" />
+              <p className="font-bold text-[#ff5722] text-sm">Syncing to admin dashboard...</p>
             </div>
             <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
-              <div className="h-full bg-[#1E3A5F] rounded-full transition-all duration-500"
+              <div className="h-full bg-[#ff5722] rounded-full transition-all duration-500"
                 style={{ width: `${syncProgress}%` }} />
             </div>
-            <p className="text-[#1E3A5F] text-xs mt-2 text-right">{syncProgress}%</p>
+            <p className="text-[#ff5722] text-xs mt-2 text-right">{syncProgress}%</p>
           </div>
         )}
 
@@ -1535,7 +1535,7 @@ function NotificationsScreen() {
     job: Briefcase, qa: AlertTriangle, sync: RefreshCw, reminder: Clock,
   };
   const typeColor: Record<string, string> = {
-    job: '#1E3A5F', qa: '#D35400', sync: '#1A7A4A', reminder: '#7C3AED',
+    job: '#ff5722', qa: '#D35400', sync: '#1A7A4A', reminder: '#7C3AED',
   };
   const typeBg: Record<string, string> = {
     job: '#EFF6FF', qa: '#FFF7ED', sync: '#F0FDF4', reminder: '#F5F3FF',
@@ -1549,7 +1549,7 @@ function NotificationsScreen() {
           const Icon = typeIcon[notif.type];
           return (
             <div key={notif.id}
-              className={`bg-white rounded-2xl border p-4 flex items-start gap-3 shadow-sm ${!notif.read ? 'border-[#1E3A5F]/20' : 'border-gray-100'}`}>
+              className={`bg-white rounded-2xl border p-4 flex items-start gap-3 shadow-sm ${!notif.read ? 'border-[#ff5722]/20' : 'border-gray-100'}`}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: typeBg[notif.type] }}>
                 <Icon size={18} style={{ color: typeColor[notif.type] }} />
@@ -1557,7 +1557,7 @@ function NotificationsScreen() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <p className={`text-sm font-bold ${!notif.read ? 'text-gray-900' : 'text-gray-600'}`}>{notif.title}</p>
-                  {!notif.read && <span className="w-2 h-2 bg-[#1E3A5F] rounded-full flex-shrink-0 mt-1" />}
+                  {!notif.read && <span className="w-2 h-2 bg-[#ff5722] rounded-full flex-shrink-0 mt-1" />}
                 </div>
                 <p className="text-gray-500 text-xs mt-0.5 leading-relaxed">{notif.body}</p>
                 <p className="text-gray-300 text-[10px] mt-1.5">{notif.time}</p>
@@ -1584,9 +1584,9 @@ function ProfileScreen() {
       <MobileHeader title="My Profile" />
 
       {/* Profile hero */}
-      <div className="bg-[#1E3A5F] px-5 pt-4 pb-8">
+      <div className="bg-[#ff5722] px-5 pt-4 pb-8">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-[#2E75B6] flex items-center justify-center text-white font-bold text-xl shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-[#ff8a65] flex items-center justify-center text-white font-bold text-xl shadow-lg">
             EO
           </div>
           <div>
@@ -1617,7 +1617,7 @@ function ProfileScreen() {
           <div className="space-y-2">
             {[
               { label: 'Carschek Certified Inspector', level: 'Level 3', color: '#1A7A4A' },
-              { label: 'Engine Specialist', level: 'Advanced', color: '#2E75B6' },
+              { label: 'Engine Specialist', level: 'Advanced', color: '#ff8a65' },
               { label: 'Electrical Systems', level: 'Intermediate', color: '#7C3AED' },
             ].map(cert => (
               <div key={cert.label} className="flex items-center gap-3">
@@ -1659,14 +1659,14 @@ function ProfileScreen() {
         {/* Admin link */}
         <a href="/admin-dashboard"
           className="w-full bg-[#EFF6FF] border border-[#BFDBFE] rounded-2xl p-4 flex items-center gap-3 active:opacity-90">
-          <div className="w-10 h-10 bg-[#1E3A5F] rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 bg-[#ff5722] rounded-xl flex items-center justify-center flex-shrink-0">
             <BarChart2 size={18} className="text-white" />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-[#1E3A5F] text-sm">Switch to Admin Dashboard</p>
+            <p className="font-bold text-[#ff5722] text-sm">Switch to Admin Dashboard</p>
             <p className="text-blue-400 text-xs">View full admin panel</p>
           </div>
-          <ArrowRight size={16} className="text-[#1E3A5F]" />
+          <ArrowRight size={16} className="text-[#ff5722]" />
         </a>
 
         {/* Logout */}

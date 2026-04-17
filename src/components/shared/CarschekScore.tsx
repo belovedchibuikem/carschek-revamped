@@ -15,7 +15,7 @@ export function getCarschekScoreStyle(score: number): { color: string; label: st
   if (s <= 40) return { color: '#C0392B', label: 'Poor Condition' };
   if (s <= 60) return { color: '#D35400', label: 'Fair Condition' };
   if (s <= 75) return { color: '#1A7A4A', label: 'Good Condition' };
-  if (s <= 90) return { color: '#1E3A5F', label: 'Very Good' };
+  if (s <= 90) return { color: '#ff5722', label: 'Very Good' };
   return { color: '#0E6655', label: 'Excellent' };
 }
 

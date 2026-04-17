@@ -143,7 +143,7 @@ export default function DuplicateResolutionModal({
                 setMasterId(current.id);
                 setMergeOpen(true);
               }}
-              className="inline-flex items-center gap-1 rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#16304F]"
+              className="inline-flex items-center gap-1 rounded-lg bg-[#ff5722] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e64a19]"
             >
               Merge Records <ChevronRight size={16} />
             </button>
@@ -172,7 +172,7 @@ export default function DuplicateResolutionModal({
                 <label
                   key={snap.id}
                   className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
-                    masterId === snap.id ? 'border-[#1E3A5F] bg-[#1E3A5F]/5' : 'border-[#E5E7EB] hover:border-[#2E75B6]/40'
+                    masterId === snap.id ? 'border-[#ff5722] bg-[#ff5722]/5' : 'border-[#E5E7EB] hover:border-[#ff8a65]/40'
                   }`}
                 >
                   <input
@@ -208,7 +208,7 @@ export default function DuplicateResolutionModal({
                   toast.success(`Records merged — ${masterId} is the master`);
                   router.push(`/cars/${masterId}`);
                 }}
-                className="flex-1 rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#16304F]"
+                className="flex-1 rounded-lg bg-[#ff5722] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e64a19]"
               >
                 Confirm Merge
               </button>

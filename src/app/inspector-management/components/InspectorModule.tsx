@@ -47,13 +47,13 @@ export default function InspectorModule() {
       <div className="flex gap-2">
         <button
           onClick={() => setActiveView('list')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'list' ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'list' ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
         >
           Inspector List
         </button>
         <button
           onClick={() => setActiveView('onboarding')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'onboarding' ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'onboarding' ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
         >
           Onboarding Workflow
         </button>

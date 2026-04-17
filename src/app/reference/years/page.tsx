@@ -82,17 +82,17 @@ export default function YearsPage() {
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">From Year</label>
-                <input type="number" value={batchStart} onChange={e => setBatchStart(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                <input type="number" value={batchStart} onChange={e => setBatchStart(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">To Year</label>
-                <input type="number" value={batchEnd} onChange={e => setBatchEnd(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                <input type="number" value={batchEnd} onChange={e => setBatchEnd(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
               </div>
             </div>
             <p className="text-xs text-[#6B7280] mb-4">Will add {Math.max(0, parseInt(batchEnd) - parseInt(batchStart) + 1)} years</p>
             <div className="flex gap-3">
               <button onClick={() => setBatchModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8]">Cancel</button>
-              <button onClick={addBatch} className="flex-1 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F]">Add Years</button>
+              <button onClick={addBatch} className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]">Add Years</button>
             </div>
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function YearsPage() {
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Car Years & Quick Registration</h1>
             <p className="text-sm text-[#6B7280]">Manage years and register cars in under 60 seconds</p>
           </div>
-          <button onClick={() => setBatchModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+          <button onClick={() => setBatchModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
             <Plus size={16} /> Add Years Batch
           </button>
         </div>
@@ -115,8 +115,8 @@ export default function YearsPage() {
             <h2 className="text-base font-heading font-semibold text-[#1F2937] mb-4">Year Management</h2>
             <div className="flex gap-2 mb-4">
               <input type="number" value={newYear} onChange={e => setNewYear(e.target.value)} onKeyDown={e => e.key === 'Enter' && addYear()}
-                placeholder="Enter year (e.g. 2026)" className="flex-1 px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
-              <button onClick={addYear} className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">Add</button>
+                placeholder="Enter year (e.g. 2026)" className="flex-1 px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
+              <button onClick={addYear} className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">Add</button>
             </div>
             <div className="space-y-1 max-h-80 overflow-y-auto">
               {years.slice(0, 20).map(y => (
@@ -144,12 +144,12 @@ export default function YearsPage() {
                 <div className="relative mb-2">
                   <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
                   <input value={brandSearch} onChange={e => setBrandSearch(e.target.value)} placeholder="Search…"
-                    className="w-full pl-7 pr-2 py-1.5 text-xs border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2E75B6]/30" />
+                    className="w-full pl-7 pr-2 py-1.5 text-xs border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ff8a65]/30" />
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-0.5">
                   {filteredBrands.map(b => (
                     <button key={b.id} onClick={() => { setSelectedBrand(b.id); setSelectedModel(null); }}
-                      className={`w-full text-left px-2 py-1.5 text-xs rounded-lg transition-all ${selectedBrand === b.id ? 'bg-[#1E3A5F] text-white' : 'hover:bg-[#F4F6F8] text-[#1F2937]'}`}>
+                      className={`w-full text-left px-2 py-1.5 text-xs rounded-lg transition-all ${selectedBrand === b.id ? 'bg-[#ff5722] text-white' : 'hover:bg-[#F4F6F8] text-[#1F2937]'}`}>
                       {b.logo} {b.name}
                     </button>
                   ))}
@@ -161,14 +161,14 @@ export default function YearsPage() {
                 <div className="relative mb-2">
                   <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
                   <input value={modelSearch} onChange={e => setModelSearch(e.target.value)} placeholder="Search…"
-                    className="w-full pl-7 pr-2 py-1.5 text-xs border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2E75B6]/30" />
+                    className="w-full pl-7 pr-2 py-1.5 text-xs border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ff8a65]/30" />
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-0.5">
                   {!selectedBrand ? (
                     <p className="text-xs text-[#9CA3AF] text-center mt-4">Select brand first</p>
                   ) : filteredModels.map(m => (
                     <button key={m.id} onClick={() => setSelectedModel(m.id)}
-                      className={`w-full text-left px-2 py-1.5 text-xs rounded-lg transition-all ${selectedModel === m.id ? 'bg-[#1E3A5F] text-white' : 'hover:bg-[#F4F6F8] text-[#1F2937]'}`}>
+                      className={`w-full text-left px-2 py-1.5 text-xs rounded-lg transition-all ${selectedModel === m.id ? 'bg-[#ff5722] text-white' : 'hover:bg-[#F4F6F8] text-[#1F2937]'}`}>
                       {m.name}
                       <span className="block text-[10px] opacity-60">{m.bodyTypes[0]}</span>
                     </button>
@@ -186,9 +186,9 @@ export default function YearsPage() {
                     <div className="grid grid-cols-2 gap-1">
                       {years.filter(y => y.active).slice(0, 20).map(y => (
                         <button key={y.id} onClick={() => handleYearSelect(y.year)}
-                          className="relative py-1.5 text-xs font-semibold bg-[#F4F6F8] hover:bg-[#1E3A5F] hover:text-white rounded-lg transition-all text-[#1F2937]">
+                          className="relative py-1.5 text-xs font-semibold bg-[#F4F6F8] hover:bg-[#ff5722] hover:text-white rounded-lg transition-all text-[#1F2937]">
                           {y.year}
-                          {y.cars > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#2E75B6] text-white text-[9px] rounded-full flex items-center justify-center">{y.cars}</span>}
+                          {y.cars > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#ff8a65] text-white text-[9px] rounded-full flex items-center justify-center">{y.cars}</span>}
                         </button>
                       ))}
                     </div>

@@ -264,7 +264,7 @@ export default function CarsPage() {
       case 'ckId':
         return (
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-semibold text-[#1E3A5F]">{car.id}</span>
+            <span className="font-mono text-xs font-semibold text-[#ff5722]">{car.id}</span>
             {car.hasDuplicate && (
               <button
                 type="button"
@@ -337,7 +337,7 @@ export default function CarsPage() {
     return (
       <button type="button" onClick={() => toggleSort(sk)} className="inline-flex items-center gap-1 text-xs font-semibold text-[#6B7280] uppercase tracking-wide whitespace-nowrap hover:text-[#1F2937]">
         {label}
-        <ArrowUpDown size={12} className={sortKey === sk ? 'text-[#2E75B6]' : 'opacity-50'} />
+        <ArrowUpDown size={12} className={sortKey === sk ? 'text-[#ff8a65]' : 'opacity-50'} />
       </button>
     );
   };
@@ -434,7 +434,7 @@ export default function CarsPage() {
                 });
                 setVisibleCols(o);
               }}
-              className="mt-4 text-xs text-[#2E75B6] hover:underline"
+              className="mt-4 text-xs text-[#ff8a65] hover:underline"
             >
               Reset to defaults
             </button>
@@ -452,7 +452,7 @@ export default function CarsPage() {
             <button onClick={exportCSV} className="flex items-center gap-2 px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium text-[#6B7280] hover:bg-[#F4F6F8] transition-colors">
               <Download size={15} /> Export
             </button>
-            <Link href="/cars/new" className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px]">
+            <Link href="/cars/new" className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
               <Plus size={16} /> Register New Car
             </Link>
           </div>
@@ -466,7 +466,7 @@ export default function CarsPage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search by ID, brand, plate, VIN…"
-                className="w-full pl-9 pr-4 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 focus:border-[#2E75B6]"
+                className="w-full pl-9 pr-4 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 focus:border-[#ff8a65]"
               />
               {isFiltering && <p className="absolute bottom-2 left-4 text-[11px] text-[#6B7280]">Filtering…</p>}
             </div>
@@ -477,7 +477,7 @@ export default function CarsPage() {
                 setModelFilter('');
                 setPage(1);
               }}
-              className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+              className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
             >
               <option value="">All Brands</option>
               {brandOptions.map(b => (
@@ -486,7 +486,7 @@ export default function CarsPage() {
                 </option>
               ))}
             </select>
-            <select value={modelFilter} onChange={e => { setModelFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+            <select value={modelFilter} onChange={e => { setModelFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
               <option value="">All Models</option>
               {modelOptions.map(m => (
                 <option key={m} value={m}>
@@ -494,7 +494,7 @@ export default function CarsPage() {
                 </option>
               ))}
             </select>
-            <select value={yearFilter} onChange={e => { setYearFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+            <select value={yearFilter} onChange={e => { setYearFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
               <option value="">All Years</option>
               {yearOptions.map(y => (
                 <option key={y} value={y}>
@@ -502,7 +502,7 @@ export default function CarsPage() {
                 </option>
               ))}
             </select>
-            <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+            <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
               <option value="">All Statuses</option>
               {PIPELINE_STAGES.map(s => (
                 <option key={s} value={s}>
@@ -510,7 +510,7 @@ export default function CarsPage() {
                 </option>
               ))}
             </select>
-            <select value={channelFilter} onChange={e => { setChannelFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+            <select value={channelFilter} onChange={e => { setChannelFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
               <option value="">All Channels</option>
               {CHANNELS.map(s => (
                 <option key={s} value={s}>
@@ -557,7 +557,7 @@ export default function CarsPage() {
         </div>
 
         {selectedIds.length > 0 && (
-          <div className="bg-[#1E3A5F] text-white rounded-xl px-4 py-3 flex items-center gap-4 animate-fade-in">
+          <div className="bg-[#ff5722] text-white rounded-xl px-4 py-3 flex items-center gap-4 animate-fade-in">
             <span className="text-sm font-medium">{selectedIds.length} selected</span>
             <div className="flex items-center gap-2 ml-auto flex-wrap">
               {['Push to Marketplace', 'Export', 'Delete'].map(action => (
@@ -595,7 +595,7 @@ export default function CarsPage() {
                   <th className="px-4 py-3 text-left w-10">
                     <button type="button" onClick={toggleAll} className="flex items-center">
                       {selectedIds.length === paginated.length && paginated.length > 0 ? (
-                        <CheckSquare size={16} className="text-[#2E75B6]" />
+                        <CheckSquare size={16} className="text-[#ff8a65]" />
                       ) : (
                         <Square size={16} className="text-[#9CA3AF]" />
                       )}
@@ -631,7 +631,7 @@ export default function CarsPage() {
                     >
                       <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                         <button type="button" onClick={() => toggleSelect(car.id)}>
-                          {selectedIds.includes(car.id) ? <CheckSquare size={16} className="text-[#2E75B6]" /> : <Square size={16} className="text-[#9CA3AF]" />}
+                          {selectedIds.includes(car.id) ? <CheckSquare size={16} className="text-[#ff8a65]" /> : <Square size={16} className="text-[#9CA3AF]" />}
                         </button>
                       </td>
                       {ALL_COLUMNS.filter(c => visibleCols[c.key]).map(c => (
@@ -725,7 +725,7 @@ export default function CarsPage() {
                       <p className="font-medium">No cars found</p>
                       <p className="text-sm mt-1">
                         Try adjusting your filters or{' '}
-                        <Link href="/cars/new" className="text-[#2E75B6] hover:underline">
+                        <Link href="/cars/new" className="text-[#ff8a65] hover:underline">
                           register a new car
                         </Link>
                       </p>
@@ -751,7 +751,7 @@ export default function CarsPage() {
                       setPerPage(n);
                       setPage(1);
                     }}
-                    className={`px-2 py-1 rounded-md ${perPage === n ? 'bg-[#1E3A5F] text-white' : 'hover:bg-[#F4F6F8]'}`}
+                    className={`px-2 py-1 rounded-md ${perPage === n ? 'bg-[#ff5722] text-white' : 'hover:bg-[#F4F6F8]'}`}
                   >
                     {n}
                   </button>
@@ -788,7 +788,7 @@ export default function CarsPage() {
                         type="button"
                         onClick={() => setPage(p)}
                         className={`min-w-[2rem] h-8 px-1 flex items-center justify-center rounded-lg text-sm transition-colors ${
-                          pageClamped === p ? 'bg-[#1E3A5F] text-white' : 'hover:bg-[#F4F6F8] text-[#6B7280]'
+                          pageClamped === p ? 'bg-[#ff5722] text-white' : 'hover:bg-[#F4F6F8] text-[#6B7280]'
                         }`}
                       >
                         {p}

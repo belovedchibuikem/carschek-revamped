@@ -41,7 +41,7 @@ export default function PricingGuidanceTool({ onBack }: Props) {
       </button>
 
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-[#1E3A5F] flex items-center justify-center">
+        <div className="w-9 h-9 rounded-xl bg-[#ff5722] flex items-center justify-center">
           <Calculator size={18} className="text-white" />
         </div>
         <div>
@@ -59,7 +59,7 @@ export default function PricingGuidanceTool({ onBack }: Props) {
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Make</label>
                 <div className="relative">
-                  <select value={make} onChange={e => setMake(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] appearance-none bg-white transition-all">
+                  <select value={make} onChange={e => setMake(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all">
                     {['Toyota', 'Honda', 'Mercedes-Benz', 'Ford', 'Lexus', 'Hyundai', 'Nissan', 'Kia'].map(m => <option key={m}>{m}</option>)}
                   </select>
                   <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
@@ -68,7 +68,7 @@ export default function PricingGuidanceTool({ onBack }: Props) {
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Model</label>
                 <div className="relative">
-                  <select value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] appearance-none bg-white transition-all">
+                  <select value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all">
                     {['Camry', 'Corolla', 'Highlander', 'RAV4', 'Accord', 'CR-V', 'C300', 'Escape'].map(m => <option key={m}>{m}</option>)}
                   </select>
                   <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
@@ -79,7 +79,7 @@ export default function PricingGuidanceTool({ onBack }: Props) {
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Year</label>
                 <div className="relative">
-                  <select value={year} onChange={e => setYear(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] appearance-none bg-white transition-all">
+                  <select value={year} onChange={e => setYear(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all">
                     {['2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015'].map(y => <option key={y}>{y}</option>)}
                   </select>
                   <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
@@ -87,17 +87,17 @@ export default function PricingGuidanceTool({ onBack }: Props) {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Mileage (km)</label>
-                <input type="number" value={mileage} onChange={e => setMileage(e.target.value)} placeholder="e.g. 68000" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+                <input type="number" value={mileage} onChange={e => setMileage(e.target.value)} placeholder="e.g. 68000" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
               </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Carschek Score (0–100)</label>
-              <input type="number" min="0" max="100" value={score} onChange={e => setScore(e.target.value)} placeholder="e.g. 82" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+              <input type="number" min="0" max="100" value={score} onChange={e => setScore(e.target.value)} placeholder="e.g. 82" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
               <p className="text-[10px] text-[#6B7280] mt-1">Higher score = better condition = higher estimated value</p>
             </div>
             <button
               onClick={handleEstimate}
-              className="w-full py-3 bg-[#1E3A5F] text-white text-sm font-semibold rounded-xl hover:bg-[#16304F] transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#ff5722] text-white text-sm font-semibold rounded-xl hover:bg-[#e64a19] transition-all active:scale-[0.99] flex items-center justify-center gap-2"
             >
               <Calculator size={15} /> Estimate Market Price
             </button>
@@ -111,11 +111,11 @@ export default function PricingGuidanceTool({ onBack }: Props) {
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Estimated Market Value</h3>
-                <span className="text-[10px] bg-blue-50 text-[#2E75B6] border border-blue-200 px-2 py-0.5 rounded-full font-semibold">Based on {COMP_SALES.length} recent sales</span>
+                <span className="text-[10px] bg-blue-50 text-[#ff8a65] border border-blue-200 px-2 py-0.5 rounded-full font-semibold">Based on {COMP_SALES.length} recent sales</span>
               </div>
 
               <div className="text-center mb-5">
-                <p className="text-3xl font-heading font-bold text-[#1E3A5F]">₦{estimatedMin.toLocaleString()} – ₦{estimatedMax.toLocaleString()}</p>
+                <p className="text-3xl font-heading font-bold text-[#ff5722]">₦{estimatedMin.toLocaleString()} – ₦{estimatedMax.toLocaleString()}</p>
                 <p className="text-sm text-[#6B7280] mt-1">Fair price range for {year} {make} {model}</p>
               </div>
 
@@ -131,7 +131,7 @@ export default function PricingGuidanceTool({ onBack }: Props) {
                   <div className="absolute top-0 bottom-0 bg-green-100 border-x border-green-300" style={{ left: '25%', right: '25%' }} />
                   {/* Asking price marker */}
                   <div
-                    className="absolute top-0 bottom-0 w-1 bg-[#1E3A5F] rounded-full"
+                    className="absolute top-0 bottom-0 w-1 bg-[#ff5722] rounded-full"
                     style={{ left: `${Math.min(Math.max(pricePosition * 0.5 + 25, 5), 95)}%` }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -147,9 +147,9 @@ export default function PricingGuidanceTool({ onBack }: Props) {
 
               {/* Verdict */}
               <div className={`flex items-center gap-3 p-3 rounded-xl border ${isFair ? 'bg-green-50 border-green-200' : isAbove ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}>
-                {isFair ? <TrendingUp size={18} className="text-[#1A7A4A]" /> : isAbove ? <TrendingUp size={18} className="text-[#D35400]" /> : <TrendingDown size={18} className="text-[#2E75B6]" />}
+                {isFair ? <TrendingUp size={18} className="text-[#1A7A4A]" /> : isAbove ? <TrendingUp size={18} className="text-[#D35400]" /> : <TrendingDown size={18} className="text-[#ff8a65]" />}
                 <div>
-                  <p className={`text-sm font-semibold ${isFair ? 'text-[#1A7A4A]' : isAbove ? 'text-[#D35400]' : 'text-[#2E75B6]'}`}>
+                  <p className={`text-sm font-semibold ${isFair ? 'text-[#1A7A4A]' : isAbove ? 'text-[#D35400]' : 'text-[#ff8a65]'}`}>
                     {isFair ? '✓ Fair Price' : isAbove ? '⚠ Slightly Above Market' : '↓ Below Market Value'}
                   </p>
                   <p className="text-xs text-[#6B7280]">

@@ -99,7 +99,7 @@ export default function DashboardKPIs() {
           </div>
         </div>
         <div className="mt-2">
-          <Sparkline data={SPARKLINES.revenue.map(v => v / 100000)} color="#2E75B6" />
+          <Sparkline data={SPARKLINES.revenue.map(v => v / 100000)} color="#ff8a65" />
         </div>
       </div>
 
@@ -107,7 +107,7 @@ export default function DashboardKPIs() {
       <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between mb-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Active Inspectors</p>
-          <Users size={16} className="text-[#2E75B6]" />
+          <Users size={16} className="text-[#ff8a65]" />
         </div>
         <p className="text-4xl font-heading font-bold text-[#1F2937] tabular-nums">11<span className="text-xl text-[#6B7280] font-normal">/15</span></p>
         <p className="text-xs text-[#6B7280] mt-1">4 off duty today</p>

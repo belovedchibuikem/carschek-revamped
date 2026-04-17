@@ -22,7 +22,7 @@ export default function ProofOfSalePage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 text-sm text-[#374151] hover:text-[#1E3A5F]"
+            className="inline-flex items-center gap-2 text-sm text-[#374151] hover:text-[#ff5722]"
           >
             <ArrowLeft size={16} /> Back
           </button>
@@ -30,7 +30,7 @@ export default function ProofOfSalePage() {
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F]"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19]"
             >
               <Printer size={16} /> Print / Save as PDF
             </button>
@@ -42,7 +42,7 @@ export default function ProofOfSalePage() {
 
         <article className="bg-white rounded-xl border border-[#E5E7EB] p-8 shadow-sm print:shadow-none print:border-0 print:rounded-none">
           <header className="border-b border-[#E5E7EB] pb-6 mb-6">
-            <p className="text-xs font-semibold text-[#2E75B6] uppercase tracking-wider">Carschek — Proof of Sale</p>
+            <p className="text-xs font-semibold text-[#ff8a65] uppercase tracking-wider">Carschek — Proof of Sale</p>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937] mt-2">Vehicle sale confirmation</h1>
             <p className="text-sm text-[#6B7280] mt-1">Reference {car.id} · Generated {new Date().toLocaleDateString('en-NG')}</p>
           </header>

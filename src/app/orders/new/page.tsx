@@ -54,7 +54,7 @@ export default function NewOrderPage() {
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">{f.label}</label>
                 <input type={f.type} value={form[f.key as keyof typeof form]} onChange={e => set(f.key, e.target.value)}
                   placeholder={f.placeholder}
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
               </div>
             ))}
           </div>
@@ -64,19 +64,19 @@ export default function NewOrderPage() {
             <div>
               <label className="block text-xs font-semibold text-[#374151] mb-1.5">Date *</label>
               <input type="date" value={form.scheduledDate} onChange={e => set('scheduledDate', e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#374151] mb-1.5">Time</label>
               <input type="time" value={form.scheduledTime} onChange={e => set('scheduledTime', e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-[#374151] mb-1.5">Notes</label>
             <textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={3} placeholder="Special instructions…"
-              className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+              className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
           </div>
         </div>
 
@@ -85,7 +85,7 @@ export default function NewOrderPage() {
             Cancel
           </Link>
           <button onClick={handleSubmit} disabled={saving}
-            className="flex-1 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] disabled:opacity-60 transition-all">
+            className="flex-1 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] disabled:opacity-60 transition-all">
             {saving ? 'Creating…' : 'Create Order'}
           </button>
         </div>

@@ -59,7 +59,7 @@ export default function DealDetailPage() {
       <AppLayout currentPath={pathname}>
         <div className="rounded-xl border border-[#E5E7EB] bg-white p-8 text-center">
           <p className="font-medium text-[#1F2937]">Deal not found</p>
-          <Link href="/deals" className="mt-3 inline-block text-sm text-[#2E75B6] hover:underline">
+          <Link href="/deals" className="mt-3 inline-block text-sm text-[#ff8a65] hover:underline">
             Back to deals
           </Link>
         </div>
@@ -73,14 +73,14 @@ export default function DealDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[#6B7280] text-sm mb-1">
-              <Link href="/deals" className="hover:text-[#1E3A5F]">
+              <Link href="/deals" className="hover:text-[#ff5722]">
                 Deals
               </Link>
               <span>/</span>
               <span className="font-mono text-[#1F2937]">{deal.id}</span>
             </div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937] flex items-center gap-2">
-              <Handshake className="text-[#1E3A5F]" size={26} />
+              <Handshake className="text-[#ff5722]" size={26} />
               {deal.carName}
             </h1>
             <p className="text-sm text-[#6B7280] mt-1">
@@ -133,12 +133,12 @@ export default function DealDetailPage() {
                   onChange={e => setDraft(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && sendMessage()}
                   placeholder="Type a message…"
-                  className="flex-1 px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+                  className="flex-1 px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                 />
                 <button
                   type="button"
                   onClick={sendMessage}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F]"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19]"
                 >
                   <Send size={16} /> Send
                 </button>

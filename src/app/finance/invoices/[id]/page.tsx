@@ -23,7 +23,7 @@ export default function InvoiceDetailPage() {
       <AppLayout currentPath={pathname}>
         <div className="rounded-xl border border-[#E5E7EB] bg-white p-8 text-center">
           <p className="font-medium text-[#1F2937]">Invoice not found</p>
-          <Link href="/finance" className="mt-3 inline-block text-sm text-[#2E75B6] hover:underline">
+          <Link href="/finance" className="mt-3 inline-block text-sm text-[#ff8a65] hover:underline">
             Back to finance
           </Link>
         </div>
@@ -43,7 +43,7 @@ export default function InvoiceDetailPage() {
     <AppLayout currentPath={pathname}>
       <div className="space-y-6 max-w-3xl">
         <div className="flex items-center gap-2 text-[#6B7280] text-sm">
-          <Link href="/finance" className="hover:text-[#1E3A5F]">
+          <Link href="/finance" className="hover:text-[#ff5722]">
             Finance
           </Link>
           <span>/</span>
@@ -54,7 +54,7 @@ export default function InvoiceDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937] flex items-center gap-2">
-              <FileText className="text-[#1E3A5F]" size={26} />
+              <FileText className="text-[#ff5722]" size={26} />
               Invoice {id}
             </h1>
             <p className="text-sm text-[#6B7280] mt-1">{inv.customer}</p>
@@ -94,7 +94,7 @@ export default function InvoiceDetailPage() {
           <button
             type="button"
             onClick={exportLines}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F]"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]"
           >
             <Download size={16} /> Export lines (CSV)
           </button>
@@ -138,7 +138,7 @@ export default function InvoiceDetailPage() {
                 <td colSpan={3} className="px-5 py-4 text-right font-semibold text-[#1F2937]">
                   Total
                 </td>
-                <td className="px-5 py-4 text-right font-heading font-bold text-[#1E3A5F]">{formatNaira(total)}</td>
+                <td className="px-5 py-4 text-right font-heading font-bold text-[#ff5722]">{formatNaira(total)}</td>
               </tr>
             </tfoot>
           </table>

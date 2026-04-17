@@ -172,7 +172,7 @@ export function OverviewScreen({ layout, jobId }: Props) {
       data-inspection-layout={layout}
       className={`space-y-5 pb-8 ${layout === 'mobile-app' ? 'mx-auto max-w-lg' : ''}`}
     >
-      <div className="overflow-hidden rounded-b-3xl bg-[#1E3A5F] text-white shadow-lg">
+      <div className="overflow-hidden rounded-b-3xl bg-[#ff5722] text-white shadow-lg">
         <div className="flex items-start gap-2 px-4 pb-2 pt-3">
           <Link
             href={href(`jobs/${jobId}`)}
@@ -237,7 +237,7 @@ export function OverviewScreen({ layout, jobId }: Props) {
                     sectionMap[section.id] === 'not-started' ? 'in-progress' : (sectionMap[section.id] ?? 'in-progress'),
                 });
               }}
-              className="flex flex-col rounded-2xl border border-[#E5E7EB] bg-white p-2.5 shadow-sm transition hover:border-[#2E75B6]/35 hover:shadow-md"
+              className="flex flex-col rounded-2xl border border-[#E5E7EB] bg-white p-2.5 shadow-sm transition hover:border-[#ff8a65]/35 hover:shadow-md"
             >
               <div className="mb-1.5 flex items-start justify-end">
                 <span className="sr-only">
@@ -266,10 +266,10 @@ export function OverviewScreen({ layout, jobId }: Props) {
         <div className="space-y-2">
           <Link
             href={vehiclePhotosHref}
-            className="flex items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-white p-3 shadow-sm transition hover:border-[#2E75B6]/40"
+            className="flex items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-white p-3 shadow-sm transition hover:border-[#ff8a65]/40"
           >
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#EEF4FB]">
-              <Camera className="text-[#2E75B6]" size={22} aria-hidden />
+              <Camera className="text-[#ff8a65]" size={22} aria-hidden />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-[#1F2937]">Vehicle Photos</p>

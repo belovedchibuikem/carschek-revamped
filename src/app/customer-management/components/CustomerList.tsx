@@ -53,7 +53,7 @@ export default function CustomerList({ customers, onSelectCustomer }: Props) {
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[240px]">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, phone, plate…" className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, phone, plate…" className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
         </div>
         <div className="relative">
           <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)} className="appearance-none pl-3 pr-8 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none bg-white">
@@ -71,7 +71,7 @@ export default function CustomerList({ customers, onSelectCustomer }: Props) {
           <button
             key={f.id}
             onClick={() => setActiveFilter(f.value)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${activeFilter === f.value ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#1E3A5F] hover:text-[#1E3A5F]'}`}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${activeFilter === f.value ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#ff5722] hover:text-[#ff5722]'}`}
           >
             {f.label}
           </button>
@@ -98,7 +98,7 @@ export default function CustomerList({ customers, onSelectCustomer }: Props) {
                 <tr key={customer.id} className="hover:bg-[#F4F6F8]/60 transition-colors group cursor-pointer" onClick={() => onSelectCustomer(customer)}>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{customer.avatar}</div>
+                      <div className="w-8 h-8 rounded-full bg-[#ff8a65] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{customer.avatar}</div>
                       <div>
                         <p className="text-sm font-semibold text-[#1F2937]">{customer.name}</p>
                         <p className="text-[10px] text-[#6B7280]">{customer.email}</p>
@@ -116,7 +116,7 @@ export default function CustomerList({ customers, onSelectCustomer }: Props) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={e => { e.stopPropagation(); onSelectCustomer(customer); }} className="p-1.5 rounded-lg hover:bg-blue-50 text-[#2E75B6] transition-colors" title="View profile"><Eye size={14} /></button>
+                      <button onClick={e => { e.stopPropagation(); onSelectCustomer(customer); }} className="p-1.5 rounded-lg hover:bg-blue-50 text-[#ff8a65] transition-colors" title="View profile"><Eye size={14} /></button>
                       <button onClick={e => { e.stopPropagation(); toast.warning(`${customer.name} flagged for review`); }} className="p-1.5 rounded-lg hover:bg-amber-50 text-[#D35400] transition-colors" title="Flag account"><Flag size={14} /></button>
                       <button onClick={e => { e.stopPropagation(); toast.error(`${customer.name} account suspended`); }} className="p-1.5 rounded-lg hover:bg-red-50 text-[#C0392B] transition-colors" title="Suspend account"><Ban size={14} /></button>
                     </div>

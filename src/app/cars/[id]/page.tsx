@@ -261,7 +261,7 @@ function CarDetailPageContent() {
                   </li>
                 ))}
               </ul>
-              <button type="button" onClick={() => setWarningsOpen(false)} className="mt-5 w-full py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold">
+              <button type="button" onClick={() => setWarningsOpen(false)} className="mt-5 w-full py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold">
                 Close
               </button>
             </div>
@@ -301,7 +301,7 @@ function CarDetailPageContent() {
               type="button"
               onClick={() => setTab(i)}
               className={`relative px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${
-                activeTab === i ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'
+                activeTab === i ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'
               }`}
             >
               {tab}
@@ -316,7 +316,7 @@ function CarDetailPageContent() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Car Details</h3>
                 {!editMain ? (
-                  <button type="button" onClick={() => setEditMain(true)} className="flex items-center gap-1.5 text-xs text-[#2E75B6] hover:underline">
+                  <button type="button" onClick={() => setEditMain(true)} className="flex items-center gap-1.5 text-xs text-[#ff8a65] hover:underline">
                     <Edit size={12} /> Edit
                   </button>
                 ) : (
@@ -344,7 +344,7 @@ function CarDetailPageContent() {
                           setEditData(prev => ({ ...prev, [field.key]: e.target.value }));
                           markDirty(0);
                         }}
-                        className={`flex-1 text-sm px-2 py-1 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 text-right ${field.mono ? 'font-mono text-xs' : ''}`}
+                        className={`flex-1 text-sm px-2 py-1 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 text-right ${field.mono ? 'font-mono text-xs' : ''}`}
                       />
                     ) : (
                       <span className={`text-sm font-medium text-[#1F2937] text-right ${field.mono ? 'font-mono text-xs' : ''}`}>{field.value}</span>
@@ -360,7 +360,7 @@ function CarDetailPageContent() {
                     markDirty(0);
                     toast.success('Car details updated');
                   }}
-                  className="mt-4 w-full py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all"
+                  className="mt-4 w-full py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all"
                 >
                   Save
                 </button>
@@ -371,7 +371,7 @@ function CarDetailPageContent() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Contact</h3>
                 {!editContact ? (
-                  <button type="button" onClick={() => setEditContact(true)} className="text-xs text-[#2E75B6] hover:underline flex items-center gap-1">
+                  <button type="button" onClick={() => setEditContact(true)} className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">
                     <Edit size={12} /> Edit
                   </button>
                 ) : (
@@ -399,7 +399,7 @@ function CarDetailPageContent() {
                   </div>
                 ))}
               </div>
-              <Link href="/crm" className="mt-4 inline-flex items-center gap-1 text-xs text-[#2E75B6] hover:underline">
+              <Link href="/crm" className="mt-4 inline-flex items-center gap-1 text-xs text-[#ff8a65] hover:underline">
                 <ExternalLink size={12} /> Open in CRM
               </Link>
             </div>
@@ -411,7 +411,7 @@ function CarDetailPageContent() {
                   <CarschekScore score={car.score} size={88} />
                   <div className="min-w-0">
                     <p className="text-xs text-[#6B7280]">Based on inspection data</p>
-                    <Link href="/reports" className="text-xs text-[#2E75B6] hover:underline mt-1 block">
+                    <Link href="/reports" className="text-xs text-[#ff8a65] hover:underline mt-1 block">
                       View reports →
                     </Link>
                   </div>
@@ -428,7 +428,7 @@ function CarDetailPageContent() {
                 <button
                   type="button"
                   onClick={() => setComplianceOpen(true)}
-                  className="w-full py-2.5 border border-[#1E3A5F] text-[#1E3A5F] text-sm font-semibold rounded-lg hover:bg-[#1E3A5F]/5 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 border border-[#ff5722] text-[#ff5722] text-sm font-semibold rounded-lg hover:bg-[#ff5722]/5 flex items-center justify-center gap-2"
                 >
                   <FileText size={14} /> Open Document Review
                 </button>
@@ -466,7 +466,7 @@ function CarDetailPageContent() {
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Purchase prices</h3>
-                <button type="button" onClick={() => setAddingPrice(!addingPrice)} className="text-xs text-[#2E75B6] font-semibold">
+                <button type="button" onClick={() => setAddingPrice(!addingPrice)} className="text-xs text-[#ff8a65] font-semibold">
                   + Add Price
                 </button>
               </div>
@@ -512,7 +512,7 @@ function CarDetailPageContent() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      className="flex-1 py-1.5 bg-[#1E3A5F] text-white text-xs rounded-lg"
+                      className="flex-1 py-1.5 bg-[#ff5722] text-white text-xs rounded-lg"
                       onClick={() => {
                         const n = Number(newPriceRow.amount.replace(/\D/g, ''));
                         if (!n || !newPriceRow.date) return;
@@ -565,7 +565,7 @@ function CarDetailPageContent() {
                 }}
                 className="w-full text-sm border border-[#E5E7EB] rounded-lg px-3 py-2"
               />
-              <button type="button" onClick={() => toast.success('Handover date saved')} className="mt-3 w-full py-2 bg-[#1E3A5F] text-white text-sm rounded-lg">
+              <button type="button" onClick={() => toast.success('Handover date saved')} className="mt-3 w-full py-2 bg-[#ff5722] text-white text-sm rounded-lg">
                 Save
               </button>
             </div>
@@ -649,7 +649,7 @@ function CarDetailPageContent() {
               <button
                 type="button"
                 onClick={() => router.push(`/cars/${car.id}/proof-of-sale`)}
-                className="w-full py-2.5 border border-[#1E3A5F] text-[#1E3A5F] text-sm font-semibold rounded-lg hover:bg-[#1E3A5F]/5"
+                className="w-full py-2.5 border border-[#ff5722] text-[#ff5722] text-sm font-semibold rounded-lg hover:bg-[#ff5722]/5"
               >
                 Generate Proof of Sale (PDF preview)
               </button>
@@ -679,7 +679,7 @@ function CarDetailPageContent() {
                     Current: <strong>{formatNaira(auction.currentBid)}</strong> · Bids: {auction.bidCount}
                   </p>
                   <p className="text-xs text-[#6B7280]">Ends {new Date(auction.endsAt).toLocaleString()}</p>
-                  <Link href={`/auctions/${auction.id}`} className="text-[#2E75B6] text-sm font-medium inline-flex items-center gap-1">
+                  <Link href={`/auctions/${auction.id}`} className="text-[#ff8a65] text-sm font-medium inline-flex items-center gap-1">
                     View Bids <ExternalLink size={12} />
                   </Link>
                   <button type="button" onClick={() => toast.success('Auction ended (demo)')} className="block w-full py-2 border border-[#C0392B] text-[#C0392B] rounded-lg text-sm">
@@ -690,7 +690,7 @@ function CarDetailPageContent() {
               {auction && auction.status !== 'Active' && (
                 <div className="space-y-3">
                   <p className="text-sm text-[#6B7280]">Auction ended — reserve {auction.reserveMet ? 'met' : 'not met'}</p>
-                  <button type="button" onClick={() => router.push('/deals')} className="w-full py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm">
+                  <button type="button" onClick={() => router.push('/deals')} className="w-full py-2.5 bg-[#ff5722] text-white rounded-lg text-sm">
                     Create Deal
                   </button>
                 </div>
@@ -713,7 +713,7 @@ function CarDetailPageContent() {
                           toast.success(`Visibility: ${v}`);
                         }}
                         className={`flex-1 min-w-[90px] py-2 text-xs font-medium rounded-lg border transition-all ${
-                          marketplaceVisibility === v ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280]'
+                          marketplaceVisibility === v ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280]'
                         }`}
                       >
                         {v}
@@ -757,7 +757,7 @@ function CarDetailPageContent() {
                           setPctOff(p);
                           markDirty(3);
                         }}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${pctOff === p ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-[#E5E7EB]'}`}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${pctOff === p ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'border-[#E5E7EB]'}`}
                       >
                         {p}%
                       </button>
@@ -778,7 +778,7 @@ function CarDetailPageContent() {
                     setMarketplaceLoading(false);
                     toast.success('Marketplace listing updated');
                   }}
-                  className="w-full py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] disabled:opacity-50 inline-flex items-center justify-center gap-2"
                 >
                   {marketplaceLoading ? <Loader2 size={16} className="animate-spin" /> : null}
                   Update Marketplace Listing

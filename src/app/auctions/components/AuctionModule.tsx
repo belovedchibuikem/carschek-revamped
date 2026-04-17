@@ -39,7 +39,7 @@ const STATUS_STYLE: Record<string, string> = {
   'Active': 'bg-green-50 text-green-700',
   'Extended': 'bg-blue-50 text-blue-700',
   'Ended — No Sale': 'bg-gray-100 text-gray-500',
-  'Ended — Sale': 'bg-[#1E3A5F]/10 text-[#1E3A5F]',
+  'Ended — Sale': 'bg-[#ff5722]/10 text-[#ff5722]',
 };
 
 export default function AuctionModule() {
@@ -61,8 +61,8 @@ export default function AuctionModule() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[#1E3A5F]">Auctions</h1>
-          <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-sm font-semibold px-2.5 py-0.5 rounded-full">{MOCK_AUCTIONS.length} auctions</span>
+          <h1 className="text-2xl font-bold text-[#ff5722]">Auctions</h1>
+          <span className="bg-[#ff5722]/10 text-[#ff5722] text-sm font-semibold px-2.5 py-0.5 rounded-full">{MOCK_AUCTIONS.length} auctions</span>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export default function AuctionModule() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
-                        <button onClick={() => setSelectedAuction(auction.id)} className="text-xs px-2 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-md hover:bg-[#1E3A5F]/20 transition-colors font-medium">View Bids</button>
+                        <button onClick={() => setSelectedAuction(auction.id)} className="text-xs px-2 py-1 bg-[#ff5722]/10 text-[#ff5722] rounded-md hover:bg-[#ff5722]/20 transition-colors font-medium">View Bids</button>
                         <button className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors">Extend</button>
                         {auction.status === 'Active' && (
                           <button onClick={() => setShowCloseFlow(auction.id)} className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors">Close</button>
@@ -128,7 +128,7 @@ export default function AuctionModule() {
           <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
             <div className="p-5 border-b border-gray-100">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="font-bold text-[#1E3A5F] text-lg">Bid History</h2>
+                <h2 className="font-bold text-[#ff5722] text-lg">Bid History</h2>
                 <button onClick={() => setSelectedAuction(null)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"><X size={18} /></button>
               </div>
               <p className="text-sm text-gray-600">{selectedAuctionData.vehicle} — {selectedAuctionData.ckId}</p>
@@ -184,7 +184,7 @@ export default function AuctionModule() {
       {showCloseFlow && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 className="font-bold text-[#1E3A5F] text-lg mb-2">Close Auction Early</h3>
+            <h3 className="font-bold text-[#ff5722] text-lg mb-2">Close Auction Early</h3>
             <p className="text-sm text-gray-500 mb-5">Are you sure you want to close this auction before it ends?</p>
             <div className="flex gap-3">
               <button onClick={() => setShowCloseFlow(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>

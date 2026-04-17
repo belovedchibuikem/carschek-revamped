@@ -83,7 +83,7 @@ export default function ActivityPage() {
         <div className="relative max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search activity…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
           {search !== debouncedSearch && (
             <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
           )}
@@ -110,7 +110,7 @@ export default function ActivityPage() {
                     <td className="px-4 py-3 font-medium text-[#1F2937]">{log.actor}</td>
                     <td className="px-4 py-3 text-[#6B7280]">{log.action}</td>
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-[#2E75B6]">{log.target}</span>
+                      <span className="font-mono text-xs text-[#ff8a65]">{log.target}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-xs bg-[#F4F6F8] text-[#6B7280] px-2 py-0.5 rounded-full">{log.role}</span>

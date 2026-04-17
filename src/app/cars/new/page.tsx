@@ -16,7 +16,7 @@ import { SearchableSelect } from '@/components/shared/SearchableSelect';
 const STEPS = ['Vehicle Identity', 'Seller Contact', 'Purchase', 'Documents'];
 const COLOUR_SWATCHES: { name: string; hex: string }[] = [
   { name: 'White', hex: '#FFFFFF' }, { name: 'Black', hex: '#111827' }, { name: 'Silver', hex: '#C0C0C0' }, { name: 'Grey', hex: '#6B7280' },
-  { name: 'Red', hex: '#DC2626' }, { name: 'Blue', hex: '#2563EB' }, { name: 'Navy Blue', hex: '#1E3A5F' }, { name: 'Green', hex: '#16A34A' },
+  { name: 'Red', hex: '#DC2626' }, { name: 'Blue', hex: '#2563EB' }, { name: 'Navy Blue', hex: '#ff5722' }, { name: 'Green', hex: '#16A34A' },
   { name: 'Brown', hex: '#92400E' }, { name: 'Gold', hex: '#CA8A04' }, { name: 'Beige', hex: '#D6C4A8' }, { name: 'Orange', hex: '#EA580C' },
   { name: 'Yellow', hex: '#EAB308' }, { name: 'Purple', hex: '#7C3AED' }, { name: 'Maroon', hex: '#7F1D1D' }, { name: 'Pearl White', hex: '#F5F0E8' },
 ];
@@ -393,14 +393,14 @@ function NewCarPageInner() {
     <AppLayout currentPath={pathname}>
       <div className="max-w-3xl mx-auto space-y-6">
         {apptBanner && (
-          <div className="rounded-xl border border-[#2E75B6]/30 bg-sky-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-sm text-[#1e3a5f]">
+          <div className="rounded-xl border border-[#ff8a65]/30 bg-sky-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-[#ff5722]">
               Pre-filled from appointment{' '}
               <span className="font-mono font-semibold">{apptBanner.bookingId}</span> — review fields then complete registration.
             </p>
             <Link
               href={`/appointments/${apptBanner.appointmentId}`}
-              className="text-sm font-semibold text-[#2E75B6] hover:underline shrink-0"
+              className="text-sm font-semibold text-[#ff8a65] hover:underline shrink-0"
             >
               View appointment →
             </Link>
@@ -412,7 +412,7 @@ function NewCarPageInner() {
               You have a saved registration draft (local). Restore it or start fresh.
             </p>
             <div className="flex gap-2 shrink-0">
-              <button type="button" onClick={restoreDraft} className="px-3 py-2 text-sm font-semibold rounded-lg bg-[#1E3A5F] text-white hover:bg-[#16304F]">
+              <button type="button" onClick={restoreDraft} className="px-3 py-2 text-sm font-semibold rounded-lg bg-[#ff5722] text-white hover:bg-[#e64a19]">
                 Restore draft
               </button>
               <button type="button" onClick={discardDraftPrompt} className="px-3 py-2 text-sm font-medium rounded-lg border border-amber-300 text-amber-950 hover:bg-amber-100">
@@ -443,9 +443,9 @@ function NewCarPageInner() {
                 <button
                   type="button"
                   onClick={() => goToStep(i)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${i === step ? 'bg-[#1E3A5F] text-white' : i < step ? 'text-[#1A7A4A] hover:bg-green-50 cursor-pointer' : 'text-[#6B7280] hover:bg-[#F4F6F8] cursor-pointer'}`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${i === step ? 'bg-[#ff5722] text-white' : i < step ? 'text-[#1A7A4A] hover:bg-green-50 cursor-pointer' : 'text-[#6B7280] hover:bg-[#F4F6F8] cursor-pointer'}`}
                 >
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${i === step ? 'bg-white text-[#1E3A5F]' : i < step ? 'bg-[#1A7A4A] text-white' : 'bg-[#E5E7EB] text-[#9CA3AF]'}`}>
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${i === step ? 'bg-white text-[#ff5722]' : i < step ? 'bg-[#1A7A4A] text-white' : 'bg-[#E5E7EB] text-[#9CA3AF]'}`}>
                     {i < step ? <Check size={10} /> : i + 1}
                   </span>
                   <span className="hidden sm:inline">{s}</span>
@@ -526,7 +526,7 @@ function NewCarPageInner() {
                     value={form.mileage}
                     onChange={e => set('mileage', formatMileageInput(e.target.value))}
                     placeholder="e.g. 145,000"
-                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.mileage ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`}
+                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.mileage ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`}
                   />
                   {errors.mileage && <p className="text-xs text-[#C0392B] mt-1">{errors.mileage}</p>}
                 </div>
@@ -537,7 +537,7 @@ function NewCarPageInner() {
                 <div className="flex flex-wrap gap-2">
                   {TRANSMISSIONS.map(t => (
                     <button key={t} onClick={() => set('transmission', t)}
-                      className={`px-4 py-2 text-sm rounded-lg border transition-all ${form.transmission === t ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#2E75B6]'}`}>
+                      className={`px-4 py-2 text-sm rounded-lg border transition-all ${form.transmission === t ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#ff8a65]'}`}>
                       {t}
                     </button>
                   ))}
@@ -549,7 +549,7 @@ function NewCarPageInner() {
                 <div className="flex flex-wrap gap-2">
                   {BODY_TYPES.map(t => (
                     <button key={t} onClick={() => set('bodyType', t)}
-                      className={`px-4 py-2 text-sm rounded-lg border transition-all ${form.bodyType === t ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#2E75B6]'}`}>
+                      className={`px-4 py-2 text-sm rounded-lg border transition-all ${form.bodyType === t ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#ff8a65]'}`}>
                       {t}
                     </button>
                   ))}
@@ -565,14 +565,14 @@ function NewCarPageInner() {
                       type="button"
                       title={c.name}
                       onClick={() => { set('colour', c.name); setErrors(prev => ({ ...prev, colour: '', colourCustom: '' })); }}
-                      className={`h-8 w-8 rounded-full border-2 transition-all ${form.colour === c.name ? 'border-[#1E3A5F] scale-110 ring-2 ring-[#2E75B6]/30' : 'border-transparent hover:border-[#E5E7EB]'}`}
+                      className={`h-8 w-8 rounded-full border-2 transition-all ${form.colour === c.name ? 'border-[#ff5722] scale-110 ring-2 ring-[#ff8a65]/30' : 'border-transparent hover:border-[#E5E7EB]'}`}
                       style={{ backgroundColor: c.hex }} />
                   ))}
                 </div>
                 <button
                   type="button"
                   onClick={() => set('colour', 'Custom')}
-                  className={`mt-2 px-3 py-1.5 text-xs rounded-lg border ${form.colour === 'Custom' ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280]'}`}
+                  className={`mt-2 px-3 py-1.5 text-xs rounded-lg border ${form.colour === 'Custom' ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280]'}`}
                 >
                   Custom
                 </button>
@@ -593,7 +593,7 @@ function NewCarPageInner() {
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">VIN * (17 characters)</label>
                   <input type="text" value={form.vin} onChange={e => set('vin', e.target.value.toUpperCase())} onBlur={checkVin}
                     maxLength={17} placeholder="e.g. JTDBE32K413012345"
-                    className={`w-full px-3 py-2.5 text-sm font-mono border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.vin ? 'border-[#C0392B]' : vinWarning ? 'border-amber-400' : 'border-[#E5E7EB]'}`} />
+                    className={`w-full px-3 py-2.5 text-sm font-mono border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.vin ? 'border-[#C0392B]' : vinWarning ? 'border-amber-400' : 'border-[#E5E7EB]'}`} />
                   <div className="flex items-center justify-between mt-1">
                     {errors.vin && <p className="text-xs text-[#C0392B]">{errors.vin}</p>}
                     <p className="text-xs text-[#9CA3AF] ml-auto">{form.vin.length}/17</p>
@@ -621,7 +621,7 @@ function NewCarPageInner() {
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Licence Plate *</label>
                   <input type="text" value={form.plate} onChange={e => set('plate', e.target.value.toUpperCase())} placeholder="e.g. LND-234-KJ"
-                    className={`w-full px-3 py-2.5 text-sm font-mono border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.plate ? 'border-[#C0392B]' : plateClash ? 'border-amber-400' : 'border-[#E5E7EB]'}`} />
+                    className={`w-full px-3 py-2.5 text-sm font-mono border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.plate ? 'border-[#C0392B]' : plateClash ? 'border-amber-400' : 'border-[#E5E7EB]'}`} />
                   {errors.plate && <p className="text-xs text-[#C0392B] mt-1">{errors.plate}</p>}
                   {plateClash && !errors.plate && (
                     <p className="text-xs text-amber-700 mt-1">
@@ -632,18 +632,18 @@ function NewCarPageInner() {
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Engine Number</label>
                   <input type="text" value={form.engineNumber} onChange={e => set('engineNumber', e.target.value)} placeholder="Optional"
-                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Registered city *</label>
                   <input value={form.city} onChange={e => set('city', e.target.value)} placeholder="e.g. Lekki"
-                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.city ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
+                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.city ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
                   {errors.city && <p className="text-xs text-[#C0392B] mt-1">{errors.city}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Registered state *</label>
                   <select value={form.state} onChange={e => set('state', e.target.value)}
-                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.state ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`}>
+                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.state ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`}>
                     <option value="">Select state…</option>
                     {NIGERIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -668,7 +668,7 @@ function NewCarPageInner() {
                       key={t.id}
                       type="button"
                       onClick={() => set('contactType', t.id)}
-                      className={`flex flex-col items-center gap-2 py-4 text-sm rounded-xl border-2 transition-all ${form.contactType === t.id ? 'border-[#1E3A5F] bg-[#1E3A5F]/5 text-[#1E3A5F] font-semibold' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#2E75B6]'}`}
+                      className={`flex flex-col items-center gap-2 py-4 text-sm rounded-xl border-2 transition-all ${form.contactType === t.id ? 'border-[#ff5722] bg-[#ff5722]/5 text-[#ff5722] font-semibold' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#ff8a65]'}`}
                     >
                       <t.icon size={22} />
                       {t.label}
@@ -680,19 +680,19 @@ function NewCarPageInner() {
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">First Name *</label>
                   <input type="text" value={form.firstName} onChange={e => set('firstName', e.target.value)}
-                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.firstName ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
+                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.firstName ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
                   {errors.firstName && <p className="text-xs text-[#C0392B] mt-1">{errors.firstName}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Last Name *</label>
                   <input type="text" value={form.lastName} onChange={e => set('lastName', e.target.value)}
-                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.lastName ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
+                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.lastName ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
                   {errors.lastName && <p className="text-xs text-[#C0392B] mt-1">{errors.lastName}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Email *</label>
                   <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
-                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.email ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
+                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.email ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
                   {errors.email && <p className="text-xs text-[#C0392B] mt-1">{errors.email}</p>}
                 </div>
                 <div>
@@ -700,7 +700,7 @@ function NewCarPageInner() {
                   <div className="flex">
                     <span className="px-3 py-2.5 bg-[#F4F6F8] border border-r-0 border-[#E5E7EB] rounded-l-lg text-sm text-[#6B7280]">+234</span>
                     <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value.replace(/\D/g, '').slice(0, 10))} maxLength={10}
-                      className={`flex-1 px-3 py-2.5 text-sm border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.phone ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
+                      className={`flex-1 px-3 py-2.5 text-sm border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.phone ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
                   </div>
                   {errors.phone && <p className="text-xs text-[#C0392B] mt-1">{errors.phone}</p>}
                 </div>
@@ -716,7 +716,7 @@ function NewCarPageInner() {
                 <div className="flex flex-wrap gap-2">
                   {CHANNELS.map(c => (
                     <button key={c} onClick={() => set('channel', c)}
-                      className={`px-4 py-2 text-sm rounded-lg border transition-all ${form.channel === c ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#2E75B6]'}`}>
+                      className={`px-4 py-2 text-sm rounded-lg border transition-all ${form.channel === c ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#ff8a65]'}`}>
                       {c}
                     </button>
                   ))}
@@ -727,7 +727,7 @@ function NewCarPageInner() {
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Purchase Date *</label>
                   <input type="date" value={form.purchaseDate} onChange={e => set('purchaseDate', e.target.value)}
-                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.purchaseDate ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
+                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.purchaseDate ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`} />
                   {errors.purchaseDate && <p className="text-xs text-[#C0392B] mt-1">{errors.purchaseDate}</p>}
                 </div>
                 <div>
@@ -735,7 +735,7 @@ function NewCarPageInner() {
                   <select
                     value={form.salesPerson}
                     onChange={e => set('salesPerson', e.target.value)}
-                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.salesPerson ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`}
+                    className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.salesPerson ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`}
                   >
                     <option value="">Select…</option>
                     {SALES_STAFF.map(p => (
@@ -754,7 +754,7 @@ function NewCarPageInner() {
                       value={form.purchasePrice ? Number(form.purchasePrice.replace(/\D/g, '')).toLocaleString('en-NG') : ''}
                       onChange={e => set('purchasePrice', e.target.value.replace(/\D/g, ''))}
                       placeholder="5,000,000"
-                      className={`w-full pl-8 pr-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 ${errors.purchasePrice ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`}
+                      className={`w-full pl-8 pr-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${errors.purchasePrice ? 'border-[#C0392B]' : 'border-[#E5E7EB]'}`}
                     />
                   </div>
                   {errors.purchasePrice && <p className="text-xs text-[#C0392B] mt-1">{errors.purchasePrice}</p>}
@@ -792,16 +792,16 @@ function NewCarPageInner() {
                         setForm(prev => ({ ...prev, docs: newDocs }));
                       }}
                       rows={2}
-                      className="w-full px-3 py-2 text-xs border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30"
+                      className="w-full px-3 py-2 text-xs border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                     />
                     {doc.progress > 0 && doc.progress < 100 && (
                       <div className="h-2 rounded-full bg-[#F4F6F8] overflow-hidden">
-                        <div className="h-full bg-[#2E75B6] transition-all" style={{ width: `${doc.progress}%` }} />
+                        <div className="h-full bg-[#ff8a65] transition-all" style={{ width: `${doc.progress}%` }} />
                       </div>
                     )}
                     <div className="flex flex-col gap-2">
-                      <label className="flex flex-col items-center justify-center gap-2 w-full py-4 border-2 border-dashed border-[#E5E7EB] rounded-lg text-xs text-[#6B7280] hover:border-[#2E75B6] cursor-pointer transition-colors">
-                        <Upload size={14} /> Drag & drop or <span className="text-[#2E75B6] font-semibold">Select File(s)</span>
+                      <label className="flex flex-col items-center justify-center gap-2 w-full py-4 border-2 border-dashed border-[#E5E7EB] rounded-lg text-xs text-[#6B7280] hover:border-[#ff8a65] cursor-pointer transition-colors">
+                        <Upload size={14} /> Drag & drop or <span className="text-[#ff8a65] font-semibold">Select File(s)</span>
                         <input
                           type="file"
                           className="hidden"
@@ -827,7 +827,7 @@ function NewCarPageInner() {
           </button>
           {step < 3 ? (
             <button onClick={nextStep}
-              className="flex items-center gap-2 px-6 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+              className="flex items-center gap-2 px-6 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
               Next <ChevronRight size={15} />
             </button>
           ) : (

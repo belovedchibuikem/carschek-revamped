@@ -78,7 +78,7 @@ export function JobDetailScreen({ layout, jobId }: Props) {
     return (
       <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 text-center">
         <p className="text-[#6B7280]">Job not found.</p>
-        <Link href={href('jobs')} className="mt-3 inline-block text-sm font-semibold text-[#2E75B6]">
+        <Link href={href('jobs')} className="mt-3 inline-block text-sm font-semibold text-[#ff8a65]">
           Back to jobs
         </Link>
       </div>
@@ -113,8 +113,8 @@ export function JobDetailScreen({ layout, jobId }: Props) {
 
       <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-start gap-3">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#1E3A5F]/10">
-            <Car size={24} className="text-[#1E3A5F]" />
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#ff5722]/10">
+            <Car size={24} className="text-[#ff5722]" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-mono text-2xl font-bold tracking-tight text-[#1F2937]" style={{ fontFamily: 'var(--font-mono, ui-monospace, monospace)' }}>
@@ -135,7 +135,7 @@ export function JobDetailScreen({ layout, jobId }: Props) {
         </div>
         <div className="mt-3 flex items-center gap-2">
           <span className="font-mono text-xs text-[#6B7280] break-all">VIN: {job.vin}</span>
-          <button type="button" onClick={() => copyVin(job.vin)} className="rounded-lg p-1.5 text-[#2E75B6] hover:bg-[#F4F6F8]" aria-label="Copy VIN">
+          <button type="button" onClick={() => copyVin(job.vin)} className="rounded-lg p-1.5 text-[#ff8a65] hover:bg-[#F4F6F8]" aria-label="Copy VIN">
             <Copy size={14} />
           </button>
         </div>
@@ -144,7 +144,7 @@ export function JobDetailScreen({ layout, jobId }: Props) {
       <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-[#1F2937]">Customer</h2>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1E3A5F] text-xs font-bold text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff5722] text-xs font-bold text-white">
             {job.customer
               .split(' ')
               .map(w => w[0])
@@ -156,7 +156,7 @@ export function JobDetailScreen({ layout, jobId }: Props) {
             <button
               type="button"
               onClick={() => copyPhone(job.phoneFull)}
-              className="mt-0.5 inline-flex items-center gap-1 text-sm text-[#2E75B6]"
+              className="mt-0.5 inline-flex items-center gap-1 text-sm text-[#ff8a65]"
             >
               <Phone size={14} />
               {phoneRevealed ? job.phoneFull : job.phoneMasked}
@@ -177,8 +177,8 @@ export function JobDetailScreen({ layout, jobId }: Props) {
         className="relative w-full overflow-hidden rounded-2xl border border-[#E5E7EB] bg-[#E8EDF3] text-left transition hover:opacity-95"
       >
         <div className="flex h-36 items-center justify-center gap-2 bg-gradient-to-br from-[#dbeafe] to-[#e0e7ef]">
-          <MapPin className="text-[#1E3A5F]" size={28} />
-          <span className="text-sm font-semibold text-[#1E3A5F]">Open in Google Maps</span>
+          <MapPin className="text-[#ff5722]" size={28} />
+          <span className="text-sm font-semibold text-[#ff5722]">Open in Google Maps</span>
         </div>
         <p className="px-4 py-2 text-xs text-[#6B7280]">{job.address}</p>
       </button>
@@ -201,10 +201,10 @@ export function JobDetailScreen({ layout, jobId }: Props) {
                 <tr key={r.id} className="border-b border-[#F9FAFB] last:border-0">
                   <td className="py-2 font-mono text-[11px] text-[#6B7280]">{r.submittedAt.slice(0, 10)}</td>
                   <td className="py-2 text-[#374151]">{r.inspectorName}</td>
-                  <td className="py-2 font-semibold text-[#1E3A5F]">{r.score}</td>
+                  <td className="py-2 font-semibold text-[#ff5722]">{r.score}</td>
                   <td className="py-2 text-[#6B7280]">{r.status}</td>
                   <td className="py-2 text-right">
-                    <Link href={`/reports/${r.id}`} className="font-semibold text-[#2E75B6] hover:underline">
+                    <Link href={`/reports/${r.id}`} className="font-semibold text-[#ff8a65] hover:underline">
                       View Report →
                     </Link>
                   </td>
@@ -226,7 +226,7 @@ export function JobDetailScreen({ layout, jobId }: Props) {
         <button
           type="button"
           onClick={handleStart}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1E3A5F] py-4 text-base font-bold text-white shadow-lg shadow-[#1E3A5F]/20 transition hover:bg-[#16304F]"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ff5722] py-4 text-base font-bold text-white shadow-lg shadow-[#ff5722]/20 transition hover:bg-[#e64a19]"
         >
           ▶ Start Inspection
         </button>
@@ -237,7 +237,7 @@ export function JobDetailScreen({ layout, jobId }: Props) {
           <button
             type="button"
             onClick={handleContinue}
-            className="relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#1E3A5F] py-4 text-base font-bold text-white shadow-lg"
+            className="relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#ff5722] py-4 text-base font-bold text-white shadow-lg"
           >
             <div
               className="absolute bottom-0 left-0 top-0 bg-white/10 transition-all"

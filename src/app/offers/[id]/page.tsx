@@ -47,10 +47,10 @@ export default function OfferDetailPage() {
                 ))}
               </div>
               <textarea value={responseNote} onChange={e => setResponseNote(e.target.value)} placeholder="Notes…" rows={2}
-                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30 mb-4" />
+                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 mb-4" />
               <div className="flex gap-3">
                 <button onClick={() => setResponseModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8]">Cancel</button>
-                <button onClick={handleRecord} className="flex-1 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F]">Record</button>
+                <button onClick={handleRecord} className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]">Record</button>
               </div>
             </div>
           </div>
@@ -78,11 +78,11 @@ export default function OfferDetailPage() {
         </div>
 
         <div className="flex gap-3">
-          <button onClick={() => setResponseModal(true)} className="flex-1 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+          <button onClick={() => setResponseModal(true)} className="flex-1 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
             Record Response
           </button>
           {offer.status === 'Draft' && (
-            <button onClick={() => toast.success('Offer sent!')} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#2E75B6] text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-all">
+            <button onClick={() => toast.success('Offer sent!')} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#ff8a65] text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-all">
               <Send size={14} /> Send Offer
             </button>
           )}

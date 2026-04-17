@@ -33,7 +33,7 @@ export default function OrdersKanban({ orders, onSelectOrder }: Props) {
         return (
           <div
             key={`kanban-col-${col.status}`}
-            className={`flex-shrink-0 w-64 bg-[#F4F6F8] rounded-xl border-t-4 ${col.color} ${dragOver === col.status ? 'ring-2 ring-[#2E75B6]' : ''} transition-all`}
+            className={`flex-shrink-0 w-64 bg-[#F4F6F8] rounded-xl border-t-4 ${col.color} ${dragOver === col.status ? 'ring-2 ring-[#ff8a65]' : ''} transition-all`}
             onDragOver={e => { e.preventDefault(); setDragOver(col.status); }}
             onDragLeave={() => setDragOver(null)}
             onDrop={() => setDragOver(null)}
@@ -55,7 +55,7 @@ export default function OrdersKanban({ orders, onSelectOrder }: Props) {
                   className={`bg-white rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-all ${urgencyClass(order.scheduledAt)}`}
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <span className="font-mono text-[10px] font-bold text-[#1E3A5F]">{order.id}</span>
+                    <span className="font-mono text-[10px] font-bold text-[#ff5722]">{order.id}</span>
                     {order.score !== null && (
                       <span className={`text-[10px] font-bold tabular-nums ${order.score >= 71 ? 'text-[#1A7A4A]' : order.score >= 41 ? 'text-[#D35400]' : 'text-[#C0392B]'}`}>
                         {order.score}pts

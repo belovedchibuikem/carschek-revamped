@@ -15,14 +15,14 @@ function NewDealContent() {
     <AppLayout currentPath={pathname}>
       <div className="space-y-4 max-w-2xl">
         <div className="flex items-center gap-2 text-[#6B7280] text-sm">
-          <Link href="/deals" className="hover:text-[#1E3A5F]">
+          <Link href="/deals" className="hover:text-[#ff5722]">
             Deals
           </Link>
           <span>/</span>
           <span>New</span>
         </div>
         <h1 className="text-2xl font-heading font-bold text-[#1F2937] flex items-center gap-2">
-          <Handshake className="text-[#1E3A5F]" size={26} />
+          <Handshake className="text-[#ff5722]" size={26} />
           Create deal
         </h1>
         {auctionId && (

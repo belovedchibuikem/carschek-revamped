@@ -23,7 +23,7 @@ export default function GlobalError({
           <button
             type="button"
             onClick={() => reset()}
-            className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg"
+            className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg"
           >
             Try again
           </button>

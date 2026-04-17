@@ -39,7 +39,7 @@ export default function LiveInspectionPanel({ orderId }: { orderId: string }) {
   const ss = live.elapsedSec % 60;
 
   return (
-    <div className="bg-gradient-to-br from-[#1E3A5F] to-[#16304F] rounded-xl border border-[#2E75B6]/30 p-5 text-white shadow-lg">
+    <div className="bg-gradient-to-br from-[#ff5722] to-[#e64a19] rounded-xl border border-[#ff8a65]/30 p-5 text-white shadow-lg">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2">
           <span className="relative flex h-3 w-3">
@@ -56,7 +56,7 @@ export default function LiveInspectionPanel({ orderId }: { orderId: string }) {
         <div className="bg-white/10 rounded-lg p-3">
           <p className="text-[10px] uppercase tracking-wide text-white/60 mb-1">Current section</p>
           <p className="text-sm font-bold flex items-center gap-1.5">
-            <Radio size={14} className="text-[#2E75B6]" />
+            <Radio size={14} className="text-[#ff8a65]" />
             {live.section}
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function LiveInspectionPanel({ orderId }: { orderId: string }) {
           value={msg}
           onChange={e => setMsg(e.target.value)}
           placeholder="Message to inspector…"
-          className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/15 border border-white/20 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#2E75B6]"
+          className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/15 border border-white/20 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff8a65]"
         />
         <button
           type="button"

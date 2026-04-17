@@ -61,21 +61,21 @@ export default function CRMPage() {
                 <div key={f.key}>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">{f.label}</label>
                   <input type={f.type} value={newContact[f.key as keyof typeof newContact]} onChange={e => setNewContact(p => ({ ...p, [f.key]: e.target.value }))}
-                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
                 </div>
               ))}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Type</label>
                   <select value={newContact.type} onChange={e => setNewContact(p => ({ ...p, type: e.target.value }))}
-                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                     {['Individual', 'Dealer', 'Corporate'].map(t => <option key={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Stage</label>
                   <select value={newContact.stage} onChange={e => setNewContact(p => ({ ...p, stage: e.target.value }))}
-                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                     {STAGES.map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
@@ -83,7 +83,7 @@ export default function CRMPage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8]">Cancel</button>
-              <button onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F]">Add Contact</button>
+              <button onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]">Add Contact</button>
             </div>
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function CRMPage() {
               <button onClick={() => setViewMode('table')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-[#1F2937]' : 'text-[#6B7280]'}`}>Table</button>
               <button onClick={() => setViewMode('kanban')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${viewMode === 'kanban' ? 'bg-white shadow-sm text-[#1F2937]' : 'text-[#6B7280]'}`}>Kanban</button>
             </div>
-            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px]">
+            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
               <Plus size={16} /> Add Contact
             </button>
           </div>
@@ -108,7 +108,7 @@ export default function CRMPage() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total', value: CRM_CONTACTS.length, color: '#1E3A5F' },
+            { label: 'Total', value: CRM_CONTACTS.length, color: '#ff5722' },
             { label: 'Hot Leads', value: CRM_CONTACTS.filter(c => c.stage === 'Hot Lead').length, color: '#C0392B' },
             { label: 'In Negotiation', value: CRM_CONTACTS.filter(c => c.stage === 'Negotiation').length, color: '#D35400' },
             { label: 'Closed Won', value: CRM_CONTACTS.filter(c => c.stage === 'Closed Won').length, color: '#1A7A4A' },
@@ -123,7 +123,7 @@ export default function CRMPage() {
         <div className="relative max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
           {search !== debouncedSearch && (
             <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
           )}
@@ -149,9 +149,9 @@ export default function CRMPage() {
                   <tr key={contact.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">{contact.avatar}</div>
+                        <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">{contact.avatar}</div>
                         <div>
-                          <Link href={`/crm/${contact.id}`} className="font-medium text-[#1F2937] hover:text-[#2E75B6] transition-colors">{contact.name}</Link>
+                          <Link href={`/crm/${contact.id}`} className="font-medium text-[#1F2937] hover:text-[#ff8a65] transition-colors">{contact.name}</Link>
                           <p className="text-xs text-[#6B7280]">{contact.email}</p>
                         </div>
                       </div>
@@ -222,9 +222,9 @@ export default function CRMPage() {
                     <div className="space-y-3">
                       {stageContacts.map(c => (
                         <Link key={c.id} href={`/crm/${c.id}`}
-                          className="block bg-white rounded-xl border border-[#E5E7EB] p-3 hover:shadow-md transition-all hover:border-[#2E75B6]/30">
+                          className="block bg-white rounded-xl border border-[#E5E7EB] p-3 hover:shadow-md transition-all hover:border-[#ff8a65]/30">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-7 h-7 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-[10px] font-bold">{c.avatar}</div>
+                            <div className="w-7 h-7 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-[10px] font-bold">{c.avatar}</div>
                             <p className="text-xs font-medium text-[#1F2937] truncate">{c.name}</p>
                           </div>
                           <p className="text-[10px] text-[#6B7280]">{c.type}</p>

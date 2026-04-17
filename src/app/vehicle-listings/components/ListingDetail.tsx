@@ -100,8 +100,8 @@ export default function ListingDetail({ listing, onBack }: Props) {
           {/* Photo Gallery */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-heading font-semibold text-[#1F2937] flex items-center gap-2"><Camera size={15} className="text-[#2E75B6]" /> Photo Gallery</h3>
-              <button onClick={() => toast.info('Request sent to seller for new photos')} className="text-xs text-[#2E75B6] hover:underline">Request new photos</button>
+              <h3 className="text-sm font-heading font-semibold text-[#1F2937] flex items-center gap-2"><Camera size={15} className="text-[#ff8a65]" /> Photo Gallery</h3>
+              <button onClick={() => toast.info('Request sent to seller for new photos')} className="text-xs text-[#ff8a65] hover:underline">Request new photos</button>
             </div>
             {/* Main photo */}
             <div className="w-full h-48 bg-[#F4F6F8] rounded-xl border border-[#E5E7EB] flex items-center justify-center mb-3">
@@ -116,7 +116,7 @@ export default function ListingDetail({ listing, onBack }: Props) {
                 <button
                   key={`thumb-${i}`}
                   onClick={() => setActivePhoto(i)}
-                  className={`w-16 h-12 rounded-lg border-2 flex items-center justify-center bg-[#F4F6F8] transition-all ${activePhoto === i ? 'border-[#1E3A5F]' : 'border-[#E5E7EB] hover:border-[#2E75B6]'}`}
+                  className={`w-16 h-12 rounded-lg border-2 flex items-center justify-center bg-[#F4F6F8] transition-all ${activePhoto === i ? 'border-[#ff5722]' : 'border-[#E5E7EB] hover:border-[#ff8a65]'}`}
                 >
                   <Camera size={14} className="text-[#6B7280]" />
                 </button>
@@ -153,7 +153,7 @@ export default function ListingDetail({ listing, onBack }: Props) {
               <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Features</p>
               <div className="flex flex-wrap gap-2">
                 {['Leather Seats', 'Sunroof', 'Reverse Camera', 'Bluetooth', 'Navigation', 'Keyless Entry', 'Push Start', 'Alloy Wheels'].map(f => (
-                  <span key={f} className="text-xs px-2.5 py-1 bg-[#EEF2FF] text-[#2E75B6] rounded-full font-medium">{f}</span>
+                  <span key={f} className="text-xs px-2.5 py-1 bg-[#EEF2FF] text-[#ff8a65] rounded-full font-medium">{f}</span>
                 ))}
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function ListingDetail({ listing, onBack }: Props) {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Seller Description</h3>
-              <button className="text-xs text-[#2E75B6] hover:underline">Edit</button>
+              <button className="text-xs text-[#ff8a65] hover:underline">Edit</button>
             </div>
             <p className="text-sm text-[#6B7280] leading-relaxed">
               Well-maintained {listing.year} {listing.make} {listing.model} in excellent condition. Single owner, full service history available. No accident history. All papers complete and up to date. Reason for sale: relocating abroad. Serious buyers only, price is slightly negotiable.
@@ -172,14 +172,14 @@ export default function ListingDetail({ listing, onBack }: Props) {
 
           {/* Attached Inspection Report */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
-            <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-3 flex items-center gap-2"><FileText size={15} className="text-[#2E75B6]" /> Attached Inspection Report</h3>
+            <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-3 flex items-center gap-2"><FileText size={15} className="text-[#ff8a65]" /> Attached Inspection Report</h3>
             <div className="flex items-center gap-4 p-4 bg-[#F4F6F8] rounded-xl border border-[#E5E7EB]">
               <CarschekScore score={listing.score} size={48} />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-[#1F2937]">Carschek Inspection Report</p>
                 <p className="text-xs text-[#6B7280]">Inspected: 28 Mar 2026 · Score: {listing.score}/100</p>
               </div>
-              <button className="text-xs text-[#2E75B6] hover:underline font-semibold">View Full Report →</button>
+              <button className="text-xs text-[#ff8a65] hover:underline font-semibold">View Full Report →</button>
             </div>
           </div>
 
@@ -222,13 +222,13 @@ export default function ListingDetail({ listing, onBack }: Props) {
           {/* Views sparkline */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-heading font-semibold text-[#1F2937] flex items-center gap-2"><Eye size={14} className="text-[#2E75B6]" /> Views This Week</h3>
+              <h3 className="text-sm font-heading font-semibold text-[#1F2937] flex items-center gap-2"><Eye size={14} className="text-[#ff8a65]" /> Views This Week</h3>
               <span className="text-lg font-bold text-[#1F2937]">{VIEWS_DATA.reduce((a, d) => a + d.views, 0)}</span>
             </div>
             <ResponsiveContainer width="100%" height={60}>
               <LineChart data={VIEWS_DATA} margin={{ top: 2, right: 4, left: -18, bottom: 0 }}>
                 <XAxis dataKey="day" tick={{ fontSize: 9, fill: chartTheme.tickFill }} tickLine={false} axisLine={false} />
-                <Line type="monotone" dataKey="views" stroke="#2E75B6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="views" stroke="#ff8a65" strokeWidth={2} dot={false} />
                 <Tooltip contentStyle={{ ...chartTheme.tooltipContentStyle, fontSize: 11 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -237,19 +237,19 @@ export default function ListingDetail({ listing, onBack }: Props) {
           {/* Inquiries */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-heading font-semibold text-[#1F2937] flex items-center gap-2"><MessageSquare size={14} className="text-[#2E75B6]" /> Inquiries ({listing.inquiries})</h3>
+              <h3 className="text-sm font-heading font-semibold text-[#1F2937] flex items-center gap-2"><MessageSquare size={14} className="text-[#ff8a65]" /> Inquiries ({listing.inquiries})</h3>
             </div>
             <div className="space-y-2">
               {INTERESTED_BUYERS.slice(0, 3).map(b => (
                 <div key={b.id} className="flex items-center gap-3 p-2.5 bg-[#F4F6F8] rounded-lg">
-                  <div className="w-7 h-7 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-[#ff8a65] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
                     {b.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-[#1F2937] truncate">{b.name}</p>
                     <p className="text-[10px] text-[#6B7280]">{b.date}</p>
                   </div>
-                  <button type="button" onClick={() => toast.message('Contact (demo)', { description: `${b.name} · ${b.phone}` })} className="text-[10px] text-[#2E75B6] hover:underline">Contact</button>
+                  <button type="button" onClick={() => toast.message('Contact (demo)', { description: `${b.name} · ${b.phone}` })} className="text-[10px] text-[#ff8a65] hover:underline">Contact</button>
                 </div>
               ))}
             </div>
@@ -257,7 +257,7 @@ export default function ListingDetail({ listing, onBack }: Props) {
 
           {/* Stats */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
-            <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-3 flex items-center gap-2"><TrendingUp size={14} className="text-[#2E75B6]" /> Listing Stats</h3>
+            <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-3 flex items-center gap-2"><TrendingUp size={14} className="text-[#ff8a65]" /> Listing Stats</h3>
             <div className="space-y-2">
               {[
                 { label: 'Days on Market', value: `${listing.daysOnMarket} days`, color: listing.daysOnMarket > 30 ? 'text-[#C0392B]' : 'text-[#1F2937]' },
@@ -275,11 +275,11 @@ export default function ListingDetail({ listing, onBack }: Props) {
 
           {/* Price History */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
-            <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-3 flex items-center gap-2"><Calendar size={14} className="text-[#2E75B6]" /> Price History</h3>
+            <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-3 flex items-center gap-2"><Calendar size={14} className="text-[#ff8a65]" /> Price History</h3>
             <div className="space-y-2">
               {PRICE_HISTORY.map((p, i) => (
                 <div key={`ph-${i}`} className="flex items-center gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#2E75B6] flex-shrink-0" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#ff8a65] flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-xs font-semibold text-[#1F2937]">₦{p.price.toLocaleString()}</p>
                     <p className="text-[10px] text-[#6B7280]">{p.date} · {p.note}</p>

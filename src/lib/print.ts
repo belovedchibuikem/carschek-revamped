@@ -11,7 +11,7 @@ export function openPrintableReport(options: {
 <style>
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   body { font-family: Inter, system-ui, sans-serif; padding: 24px; color: #1F2937; max-width: 800px; margin: 0 auto; }
-  h1 { color: #1E3A5F; font-size: 22px; margin: 0 0 4px; }
+  h1 { color: #ff5722; font-size: 22px; margin: 0 0 4px; }
   .sub { color: #6B7280; font-size: 13px; margin-bottom: 20px; }
   .meta { color: #9CA3AF; font-size: 11px; margin-bottom: 24px; }
   table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }

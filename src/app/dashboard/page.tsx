@@ -19,8 +19,8 @@ const BOOKING_DATA = Array.from({ length: 30 }, (_, i) => ({
 }));
 
 const REVENUE_DATA = [
-  { name: 'Inspection Fees', value: 4200000, color: '#1E3A5F' },
-  { name: 'Marketplace Commission', value: 3100000, color: '#2E75B6' },
+  { name: 'Inspection Fees', value: 4200000, color: '#ff5722' },
+  { name: 'Marketplace Commission', value: 3100000, color: '#ff8a65' },
   { name: 'Auction Fees', value: 2800000, color: '#1A7A4A' },
   { name: 'B2B Services', value: 2350000, color: '#D35400' },
 ];
@@ -115,7 +115,7 @@ export default function DashboardPage() {
       trend: +2,
       trendLabel: 'vs yesterday',
       icon: ClipboardList,
-      color: '#1E3A5F',
+      color: '#ff5722',
       href: '/orders?status=in-progress',
     },
     {
@@ -143,7 +143,7 @@ export default function DashboardPage() {
       suffix: '/15 online',
       trendLabel: 'available now',
       icon: Users,
-      color: '#2E75B6',
+      color: '#ff8a65',
       href: '/inspectors',
     },
     {
@@ -178,7 +178,7 @@ export default function DashboardPage() {
             >
               <Download size={15} /> Export summary
             </button>
-            <Link href="/orders/new" className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all min-h-[44px] flex items-center gap-2">
+            <Link href="/orders/new" className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px] flex items-center gap-2">
               <Zap size={15} /> New Order
             </Link>
           </div>
@@ -188,14 +188,14 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
           {kpis.map((kpi, i) => (
             <Link key={`kpi-${i}`} href={kpi.href}
-              className="bg-white rounded-xl border border-[#E5E7EB] p-5 hover:shadow-md transition-all hover:border-[#2E75B6]/30 group animate-count-up"
+              className="bg-white rounded-xl border border-[#E5E7EB] p-5 hover:shadow-md transition-all hover:border-[#ff8a65]/30 group animate-count-up"
               style={{ animationDelay: `${i * 80}ms` }}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${kpi.color}15` }}>
                   <kpi.icon size={20} style={{ color: kpi.color }} />
                 </div>
-                <ArrowRight size={14} className="text-[#9CA3AF] group-hover:text-[#2E75B6] transition-colors mt-1" />
+                <ArrowRight size={14} className="text-[#9CA3AF] group-hover:text-[#ff8a65] transition-colors mt-1" />
               </div>
               <div className="text-2xl font-heading font-bold text-[#1F2937] tabular-nums">
                 {kpi.isNaira ? (
@@ -235,7 +235,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-1 bg-[#F4F6F8] rounded-lg p-1">
               {(['7D', '30D', '90D'] as const).map(r => (
                 <button key={r} onClick={() => setChartRange(r)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${chartRange === r ? 'bg-white text-[#1E3A5F] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${chartRange === r ? 'bg-white text-[#ff5722] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
                   {r}
                 </button>
               ))}
@@ -245,8 +245,8 @@ export default function DashboardPage() {
             <AreaChart data={BOOKING_DATA.slice(chartRange === '7D' ? 23 : chartRange === '30D' ? 0 : 0)}>
               <defs>
                 <linearGradient id="booked" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1E3A5F" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#1E3A5F" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#ff5722" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#ff5722" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="completed" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#1A7A4A" stopOpacity={0.15} />
@@ -262,7 +262,7 @@ export default function DashboardPage() {
               />
               <Legend wrapperStyle={chartTheme.legendWrapperStyle} onClick={onBookingLegendClick} />
               {showBookedSeries ? (
-                <Area type="monotone" dataKey="booked" stroke="#1E3A5F" strokeWidth={2} fill="url(#booked)" name="Booked" />
+                <Area type="monotone" dataKey="booked" stroke="#ff5722" strokeWidth={2} fill="url(#booked)" name="Booked" />
               ) : null}
               {showCompletedSeries ? (
                 <Area type="monotone" dataKey="completed" stroke="#1A7A4A" strokeWidth={2} fill="url(#completed)" name="Completed" />
@@ -299,13 +299,13 @@ export default function DashboardPage() {
                 <p className="text-xs text-[#6B7280]">Click a city to filter orders by zone</p>
               </div>
               {selectedZone && (
-                <button onClick={() => setSelectedZone(null)} className="text-xs text-[#2E75B6] hover:underline">Clear filter</button>
+                <button onClick={() => setSelectedZone(null)} className="text-xs text-[#ff8a65] hover:underline">Clear filter</button>
               )}
             </div>
             <div className="relative bg-[#F4F6F8] rounded-xl overflow-hidden" style={{ height: 200 }}>
               {/* Simple SVG Nigeria outline */}
               <svg viewBox="0 0 100 100" className="w-full h-full opacity-20 absolute inset-0">
-                <path d="M10,30 L20,20 L35,18 L50,15 L65,18 L80,22 L88,35 L90,50 L85,65 L75,78 L60,85 L45,88 L30,82 L18,72 L10,58 L8,45 Z" fill="#1E3A5F" />
+                <path d="M10,30 L20,20 L35,18 L50,15 L65,18 L80,22 L88,35 L90,50 L85,65 L75,78 L60,85 L45,88 L30,82 L18,72 L10,58 L8,45 Z" fill="#ff5722" />
               </svg>
               {NIGERIA_ZONES.map(zone => {
                 const size = 8 + (zone.volume / 45) * 20;
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                     style={{ left: `${zone.x}%`, top: `${zone.y}%` }}
                   >
                     <div
-                      className={`rounded-full transition-all duration-200 flex items-center justify-center ${isSelected ? 'ring-2 ring-[#1E3A5F] ring-offset-2' : ''}`}
+                      className={`rounded-full transition-all duration-200 flex items-center justify-center ${isSelected ? 'ring-2 ring-[#ff5722] ring-offset-2' : ''}`}
                       style={{
                         width: size, height: size,
                         backgroundColor: getScoreColor(zone.score),
@@ -335,7 +335,7 @@ export default function DashboardPage() {
             <div className="mt-3 flex flex-wrap gap-2">
               {NIGERIA_ZONES.map(z => (
                 <button key={z.name} onClick={() => setSelectedZone(selectedZone === z.name ? null : z.name)}
-                  className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-all ${selectedZone === z.name ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]' : 'bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#2E75B6]'}`}>
+                  className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-all ${selectedZone === z.name ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#ff8a65]'}`}>
                   <MapPin size={10} /> {z.name}
                 </button>
               ))}
@@ -349,7 +349,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-heading font-semibold text-[#1F2937]">Inspector Leaderboard</h2>
-              <Link href="/inspectors" className="text-xs text-[#2E75B6] hover:underline flex items-center gap-1">View all <ChevronRight size={12} /></Link>
+              <Link href="/inspectors" className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">View all <ChevronRight size={12} /></Link>
             </div>
             <div className="space-y-2">
               {LEADERBOARD.map((ins, i) => (
@@ -358,7 +358,7 @@ export default function DashboardPage() {
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-gray-100 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-700' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>
                     {ins.rank}
                   </span>
-                  <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                     {ins.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -378,7 +378,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-heading font-semibold text-[#1F2937]">Recent Activity</h2>
-              <Link href="/activity" className="text-xs text-[#2E75B6] hover:underline flex items-center gap-1">View all <ChevronRight size={12} /></Link>
+              <Link href="/activity" className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">View all <ChevronRight size={12} /></Link>
             </div>
             <div className="space-y-1">
               {ACTIVITY.map((item, i) => (
@@ -386,10 +386,10 @@ export default function DashboardPage() {
                   className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#F4F6F8] transition-colors group">
                   <span className="text-base flex-shrink-0 mt-0.5">{item.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-[#1F2937] group-hover:text-[#2E75B6] transition-colors">{item.text}</p>
+                    <p className="text-sm text-[#1F2937] group-hover:text-[#ff8a65] transition-colors">{item.text}</p>
                     <p className="text-xs text-[#9CA3AF] mt-0.5">{item.time}</p>
                   </div>
-                  <ChevronRight size={14} className="text-[#9CA3AF] group-hover:text-[#2E75B6] transition-colors mt-1 flex-shrink-0" />
+                  <ChevronRight size={14} className="text-[#9CA3AF] group-hover:text-[#ff8a65] transition-colors mt-1 flex-shrink-0" />
                 </Link>
               ))}
             </div>
@@ -400,12 +400,12 @@ export default function DashboardPage() {
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-heading font-semibold text-[#1F2937]">Deal Funnel</h2>
-            <Link href="/deals" className="text-xs text-[#2E75B6] hover:underline flex items-center gap-1">View deals <ChevronRight size={12} /></Link>
+            <Link href="/deals" className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">View deals <ChevronRight size={12} /></Link>
           </div>
           <div className="flex items-end gap-2 overflow-x-auto pb-2">
             {[
-              { stage: 'Lead', count: 45, color: '#2E75B6' },
-              { stage: 'Qualified', count: 28, color: '#1E3A5F' },
+              { stage: 'Lead', count: 45, color: '#ff8a65' },
+              { stage: 'Qualified', count: 28, color: '#ff5722' },
               { stage: 'Offer Sent', count: 18, color: '#D35400' },
               { stage: 'Negotiation', count: 11, color: '#D35400' },
               { stage: 'Closed Won', count: 7, color: '#1A7A4A' },

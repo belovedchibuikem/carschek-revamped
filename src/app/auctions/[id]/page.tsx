@@ -46,7 +46,7 @@ export default function AuctionDetailPage() {
       <AppLayout currentPath={pathname}>
         <div className="rounded-xl border border-[#E5E7EB] bg-white p-8 text-center">
           <p className="font-medium text-[#1F2937]">Auction not found</p>
-          <Link href="/auctions" className="mt-3 inline-block text-sm text-[#2E75B6] hover:underline">
+          <Link href="/auctions" className="mt-3 inline-block text-sm text-[#ff8a65] hover:underline">
             Back to auctions
           </Link>
         </div>
@@ -60,7 +60,7 @@ export default function AuctionDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[#6B7280] text-sm mb-1">
-              <Link href="/auctions" className="hover:text-[#1E3A5F]">
+              <Link href="/auctions" className="hover:text-[#ff5722]">
                 Auctions
               </Link>
               <span>/</span>
@@ -83,7 +83,7 @@ export default function AuctionDetailPage() {
             </Link>
             <Link
               href={`/deals/new?auction=${encodeURIComponent(auction.id)}`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#16304F] transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-all"
               onClick={() => toast.success('Deal draft linked to this auction')}
             >
               <Handshake size={16} /> Create deal

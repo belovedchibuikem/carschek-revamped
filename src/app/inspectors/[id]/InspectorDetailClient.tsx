@@ -52,7 +52,7 @@ export default function InspectorDetailClient() {
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
           <div className="flex flex-wrap items-start gap-5">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-2xl font-bold">
                 {inspector.avatar}
               </div>
               <span className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${inspector.status === 'online' ? 'bg-green-500' : inspector.status === 'en-route' ? 'bg-amber-500' : 'bg-gray-400'}`} />
@@ -74,7 +74,7 @@ export default function InspectorDetailClient() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
                 { label: 'Rating', value: inspector.rating, icon: Star, color: 'text-amber-500' },
-                { label: 'Total Jobs', value: inspector.totalJobs, icon: BarChart2, color: 'text-[#2E75B6]' },
+                { label: 'Total Jobs', value: inspector.totalJobs, icon: BarChart2, color: 'text-[#ff8a65]' },
                 { label: 'Avg Score', value: inspector.avgScore, icon: Clock, color: 'text-[#1A7A4A]' },
                 { label: 'Today', value: `${inspector.jobsCompleted}/${inspector.jobsToday}`, icon: Calendar, color: 'text-[#D35400]' },
               ].map(stat => (
@@ -91,7 +91,7 @@ export default function InspectorDetailClient() {
         <div className="flex gap-1 border-b border-[#E5E7EB] overflow-x-auto">
           {TABS.map((tab, i) => (
             <button key={tab} onClick={() => setTab(i)}
-              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === i ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === i ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
               {tab}
             </button>
           ))}
@@ -106,7 +106,7 @@ export default function InspectorDetailClient() {
                   {inspectorOrders.map(order => (
                     <Link key={order.id} href={`/orders/${order.id}`}
                       className="flex items-center gap-4 p-3 rounded-lg hover:bg-[#F4F6F8] transition-colors">
-                      <span className="font-mono text-xs font-semibold text-[#2E75B6]">{order.id}</span>
+                      <span className="font-mono text-xs font-semibold text-[#ff8a65]">{order.id}</span>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-[#1F2937]">{order.vehicle}</p>
                         <p className="text-xs text-[#6B7280]">{order.zone}</p>
@@ -129,8 +129,8 @@ export default function InspectorDetailClient() {
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
                 <div key={day} className="text-center">
                   <p className="text-xs font-semibold text-[#6B7280] mb-2">{day}</p>
-                  <div className={`h-20 rounded-lg ${i < 5 ? 'bg-[#1E3A5F]/10 border border-[#1E3A5F]/20' : 'bg-[#F4F6F8]'} flex items-center justify-center`}>
-                    {i < 5 && <span className="text-xs text-[#1E3A5F] font-medium">Available</span>}
+                  <div className={`h-20 rounded-lg ${i < 5 ? 'bg-[#ff5722]/10 border border-[#ff5722]/20' : 'bg-[#F4F6F8]'} flex items-center justify-center`}>
+                    {i < 5 && <span className="text-xs text-[#ff5722] font-medium">Available</span>}
                   </div>
                 </div>
               ))}
@@ -157,7 +157,7 @@ export default function InspectorDetailClient() {
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => toast.success('Payslip PDF generated')} className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+              <button onClick={() => toast.success('Payslip PDF generated')} className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                 Generate Payslip
               </button>
               <button onClick={() => toast.success('Period marked as paid')} className="px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium text-[#6B7280] hover:bg-[#F4F6F8] transition-colors">
@@ -178,10 +178,10 @@ export default function InspectorDetailClient() {
               ].map(f => (
                 <div key={f.label}>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">{f.label}</label>
-                  <input defaultValue={f.value} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                  <input defaultValue={f.value} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
                 </div>
               ))}
-              <button onClick={() => toast.success('Profile updated')} className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+              <button onClick={() => toast.success('Profile updated')} className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                 Save Changes
               </button>
             </div>

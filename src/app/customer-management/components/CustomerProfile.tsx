@@ -73,7 +73,7 @@ export default function CustomerProfile({ customer, onBack }: Props) {
       {/* Hero */}
       <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 shadow-sm">
         <div className="flex flex-wrap items-start gap-5">
-          <div className="w-16 h-16 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+          <div className="w-16 h-16 rounded-full bg-[#ff8a65] flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
             {customer.avatar}
           </div>
           <div className="flex-1 min-w-0">
@@ -105,8 +105,8 @@ export default function CustomerProfile({ customer, onBack }: Props) {
         {/* Lifetime stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-[#F4F6F8]">
           {[
-            { label: 'Total Bookings', value: customer.totalBookings.toString(), color: 'text-[#2E75B6]' },
-            { label: 'Vehicles Inspected', value: customer.vehiclesInspected.toString(), color: 'text-[#2E75B6]' },
+            { label: 'Total Bookings', value: customer.totalBookings.toString(), color: 'text-[#ff8a65]' },
+            { label: 'Vehicles Inspected', value: customer.vehiclesInspected.toString(), color: 'text-[#ff8a65]' },
             { label: 'Total Spent', value: `₦${customer.lifetimeValue.toLocaleString()}`, color: 'text-[#1A7A4A]' },
             { label: 'Last Active', value: customer.lastActive, color: 'text-[#1F2937]' },
           ].map(stat => (
@@ -125,7 +125,7 @@ export default function CustomerProfile({ customer, onBack }: Props) {
             <button
               key={`ctab-${tab.id}`}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === tab.id ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
+              className={`px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === tab.id ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
             >
               {tab.label}
             </button>
@@ -144,7 +144,7 @@ export default function CustomerProfile({ customer, onBack }: Props) {
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB' }} />
-                <Bar dataKey="bookings" fill="#1E3A5F" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="bookings" fill="#ff5722" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -170,7 +170,7 @@ export default function CustomerProfile({ customer, onBack }: Props) {
                 <tbody className="divide-y divide-[#F4F6F8]">
                   {BOOKING_HISTORY.map(bk => (
                     <tr key={bk.id} className="hover:bg-[#F4F6F8]/60 transition-colors">
-                      <td className="px-5 py-3 font-mono text-xs font-semibold text-[#1E3A5F]">{bk.orderId}</td>
+                      <td className="px-5 py-3 font-mono text-xs font-semibold text-[#ff5722]">{bk.orderId}</td>
                       <td className="px-4 py-3 text-xs text-[#6B7280]">{bk.date}</td>
                       <td className="px-4 py-3 text-xs font-semibold text-[#1F2937]">{bk.vehicle}</td>
                       <td className="px-4 py-3 text-xs text-[#6B7280]">{bk.service}</td>
@@ -212,7 +212,7 @@ export default function CustomerProfile({ customer, onBack }: Props) {
                   </span>
                 </div>
                 <p className="text-[10px] text-[#6B7280] mb-3">Last inspected: {veh.lastInspected}</p>
-                <button className="w-full py-1.5 text-xs font-semibold text-[#2E75B6] border border-[#2E75B6]/30 rounded-lg hover:bg-blue-50 transition-colors">
+                <button className="w-full py-1.5 text-xs font-semibold text-[#ff8a65] border border-[#ff8a65]/30 rounded-lg hover:bg-blue-50 transition-colors">
                   Book Inspection
                 </button>
               </div>
@@ -286,11 +286,11 @@ export default function CustomerProfile({ customer, onBack }: Props) {
               value={noteText}
               onChange={e => setNoteText(e.target.value)}
               placeholder="Add a note about this customer visible to admin team only…"
-              className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] resize-none transition-all"
+              className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] resize-none transition-all"
             />
             <button
               onClick={() => { if (noteText.trim()) { toast.success('Note added successfully'); setNoteText(''); } }}
-              className="mt-2 px-4 py-2 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98]"
+              className="mt-2 px-4 py-2 bg-[#ff5722] text-white text-xs font-semibold rounded-lg hover:bg-[#e64a19] transition-all active:scale-[0.98]"
             >
               Add Note
             </button>
@@ -309,7 +309,7 @@ export default function CustomerProfile({ customer, onBack }: Props) {
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[10px] text-[#6B7280]">{comm.timestamp}</span>
                       <span className="text-[10px] text-[#6B7280]">·</span>
-                      <span className="text-[10px] font-semibold text-[#2E75B6]">{comm.actor}</span>
+                      <span className="text-[10px] font-semibold text-[#ff8a65]">{comm.actor}</span>
                     </div>
                   </div>
                   <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${comm.channel === 'sms' ? 'bg-green-50 text-green-700' : comm.channel === 'email' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'}`}>
@@ -392,7 +392,7 @@ export default function CustomerProfile({ customer, onBack }: Props) {
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md animate-fade-in p-6">
             <h3 className="font-heading font-semibold text-[#1F2937] mb-4">Flag Account</h3>
             <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Reason for flagging</label>
-            <select value={flagReason} onChange={e => setFlagReason(e.target.value)} className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 mb-4">
+            <select value={flagReason} onChange={e => setFlagReason(e.target.value)} className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 mb-4">
               <option value="">Select a reason…</option>
               <option value="suspicious">Suspicious Activity</option>
               <option value="dispute">Dispute / Complaint</option>
@@ -414,7 +414,7 @@ export default function CustomerProfile({ customer, onBack }: Props) {
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md animate-fade-in p-6">
             <h3 className="font-heading font-semibold text-[#1F2937] mb-4">Suspend Account</h3>
             <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Reason for suspension (required)</label>
-            <textarea rows={3} value={suspendReason} onChange={e => setSuspendReason(e.target.value)} placeholder="Provide a clear reason for suspending this account…" className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 resize-none mb-4" />
+            <textarea rows={3} value={suspendReason} onChange={e => setSuspendReason(e.target.value)} placeholder="Provide a clear reason for suspending this account…" className="w-full px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 resize-none mb-4" />
             <div className="flex gap-3">
               <button onClick={() => setShowSuspendModal(false)} className="flex-1 py-2 border border-[#E5E7EB] text-sm font-semibold text-[#6B7280] rounded-lg hover:bg-[#F4F6F8]">Cancel</button>
               <button

@@ -33,7 +33,7 @@ export default function CRMContactPage() {
 
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
           <div className="flex flex-wrap items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-lg">{contact.avatar}</div>
+            <div className="w-12 h-12 rounded-full bg-[#ff5722] flex items-center justify-center text-white font-bold text-lg">{contact.avatar}</div>
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h2 className="text-lg font-heading font-bold text-[#1F2937]">{contact.name}</h2>
@@ -42,7 +42,7 @@ export default function CRMContactPage() {
               <p className="text-sm text-[#6B7280]">{contact.email} · {contact.phone}</p>
               <div className="flex items-center gap-2 mt-2">
                 <select defaultValue={contact.stage} onChange={e => toast.success(`Stage updated to ${e.target.value}`)}
-                  className="text-xs border border-[#E5E7EB] rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30">
+                  className="text-xs border border-[#E5E7EB] rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                   {['Lead', 'Hot Lead', 'Qualified', 'Negotiation', 'Offer Sent', 'Closed Won', 'Cold'].map(s => <option key={s}>{s}</option>)}
                 </select>
                 <span className="text-xs text-[#6B7280]">Assigned: {contact.assignedTo}</span>
@@ -54,7 +54,7 @@ export default function CRMContactPage() {
         <div className="flex gap-1 border-b border-[#E5E7EB] overflow-x-auto">
           {TABS.map((tab, i) => (
             <button key={tab} onClick={() => setActiveTab(i)}
-              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === i ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${activeTab === i ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}>
               {tab}
             </button>
           ))}
@@ -82,7 +82,7 @@ export default function CRMContactPage() {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Linked Cars</h3>
-              <button onClick={() => toast.success('Car search modal')} className="text-xs text-[#2E75B6] hover:underline flex items-center gap-1">
+              <button onClick={() => toast.success('Car search modal')} className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">
                 <Plus size={12} /> Link Car
               </button>
             </div>
@@ -94,7 +94,7 @@ export default function CRMContactPage() {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Offers</h3>
-              <Link href={`/offers/new?contact=${contact.id}`} className="text-xs text-[#2E75B6] hover:underline flex items-center gap-1">
+              <Link href={`/offers/new?contact=${contact.id}`} className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">
                 <Plus size={12} /> Create Offer
               </Link>
             </div>
@@ -120,7 +120,7 @@ export default function CRMContactPage() {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Communications</h3>
-              <button onClick={() => toast.success('Communication logged')} className="text-xs text-[#2E75B6] hover:underline flex items-center gap-1">
+              <button onClick={() => toast.success('Communication logged')} className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">
                 <Plus size={12} /> Log Communication
               </button>
             </div>
@@ -130,7 +130,7 @@ export default function CRMContactPage() {
                 { type: 'Email', note: 'Sent offer for Toyota Camry', date: '2026-04-13' },
               ].map((c, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 bg-[#F9FAFB] rounded-lg">
-                  <MessageSquare size={14} className="text-[#2E75B6] mt-0.5 flex-shrink-0" />
+                  <MessageSquare size={14} className="text-[#ff8a65] mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs font-semibold text-[#1F2937]">{c.type}</p>
                     <p className="text-xs text-[#6B7280]">{c.note}</p>
@@ -155,9 +155,9 @@ export default function CRMContactPage() {
             </div>
             <div className="flex gap-2">
               <input value={newNote} onChange={e => setNewNote(e.target.value)} placeholder="Add a note…"
-                className="flex-1 px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E75B6]/30" />
+                className="flex-1 px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
               <button onClick={() => { if (newNote) { setNotes(prev => [...prev, newNote]); setNewNote(''); toast.success('Note added'); } }}
-                className="px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+                className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
                 Add
               </button>
             </div>

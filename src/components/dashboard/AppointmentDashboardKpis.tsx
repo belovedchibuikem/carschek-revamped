@@ -56,7 +56,7 @@ export function AppointmentDashboardKpis() {
       sub: stats.nextTodaySlot ? `Next: ${stats.nextTodaySlot}` : 'No upcoming today',
       href: '/appointments?date=today',
       icon: CalendarDays,
-      color: '#1E3A5F',
+      color: '#ff5722',
     },
     {
       label: 'Ready to inspect',
@@ -64,7 +64,7 @@ export function AppointmentDashboardKpis() {
       sub: 'Cars awaiting inspection start',
       href: '/appointments?serviceType=inspection&status=confirmed&inspectionLinked=false',
       icon: Wrench,
-      color: '#2E75B6',
+      color: '#ff8a65',
     },
     {
       label: 'Total appointments',
@@ -92,13 +92,13 @@ export function AppointmentDashboardKpis() {
           <Link
             key={`apt-kpi-${i}`}
             href={k.href}
-            className="bg-white rounded-xl border border-[#E5E7EB] p-5 hover:shadow-md transition-all hover:border-[#2E75B6]/30 group"
+            className="bg-white rounded-xl border border-[#E5E7EB] p-5 hover:shadow-md transition-all hover:border-[#ff8a65]/30 group"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${k.color}15` }}>
                 <k.icon size={20} style={{ color: k.color }} />
               </div>
-              <ArrowRight size={14} className="text-[#9CA3AF] group-hover:text-[#2E75B6] transition-colors" />
+              <ArrowRight size={14} className="text-[#9CA3AF] group-hover:text-[#ff8a65] transition-colors" />
             </div>
             <div className="text-2xl font-heading font-bold text-[#1F2937] tabular-nums">{k.value.toLocaleString()}</div>
             <p className="text-xs text-[#6B7280] mt-1">{k.label}</p>

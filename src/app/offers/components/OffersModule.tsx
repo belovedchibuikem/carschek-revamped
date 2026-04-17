@@ -69,10 +69,10 @@ export default function OffersModule() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[#1E3A5F]">
+          <h1 className="text-2xl font-bold text-[#ff5722]">
             {view === 'documents' ? 'Document Compliance Panel' : 'Offers'}
           </h1>
-          {view === 'list' && <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-sm font-semibold px-2.5 py-0.5 rounded-full">{MOCK_OFFERS.length}</span>}
+          {view === 'list' && <span className="bg-[#ff5722]/10 text-[#ff5722] text-sm font-semibold px-2.5 py-0.5 rounded-full">{MOCK_OFFERS.length}</span>}
         </div>
         <div className="flex items-center gap-2">
           {view !== 'list' && (
@@ -81,7 +81,7 @@ export default function OffersModule() {
           {view === 'list' && (
             <>
               <button onClick={() => setView('documents')} className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-1.5"><FileText size={14} /> Document Review</button>
-              <button onClick={() => setView('create')} className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors"><Plus size={14} /> Create Offer</button>
+              <button onClick={() => setView('create')} className="flex items-center gap-1.5 px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors"><Plus size={14} /> Create Offer</button>
             </>
           )}
         </div>
@@ -113,11 +113,11 @@ export default function OffersModule() {
                 <tbody className="divide-y divide-gray-50">
                   {MOCK_OFFERS.map(offer => (
                     <tr key={offer.id} className="hover:bg-gray-50/80 transition-colors cursor-pointer" onClick={() => setView('create')}>
-                      <td className="px-4 py-3 font-mono text-xs font-bold text-[#1E3A5F]">{offer.id}</td>
+                      <td className="px-4 py-3 font-mono text-xs font-bold text-[#ff5722]">{offer.id}</td>
                       <td className="px-4 py-3">
                         <button
                           onClick={e => { e.stopPropagation(); router.push(`/cars/${offer.car.split(' — ')[0]}`); }}
-                          className="text-sm text-[#1E3A5F] hover:underline font-medium"
+                          className="text-sm text-[#ff5722] hover:underline font-medium"
                         >
                           {offer.car}
                         </button>
@@ -125,7 +125,7 @@ export default function OffersModule() {
                       <td className="px-4 py-3">
                         <button
                           onClick={e => { e.stopPropagation(); router.push('/crm'); }}
-                          className="text-sm text-gray-700 hover:text-[#1E3A5F] hover:underline transition-colors"
+                          className="text-sm text-gray-700 hover:text-[#ff5722] hover:underline transition-colors"
                         >
                           {offer.contact}
                         </button>
@@ -137,7 +137,7 @@ export default function OffersModule() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                           {offer.status === 'Sent' && (
-                            <button onClick={() => setShowResponseModal(offer.id)} className="text-xs px-2 py-1 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-md hover:bg-[#1E3A5F]/20 transition-colors font-medium">Record Response</button>
+                            <button onClick={() => setShowResponseModal(offer.id)} className="text-xs px-2 py-1 bg-[#ff5722]/10 text-[#ff5722] rounded-md hover:bg-[#ff5722]/20 transition-colors font-medium">Record Response</button>
                           )}
                           <button className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400"><MoreHorizontal size={14} /></button>
                         </div>
@@ -155,11 +155,11 @@ export default function OffersModule() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Left — Form */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
-            <h2 className="font-bold text-[#1E3A5F]">Offer Details</h2>
+            <h2 className="font-bold text-[#ff5722]">Offer Details</h2>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Link to Car *</label>
               <div className="relative">
-                <input type="text" placeholder="Type CK- or car name..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                <input type="text" placeholder="Type CK- or car name..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
               </div>
               <div className="mt-2 p-2 border border-gray-100 rounded-lg flex items-center gap-2">
                 <span className="font-mono text-xs font-bold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md">CK-41</span>
@@ -170,7 +170,7 @@ export default function OffersModule() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Offer To (Contact) *</label>
-              <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20">
+              <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20">
                 <option value="">Search contact...</option>
                 {['Adaeze Mensah', 'Emeka Okafor', 'Fatima Bello', 'Chukwuemeka Obi'].map(c => <option key={c}>{c}</option>)}
               </select>
@@ -179,21 +179,21 @@ export default function OffersModule() {
               <label className="block text-xs font-semibold text-gray-600 mb-1">Offer Price (₦) *</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">₦</span>
-                <input type="number" value={offerPrice} onChange={e => setOfferPrice(e.target.value)} placeholder="0" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                <input type="number" value={offerPrice} onChange={e => setOfferPrice(e.target.value)} placeholder="0" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
               </div>
               <p className="text-xs text-gray-400 mt-1">Market range: ₦4,200,000 – ₦4,800,000</p>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Validity Period *</label>
               <div className="flex items-center gap-2">
-                <input type="number" value={validDays} onChange={e => setValidDays(e.target.value)} className="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                <input type="number" value={validDays} onChange={e => setValidDays(e.target.value)} className="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
                 <span className="text-sm text-gray-500">days</span>
               </div>
               {expiryDate && <p className="text-xs text-gray-400 mt-1">Expires: {expiryDate}</p>}
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Notes / Terms</label>
-              <textarea rows={3} placeholder="Add any special terms or notes..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 resize-none" />
+              <textarea rows={3} placeholder="Add any special terms or notes..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 resize-none" />
             </div>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
@@ -207,17 +207,17 @@ export default function OffersModule() {
             </div>
             <div className="flex gap-3 pt-2">
               <button className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Save as Draft</button>
-              <button className="flex-1 py-2.5 bg-[#1E3A5F] text-white rounded-xl text-sm font-bold hover:bg-[#162d4a] transition-colors">Send Offer</button>
+              <button className="flex-1 py-2.5 bg-[#ff5722] text-white rounded-xl text-sm font-bold hover:bg-[#e64a19] transition-colors">Send Offer</button>
             </div>
           </div>
 
           {/* Right — Preview */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <h2 className="font-bold text-[#1E3A5F] mb-4">Offer Preview</h2>
+            <h2 className="font-bold text-[#ff5722] mb-4">Offer Preview</h2>
             <div className="border border-gray-200 rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div>
-                  <p className="font-bold text-[#1E3A5F] text-lg">CARSCHEK</p>
+                  <p className="font-bold text-[#ff5722] text-lg">CARSCHEK</p>
                   <p className="text-xs text-gray-400">Vehicle Purchase Offer</p>
                 </div>
                 <p className="text-xs text-gray-400">{new Date().toLocaleDateString()}</p>
@@ -232,7 +232,7 @@ export default function OffersModule() {
               </div>
               <div>
                 <p className="text-xs text-gray-400 uppercase font-semibold mb-1">Offer Price</p>
-                <p className="text-2xl font-bold text-[#1E3A5F]">{offerPrice ? `₦${parseInt(offerPrice).toLocaleString()}` : '₦—'}</p>
+                <p className="text-2xl font-bold text-[#ff5722]">{offerPrice ? `₦${parseInt(offerPrice).toLocaleString()}` : '₦—'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 uppercase font-semibold mb-1">Valid Until</p>
@@ -267,7 +267,7 @@ export default function OffersModule() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-sm text-gray-500">Toyota Camry 2011 — CK-41</p>
-                <p className="text-lg font-bold text-[#1E3A5F]">{approvedCount} / {DOCUMENTS_LIST.length} Documents Complete</p>
+                <p className="text-lg font-bold text-[#ff5722]">{approvedCount} / {DOCUMENTS_LIST.length} Documents Complete</p>
               </div>
               <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${missingRequired.length === 0 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
                 {missingRequired.length === 0 ? '✓ Ready for Listing' : `⚠ Not Ready — ${missingRequired.length} required missing`}
@@ -314,9 +314,9 @@ export default function OffersModule() {
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => toggleDoc(doc.name)} className="w-full border-2 border-dashed border-gray-200 rounded-lg py-4 text-xs text-gray-400 hover:border-[#1E3A5F]/30 hover:text-[#1E3A5F] transition-all flex flex-col items-center gap-1.5">
+                    <button onClick={() => toggleDoc(doc.name)} className="w-full border-2 border-dashed border-gray-200 rounded-lg py-4 text-xs text-gray-400 hover:border-[#ff5722]/30 hover:text-[#ff5722] transition-all flex flex-col items-center gap-1.5">
                       <Upload size={16} />
-                      <span>Drag & drop or <span className="text-[#1E3A5F] font-medium">Select File(s)</span></span>
+                      <span>Drag & drop or <span className="text-[#ff5722] font-medium">Select File(s)</span></span>
                     </button>
                   )}
 
@@ -326,7 +326,7 @@ export default function OffersModule() {
                     onChange={e => setDocComments(prev => ({ ...prev, [doc.name]: e.target.value }))}
                     placeholder="Add note about this document..."
                     rows={2}
-                    className="w-full border border-gray-100 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1E3A5F]/20 resize-none bg-gray-50"
+                    className="w-full border border-gray-100 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#ff5722]/20 resize-none bg-gray-50"
                   />
 
                   {/* Rejection reason */}
@@ -363,7 +363,7 @@ export default function OffersModule() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-[#1E3A5F]">Record Response</h3>
+              <h3 className="font-bold text-[#ff5722]">Record Response</h3>
               <button onClick={() => setShowResponseModal(null)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"><X size={16} /></button>
             </div>
             <div className="flex gap-3">
@@ -387,7 +387,7 @@ export default function OffersModule() {
             )}
             <div className="flex gap-3">
               <button onClick={() => setShowResponseModal(null)} className="flex-1 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button onClick={() => setShowResponseModal(null)} className="flex-1 py-2 bg-[#1E3A5F] text-white rounded-xl text-sm font-bold hover:bg-[#162d4a] transition-colors">Save Response</button>
+              <button onClick={() => setShowResponseModal(null)} className="flex-1 py-2 bg-[#ff5722] text-white rounded-xl text-sm font-bold hover:bg-[#e64a19] transition-colors">Save Response</button>
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ export default function AppLayout({ children, currentPath = '' }: AppLayoutProps
   }, [mobileSidebarOpen]);
 
   return (
-    <div className="flex h-screen bg-[#F4F6F8] overflow-hidden">
+    <div className="flex h-screen bg-white overflow-hidden">
       {/* Mobile overlay backdrop */}
       {mobileSidebarOpen && (
         <div
