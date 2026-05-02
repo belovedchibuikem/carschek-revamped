@@ -17,6 +17,8 @@ import { getSectionDef, countToggleItems, type SectionDef, type ToggleItem, type
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
 import { VehiclePhotos } from '@/components/inspection/VehiclePhotos';
 import { DamagePhotosHubScreen } from '@/components/inspection/screens/DamagePhotosHubScreen';
+import { loadDamagePhotosForOrder } from '@/lib/inspection/dexieDamagePhotos';
+import type { VehiclePhotosProgress } from '@/components/inspection/VehiclePhotos';
 
 type ToggleValue = 'yes' | 'no' | 'na' | null;
 
@@ -351,6 +353,8 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [commentValues, setCommentValues] = useState<Record<string, string>>({});
   const [showErrors, setShowErrors] = useState(false);
+  const [photosProgress, setPhotosProgress] = useState<VehiclePhotosProgress | null>(null);
+  const [damagesCount, setDamagesCount] = useState(0);
 
   const hydrating = useRef(true);
   const touchStartX = useRef<number | null>(null);
@@ -409,6 +413,14 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
       });
   }, [jobId, sectionId]);
 
+  // Load damage photos count when on S25
+  useEffect(() => {
+    if (def?.layout !== 'damages') return;
+    void loadDamagePhotosForOrder(jobId).then(({ photos: list }) => {
+      setDamagesCount(list.length);
+    });
+  }, [def?.layout, jobId]);
+
   // Compute progress
   const { completed, total } = useMemo(() => {
     if (!def) return { completed: 0, total: 0 };
@@ -426,8 +438,16 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
     if (def.layout === 'comments') {
       return { completed: 0, total: 0 };
     }
+    if (def.layout === 'photos') {
+      const t = photosProgress?.total ?? 11;
+      const c = photosProgress?.captured ?? 0;
+      return { completed: c, total: t };
+    }
+    if (def.layout === 'damages') {
+      return { completed: damagesCount, total: damagesCount };
+    }
     return { completed: 0, total: 0 };
-  }, [def, toggleValues, formValues]);
+  }, [def, toggleValues, formValues, photosProgress, damagesCount]);
 
   const progress = total > 0 ? (completed / total) * 100 : 100;
 
@@ -604,6 +624,7 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
                 inspectionId={jobId}
                 layout="compact"
                 presentation="embedded"
+                onProgress={setPhotosProgress}
               />
             )}
             {isDamages && (
