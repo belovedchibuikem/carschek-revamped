@@ -41,28 +41,28 @@ export default function InspectorModule() {
     return <InspectorProfile inspector={selectedInspector} onBack={() => setSelectedInspector(null)} />;
   }
 
-  if (activeView === 'onboarding') {
-    return <OnboardingWorkflow onBack={() => setActiveView('list')} />;
-  }
-
   return (
     <div className="space-y-4">
       {/* View toggle */}
       <div className="flex gap-2">
         <button
           onClick={() => setActiveView('list')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'list' ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'list' ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
         >
           Inspector List
         </button>
         <button
           onClick={() => setActiveView('onboarding')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'onboarding' ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'onboarding' ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
         >
           Onboarding Workflow
         </button>
       </div>
-      <InspectorList inspectors={MOCK_INSPECTORS} onSelectInspector={setSelectedInspector} />
+      {activeView === 'onboarding' ? (
+        <OnboardingWorkflow onBack={() => setActiveView('list')} />
+      ) : (
+        <InspectorList inspectors={MOCK_INSPECTORS} onSelectInspector={setSelectedInspector} />
+      )}
     </div>
   );
 }

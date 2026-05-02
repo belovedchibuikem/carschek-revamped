@@ -67,7 +67,7 @@ export default function DealDetail({ deal, onBack }: Props) {
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-sm font-bold text-[#1E3A5F]">{deal.id}</span>
+                <span className="font-mono text-sm font-bold text-[#ff5722]">{deal.id}</span>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${
                   deal.stage === 'completed' ? 'bg-green-50 text-green-700' :
                   deal.stage === 'payment' ? 'bg-teal-50 text-teal-700' :
@@ -90,8 +90,8 @@ export default function DealDetail({ deal, onBack }: Props) {
         {/* Parties */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { label: 'Buyer', name: deal.buyerName, avatar: deal.buyerAvatar, phone: deal.buyerPhone, email: deal.buyerEmail, color: '#1E3A5F' },
-            { label: 'Seller', name: deal.sellerName, avatar: deal.sellerAvatar, phone: deal.sellerPhone, email: deal.sellerEmail, color: '#2E75B6' },
+            { label: 'Buyer', name: deal.buyerName, avatar: deal.buyerAvatar, phone: deal.buyerPhone, email: deal.buyerEmail, color: '#ff5722' },
+            { label: 'Seller', name: deal.sellerName, avatar: deal.sellerAvatar, phone: deal.sellerPhone, email: deal.sellerEmail, color: '#ff8a65' },
             { label: 'Assigned Agent', name: deal.agentName, avatar: deal.agentAvatar, phone: '—', email: '—', color: '#D35400', isAgent: true },
           ].map(party => (
             <div key={party.label} className="flex items-center gap-3 p-3 bg-[#F4F6F8] rounded-xl border border-[#E5E7EB]">
@@ -103,7 +103,7 @@ export default function DealDetail({ deal, onBack }: Props) {
                 <p className="text-sm font-semibold text-[#1F2937] truncate">{party.name}</p>
                 {!party.isAgent && <p className="text-[10px] text-[#6B7280] truncate">{party.phone}</p>}
                 {party.isAgent && (
-                  <button onClick={() => toast.info('Reassign agent modal')} className="text-[10px] text-[#2E75B6] hover:underline">Reassign</button>
+                  <button onClick={() => toast.info('Reassign agent modal')} className="text-[10px] text-[#ff8a65] hover:underline">Reassign</button>
                 )}
               </div>
             </div>
@@ -117,7 +117,7 @@ export default function DealDetail({ deal, onBack }: Props) {
           <button
             key={s.id}
             onClick={() => setActiveSection(s.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg whitespace-nowrap transition-all ${activeSection === s.id ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg whitespace-nowrap transition-all ${activeSection === s.id ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
           >
             <s.icon size={13} />
             {s.label}
@@ -147,7 +147,7 @@ export default function DealDetail({ deal, onBack }: Props) {
               const isAgent = msg.role === 'agent';
               return (
                 <div key={msg.id} className={`flex gap-3 ${isBuyer ? '' : 'flex-row-reverse'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${isBuyer ? 'bg-[#1E3A5F]' : isAgent ? 'bg-[#D35400]' : 'bg-[#2E75B6]'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${isBuyer ? 'bg-[#ff5722]' : isAgent ? 'bg-[#D35400]' : 'bg-[#ff8a65]'}`}>
                     {msg.avatar}
                   </div>
                   <div className={`flex-1 max-w-sm ${isBuyer ? '' : 'items-end flex flex-col'}`}>
@@ -162,7 +162,7 @@ export default function DealDetail({ deal, onBack }: Props) {
                         {msg.type === 'offer' && (
                           <div className="flex gap-2 mt-2">
                             <button onClick={() => toast.success('Offer accepted')} className="px-2.5 py-1 bg-[#1A7A4A] text-white text-[10px] font-semibold rounded-lg hover:bg-[#155F3A]">Accept</button>
-                            <button onClick={() => toast.info('Counter-offer modal')} className="px-2.5 py-1 bg-[#2E75B6] text-white text-[10px] font-semibold rounded-lg hover:bg-[#2563A0]">Counter</button>
+                            <button onClick={() => toast.info('Counter-offer modal')} className="px-2.5 py-1 bg-[#ff8a65] text-white text-[10px] font-semibold rounded-lg hover:bg-[#2563A0]">Counter</button>
                             <button onClick={() => toast.error('Offer declined')} className="px-2.5 py-1 border border-[#C0392B] text-[#C0392B] text-[10px] font-semibold rounded-lg hover:bg-red-50">Decline</button>
                           </div>
                         )}
@@ -241,11 +241,11 @@ export default function DealDetail({ deal, onBack }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5 flex items-center gap-1.5"><Calendar size={12} /> Handover Date & Time</label>
-                <input type="text" value={handoverDate} onChange={e => setHandoverDate(e.target.value)} placeholder="e.g. 12 Apr 2026, 10:00" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+                <input type="text" value={handoverDate} onChange={e => setHandoverDate(e.target.value)} placeholder="e.g. 12 Apr 2026, 10:00" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5 flex items-center gap-1.5"><MapPin size={12} /> Location</label>
-                <input type="text" value={handoverLocation} onChange={e => setHandoverLocation(e.target.value)} placeholder="e.g. Carschek Hub, Lekki" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+                <input type="text" value={handoverLocation} onChange={e => setHandoverLocation(e.target.value)} placeholder="e.g. Carschek Hub, Lekki" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
               </div>
             </div>
 
@@ -258,7 +258,7 @@ export default function DealDetail({ deal, onBack }: Props) {
                     type="checkbox"
                     checked={item.checked}
                     onChange={() => setChecklist(prev => prev.map(c => c.id === item.id ? { ...c, checked: !c.checked } : c))}
-                    className="w-4 h-4 rounded accent-[#1E3A5F]"
+                    className="w-4 h-4 rounded accent-[#ff5722]"
                   />
                   <span className={`text-sm ${item.checked ? 'text-[#1F2937] line-through opacity-60' : 'text-[#1F2937]'}`}>{item.label}</span>
                   {item.checked && <CheckCircle size={14} className="text-[#1A7A4A] ml-auto" />}
@@ -285,7 +285,7 @@ export default function DealDetail({ deal, onBack }: Props) {
         <div className="space-y-4">
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-4 flex items-center gap-2">
-              <DollarSign size={15} className="text-[#2E75B6]" /> Commission Calculation
+              <DollarSign size={15} className="text-[#ff8a65]" /> Commission Calculation
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
               <div className="p-4 bg-[#F4F6F8] rounded-xl border border-[#E5E7EB]">
@@ -318,7 +318,7 @@ export default function DealDetail({ deal, onBack }: Props) {
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => toast.info('Generating commission invoice PDF…')} className="px-4 py-2 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F] transition-all flex items-center gap-1.5">
+              <button onClick={() => toast.info('Generating commission invoice PDF…')} className="px-4 py-2 bg-[#ff5722] text-white text-xs font-semibold rounded-lg hover:bg-[#e64a19] transition-all flex items-center gap-1.5">
                 <FileText size={13} /> Download Invoice
               </button>
               <button onClick={() => toast.success('Payout initiated to seller')} className="px-4 py-2 bg-[#1A7A4A] text-white text-xs font-semibold rounded-lg hover:bg-[#155F3A] transition-all">
@@ -362,7 +362,7 @@ export default function DealDetail({ deal, onBack }: Props) {
             <h3 className="font-heading font-bold text-[#1F2937] mb-4">Process Refund</h3>
             <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Reason for refund</label>
             <div className="relative mb-4">
-              <select value={refundReason} onChange={e => setRefundReason(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]">
+              <select value={refundReason} onChange={e => setRefundReason(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722]">
                 <option value="">Select reason…</option>
                 <option>Buyer withdrew from deal</option>
                 <option>Vehicle condition dispute</option>

@@ -55,21 +55,21 @@ export default function OrdersListView({ orders, onSelectOrder }: Props) {
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search by name, order #, plate, VIN…"
-              className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all"
+              className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all"
             />
           </div>
           <div className="relative">
             <select
               value={statusFilter}
               onChange={e => { setStatusFilter(e.target.value as OrderStatus | 'all'); setPage(1); }}
-              className="appearance-none pl-3 pr-8 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 bg-white"
+              className="appearance-none pl-3 pr-8 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 bg-white"
             >
               {STATUS_OPTIONS.map(o => <option key={`status-opt-${o.value}`} value={o.value}>{o.label}</option>)}
             </select>
             <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
           </div>
           <div className="relative">
-            <select className="appearance-none pl-3 pr-8 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 bg-white">
+            <select className="appearance-none pl-3 pr-8 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 bg-white">
               <option>All Zones</option>
               <option>Lagos Island</option>
               <option>Lekki Phase 1</option>
@@ -90,13 +90,13 @@ export default function OrdersListView({ orders, onSelectOrder }: Props) {
         {(search || statusFilter !== 'all') && (
           <div className="flex gap-2 mt-3 flex-wrap">
             {search && (
-              <span className="flex items-center gap-1.5 text-xs bg-blue-50 text-[#2E75B6] border border-blue-200 px-2.5 py-1 rounded-full">
+              <span className="flex items-center gap-1.5 text-xs bg-blue-50 text-[#ff8a65] border border-blue-200 px-2.5 py-1 rounded-full">
                 Search: &quot;{search}&quot;
                 <button onClick={() => setSearch('')}><X size={11} /></button>
               </span>
             )}
             {statusFilter !== 'all' && (
-              <span className="flex items-center gap-1.5 text-xs bg-blue-50 text-[#2E75B6] border border-blue-200 px-2.5 py-1 rounded-full">
+              <span className="flex items-center gap-1.5 text-xs bg-blue-50 text-[#ff8a65] border border-blue-200 px-2.5 py-1 rounded-full">
                 Status: {statusFilter}
                 <button onClick={() => setStatusFilter('all')}><X size={11} /></button>
               </span>
@@ -107,7 +107,7 @@ export default function OrdersListView({ orders, onSelectOrder }: Props) {
 
       {/* Bulk action bar */}
       {selected.length > 0 && (
-        <div className="bg-[#1E3A5F] text-white rounded-xl p-3 flex items-center gap-4 animate-fade-in">
+        <div className="bg-[#ff5722] text-white rounded-xl p-3 flex items-center gap-4 animate-fade-in">
           <span className="text-sm font-semibold">{selected.length} order{selected.length > 1 ? 's' : ''} selected</span>
           <div className="flex gap-2 ml-auto">
             <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs font-semibold transition-colors">
@@ -160,11 +160,11 @@ export default function OrdersListView({ orders, onSelectOrder }: Props) {
                     <input type="checkbox" checked={selected.includes(order.id)} onChange={() => toggleSelect(order.id)} className="w-4 h-4 rounded" />
                   </td>
                   <td className="px-4 py-3">
-                    <span className="font-mono text-xs font-semibold text-[#1E3A5F]">{order.id}</span>
+                    <span className="font-mono text-xs font-semibold text-[#ff5722]">{order.id}</span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-[#2E75B6] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-[#ff8a65] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
                         {order.customer.avatar}
                       </div>
                       <div>
@@ -203,7 +203,7 @@ export default function OrdersListView({ orders, onSelectOrder }: Props) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={e => { e.stopPropagation(); onSelectOrder(order); }} className="p-1.5 rounded-lg hover:bg-blue-50 text-[#2E75B6] transition-colors" title="View order">
+                      <button onClick={e => { e.stopPropagation(); onSelectOrder(order); }} className="p-1.5 rounded-lg hover:bg-blue-50 text-[#ff8a65] transition-colors" title="View order">
                         <Eye size={14} />
                       </button>
                       <button onClick={e => e.stopPropagation()} className="p-1.5 rounded-lg hover:bg-amber-50 text-[#D35400] transition-colors" title="Edit order">
@@ -236,7 +236,7 @@ export default function OrdersListView({ orders, onSelectOrder }: Props) {
               <button
                 key={`page-${p}`}
                 onClick={() => setPage(p)}
-                className={`w-8 h-8 text-xs rounded-lg font-semibold transition-colors ${page === p ? 'bg-[#1E3A5F] text-white' : 'text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+                className={`w-8 h-8 text-xs rounded-lg font-semibold transition-colors ${page === p ? 'bg-[#ff5722] text-white' : 'text-[#6B7280] hover:bg-[#F4F6F8]'}`}
               >
                 {p}
               </button>

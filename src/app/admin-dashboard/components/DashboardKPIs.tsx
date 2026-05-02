@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, Users, Star } from 'lucide-react';
 import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts';
+import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
 
 function useCountUp(target: number, duration = 1200) {
   const [val, setVal] = useState(0);
@@ -43,6 +44,7 @@ const SPARKLINES = {
 };
 
 export default function DashboardKPIs() {
+  const t = useRechartsTheme();
   const inspections = useCountUp(47);
   const pending = useCountUp(9);
   const scoreVal = useCountUp(78);
@@ -97,7 +99,7 @@ export default function DashboardKPIs() {
           </div>
         </div>
         <div className="mt-2">
-          <Sparkline data={SPARKLINES.revenue.map(v => v / 100000)} color="#2E75B6" />
+          <Sparkline data={SPARKLINES.revenue.map(v => v / 100000)} color="#ff8a65" />
         </div>
       </div>
 
@@ -105,7 +107,7 @@ export default function DashboardKPIs() {
       <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between mb-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Active Inspectors</p>
-          <Users size={16} className="text-[#2E75B6]" />
+          <Users size={16} className="text-[#ff8a65]" />
         </div>
         <p className="text-4xl font-heading font-bold text-[#1F2937] tabular-nums">11<span className="text-xl text-[#6B7280] font-normal">/15</span></p>
         <p className="text-xs text-[#6B7280] mt-1">4 off duty today</p>
@@ -128,7 +130,7 @@ export default function DashboardKPIs() {
           <div className="h-16 w-16">
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="100%" data={[{ value: scoreVal, fill: scoreVal >= 71 ? '#1A7A4A' : scoreVal >= 41 ? '#D35400' : '#C0392B' }]} startAngle={90} endAngle={-270}>
-                <RadialBar dataKey="value" cornerRadius={4} background={{ fill: '#F4F6F8' }} />
+                <RadialBar dataKey="value" cornerRadius={4} background={{ fill: t.gridStrokeAlt }} />
               </RadialBarChart>
             </ResponsiveContainer>
           </div>

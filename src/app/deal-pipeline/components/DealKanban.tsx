@@ -5,11 +5,11 @@ import { Deal } from './DealPipelineModule';
 
 const STAGES: { id: Deal['stage']; label: string; color: string; bg: string }[] = [
   { id: 'interest', label: 'Interest', color: '#6B7280', bg: '#F4F6F8' },
-  { id: 'offer', label: 'Offer Made', color: '#2E75B6', bg: '#EFF6FF' },
+  { id: 'offer', label: 'Offer Made', color: '#ff8a65', bg: '#EFF6FF' },
   { id: 'negotiating', label: 'Negotiating', color: '#D35400', bg: '#FEF6EE' },
   { id: 'payment', label: 'Payment Received', color: '#1A7A4A', bg: '#F0FAF4' },
   { id: 'handover', label: 'Handover Scheduled', color: '#7C3AED', bg: '#F5F3FF' },
-  { id: 'completed', label: 'Completed', color: '#1E3A5F', bg: '#EFF6FF' },
+  { id: 'completed', label: 'Completed', color: '#ff5722', bg: '#EFF6FF' },
 ];
 
 const SCORE_COLOR = (s: number) => s >= 71 ? '#1A7A4A' : s >= 41 ? '#D35400' : '#C0392B';
@@ -126,8 +126,8 @@ export default function DealKanban({ deals, onViewDeal }: Props) {
                       {/* Buyer & Seller */}
                       <div className="flex items-center gap-2 mb-3">
                         <div className="flex -space-x-1.5">
-                          <div className="w-6 h-6 rounded-full bg-[#1E3A5F] border-2 border-white flex items-center justify-center text-white text-[8px] font-bold z-10">{deal.buyerAvatar}</div>
-                          <div className="w-6 h-6 rounded-full bg-[#2E75B6] border-2 border-white flex items-center justify-center text-white text-[8px] font-bold">{deal.sellerAvatar}</div>
+                          <div className="w-6 h-6 rounded-full bg-[#ff5722] border-2 border-white flex items-center justify-center text-white text-[8px] font-bold z-10">{deal.buyerAvatar}</div>
+                          <div className="w-6 h-6 rounded-full bg-[#ff8a65] border-2 border-white flex items-center justify-center text-white text-[8px] font-bold">{deal.sellerAvatar}</div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[10px] text-[#6B7280] truncate">{deal.buyerName} → {deal.sellerName}</p>

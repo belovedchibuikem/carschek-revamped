@@ -51,7 +51,7 @@ export default function ListingsTable({ listings, onViewDetail, onOpenPricing }:
           <button onClick={onOpenPricing} className="flex items-center gap-2 px-4 py-2 border border-[#E5E7EB] text-sm font-semibold text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-all">
             <BarChart2 size={15} /> Pricing Tool
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98]">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all active:scale-[0.98]">
             <Plus size={15} /> Add Listing
           </button>
         </div>
@@ -63,10 +63,10 @@ export default function ListingsTable({ listings, onViewDetail, onOpenPricing }:
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold capitalize whitespace-nowrap border-b-2 transition-all ${activeTab === tab ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold capitalize whitespace-nowrap border-b-2 transition-all ${activeTab === tab ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
           >
             {tab}
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${activeTab === tab ? 'bg-[#1E3A5F] text-white' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>{tabCount(tab)}</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${activeTab === tab ? 'bg-[#ff5722] text-white' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>{tabCount(tab)}</span>
           </button>
         ))}
       </div>
@@ -79,7 +79,7 @@ export default function ListingsTable({ listings, onViewDetail, onOpenPricing }:
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by make, model, plate, seller…"
-            className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722]"
           />
         </div>
         <button className="flex items-center gap-2 px-3 py-2 border border-[#E5E7EB] text-sm text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-all">
@@ -89,7 +89,7 @@ export default function ListingsTable({ listings, onViewDetail, onOpenPricing }:
 
       {/* Bulk action bar */}
       {selected.length > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-[#1E3A5F] text-white rounded-xl animate-fade-in">
+        <div className="flex items-center gap-3 px-4 py-3 bg-[#ff5722] text-white rounded-xl animate-fade-in">
           <span className="text-sm font-semibold">{selected.length} selected</span>
           <div className="flex items-center gap-2 ml-auto">
             <button onClick={() => { toast.success(`${selected.length} listings approved`); setSelected([]); }} className="px-3 py-1.5 bg-[#1A7A4A] text-white text-xs font-semibold rounded-lg hover:bg-[#155F3A] transition-all flex items-center gap-1"><CheckCircle size={12} /> Approve</button>
@@ -106,7 +106,7 @@ export default function ListingsTable({ listings, onViewDetail, onOpenPricing }:
             <thead>
               <tr className="border-b border-[#E5E7EB] bg-[#F4F6F8]/60">
                 <th className="w-10 px-4 py-3">
-                  <input type="checkbox" checked={selected.length === filtered.length && filtered.length > 0} onChange={toggleAll} className="w-4 h-4 rounded border-[#E5E7EB] text-[#1E3A5F]" />
+                  <input type="checkbox" checked={selected.length === filtered.length && filtered.length > 0} onChange={toggleAll} className="w-4 h-4 rounded border-[#E5E7EB] text-[#ff5722]" />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Photo</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Vehicle</th>
@@ -136,7 +136,7 @@ export default function ListingsTable({ listings, onViewDetail, onOpenPricing }:
               ) : filtered.map(listing => (
                 <tr key={listing.id} className="hover:bg-[#F4F6F8]/40 transition-colors group">
                   <td className="px-4 py-3">
-                    <input type="checkbox" checked={selected.includes(listing.id)} onChange={() => toggleSelect(listing.id)} className="w-4 h-4 rounded border-[#E5E7EB] text-[#1E3A5F]" />
+                    <input type="checkbox" checked={selected.includes(listing.id)} onChange={() => toggleSelect(listing.id)} className="w-4 h-4 rounded border-[#E5E7EB] text-[#ff5722]" />
                   </td>
                   <td className="px-4 py-3">
                     <div className="w-14 h-10 bg-[#F4F6F8] rounded-lg border border-[#E5E7EB] flex items-center justify-center overflow-hidden">
@@ -173,7 +173,7 @@ export default function ListingsTable({ listings, onViewDetail, onOpenPricing }:
                       <button onClick={() => { toast.success(`${listing.id} approved`); }} title="Approve" className="p-1.5 rounded-lg hover:bg-green-50 text-[#1A7A4A] transition-colors"><CheckCircle size={14} /></button>
                       <button onClick={() => { toast.error(`${listing.id} rejected`); }} title="Reject" className="p-1.5 rounded-lg hover:bg-red-50 text-[#C0392B] transition-colors"><XCircle size={14} /></button>
                       <button onClick={() => { toast.info(`${listing.id} featured`); }} title="Feature" className="p-1.5 rounded-lg hover:bg-purple-50 text-purple-600 transition-colors"><Star size={14} /></button>
-                      <button onClick={() => onViewDetail(listing)} title="View" className="p-1.5 rounded-lg hover:bg-blue-50 text-[#2E75B6] transition-colors"><Eye size={14} /></button>
+                      <button onClick={() => onViewDetail(listing)} title="View" className="p-1.5 rounded-lg hover:bg-blue-50 text-[#ff8a65] transition-colors"><Eye size={14} /></button>
                       <button title="Edit" className="p-1.5 rounded-lg hover:bg-[#F4F6F8] text-[#6B7280] transition-colors"><Edit size={14} /></button>
                     </div>
                   </td>
@@ -187,7 +187,7 @@ export default function ListingsTable({ listings, onViewDetail, onOpenPricing }:
           <p className="text-xs text-[#6B7280]">Showing {filtered.length} of {listings.length} listings</p>
           <div className="flex items-center gap-1">
             <button className="px-3 py-1.5 text-xs border border-[#E5E7EB] rounded-lg text-[#6B7280] hover:bg-[#F4F6F8] transition-all">Previous</button>
-            <button className="px-3 py-1.5 text-xs bg-[#1E3A5F] text-white rounded-lg">1</button>
+            <button className="px-3 py-1.5 text-xs bg-[#ff5722] text-white rounded-lg">1</button>
             <button className="px-3 py-1.5 text-xs border border-[#E5E7EB] rounded-lg text-[#6B7280] hover:bg-[#F4F6F8] transition-all">Next</button>
           </div>
         </div>

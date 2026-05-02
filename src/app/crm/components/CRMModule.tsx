@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Plus, Search, Phone, Mail, MoreHorizontal, ChevronDown, Clock, Car, X } from 'lucide-react';
 
 const STAGE_STYLES: Record<string, string> = {
-  'New': 'bg-[#1E3A5F]/10 text-[#1E3A5F]',
+  'New': 'bg-[#ff5722]/10 text-[#ff5722]',
   'Contacted': 'bg-blue-50 text-blue-700',
   'Interested': 'bg-teal-50 text-teal-700',
   'Offer Sent': 'bg-purple-50 text-purple-700',
@@ -92,16 +92,16 @@ export default function CRMModule() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[#1E3A5F]">CRM — Contacts</h1>
-          <span className="bg-[#1E3A5F]/10 text-[#1E3A5F] text-sm font-semibold px-2.5 py-0.5 rounded-full">{contacts.length}</span>
+          <h1 className="text-2xl font-bold text-[#ff5722]">CRM — Contacts</h1>
+          <span className="bg-[#ff5722]/10 text-[#ff5722] text-sm font-semibold px-2.5 py-0.5 rounded-full">{contacts.length}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex rounded-lg border border-gray-200 overflow-hidden">
             {(['list', 'kanban'] as View[]).map(v => (
-              <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-xs font-medium capitalize transition-colors ${view === v ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{v}</button>
+              <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-xs font-medium capitalize transition-colors ${view === v ? 'bg-[#ff5722] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{v}</button>
             ))}
           </div>
-          <button className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">
+          <button className="flex items-center gap-1.5 px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors">
             <Plus size={14} /> Add Contact
           </button>
         </div>
@@ -109,7 +109,7 @@ export default function CRMModule() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {[['Total', contacts.length, 'text-[#1E3A5F]'], ['Leads', contacts.filter(c => c.type === 'Lead').length, 'text-amber-600'], ['Active', contacts.filter(c => !['Closed Won', 'Closed Lost'].includes(c.stage)).length, 'text-teal-600'], ['Closed Won', contacts.filter(c => c.stage === 'Closed Won').length, 'text-green-600'], ['Cold', contacts.filter(c => c.stage === 'Closed Lost').length, 'text-red-500']].map(([label, count, color]) => (
+        {[['Total', contacts.length, 'text-[#ff5722]'], ['Leads', contacts.filter(c => c.type === 'Lead').length, 'text-amber-600'], ['Active', contacts.filter(c => !['Closed Won', 'Closed Lost'].includes(c.stage)).length, 'text-teal-600'], ['Closed Won', contacts.filter(c => c.stage === 'Closed Won').length, 'text-green-600'], ['Cold', contacts.filter(c => c.stage === 'Closed Lost').length, 'text-red-500']].map(([label, count, color]) => (
           <div key={label as string} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 text-center">
             <p className={`text-2xl font-bold ${color}`}>{count}</p>
             <p className="text-xs text-gray-500 mt-0.5">{label}</p>
@@ -123,7 +123,7 @@ export default function CRMModule() {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-wrap gap-3 items-center">
             <div className="relative flex-1 min-w-[200px]">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, phone, email..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, phone, email..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
             </div>
             {['Type', 'Stage', 'Assigned To'].map(f => (
               <button key={f} className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">{f} <ChevronDown size={13} /></button>
@@ -146,7 +146,7 @@ export default function CRMModule() {
                     <tr key={contact.id} className="hover:bg-gray-50/80 transition-colors cursor-pointer" onClick={() => { setSelectedContact(contact); setView('detail'); }}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">{contact.initials}</div>
+                          <div className="w-8 h-8 rounded-full bg-[#ff5722] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">{contact.initials}</div>
                           <span className="font-semibold text-gray-800">{contact.name}</span>
                         </div>
                       </td>
@@ -185,7 +185,7 @@ export default function CRMModule() {
               return (
                 <div
                   key={stage}
-                  className={`w-60 flex-shrink-0 rounded-xl border-2 transition-all ${dragOver === stage ? 'border-[#1E3A5F]/40 bg-[#1E3A5F]/5' : 'border-gray-100 bg-gray-50/50'}`}
+                  className={`w-60 flex-shrink-0 rounded-xl border-2 transition-all ${dragOver === stage ? 'border-[#ff5722]/40 bg-[#ff5722]/5' : 'border-gray-100 bg-gray-50/50'}`}
                   onDragOver={e => { e.preventDefault(); setDragOver(stage); }}
                   onDrop={() => handleDrop(stage)}
                   onDragLeave={() => setDragOver(null)}
@@ -206,7 +206,7 @@ export default function CRMModule() {
                         className="bg-white rounded-xl border border-gray-100 p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-all"
                       >
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-7 h-7 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">{contact.initials}</div>
+                          <div className="w-7 h-7 rounded-full bg-[#ff5722] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">{contact.initials}</div>
                           <div className="min-w-0">
                             <p className="text-xs font-semibold text-gray-800 truncate">{contact.name}</p>
                             <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${TYPE_STYLES[contact.type]}`}>{contact.type}</span>
@@ -231,15 +231,15 @@ export default function CRMModule() {
       {/* Contact Detail */}
       {view === 'detail' && selectedContact && (
         <div className="space-y-4">
-          <button onClick={() => setView('list')} className="flex items-center gap-1.5 text-sm text-[#1E3A5F] hover:underline">← Back to Contacts</button>
+          <button onClick={() => setView('list')} className="flex items-center gap-1.5 text-sm text-[#ff5722] hover:underline">← Back to Contacts</button>
 
           {/* Header Card */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <div className="flex flex-wrap items-start gap-4">
-              <div className="w-16 h-16 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-xl font-bold flex-shrink-0">{selectedContact.initials}</div>
+              <div className="w-16 h-16 rounded-full bg-[#ff5722] text-white flex items-center justify-center text-xl font-bold flex-shrink-0">{selectedContact.initials}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-xl font-bold text-[#1E3A5F]">{selectedContact.name}</h2>
+                  <h2 className="text-xl font-bold text-[#ff5722]">{selectedContact.name}</h2>
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TYPE_STYLES[selectedContact.type]}`}>{selectedContact.type}</span>
                 </div>
                 <div className="flex items-center gap-4 mt-2 flex-wrap">
@@ -268,7 +268,7 @@ export default function CRMModule() {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
             <div className="flex border-b border-gray-100 px-4 overflow-x-auto">
               {['overview', 'cars', 'offers', 'communications', 'notes'].map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-3 text-sm font-medium capitalize whitespace-nowrap transition-colors ${activeTab === tab ? 'text-[#1E3A5F] border-b-2 border-[#1E3A5F]' : 'text-gray-500 hover:text-gray-700'}`}>{tab}</button>
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-3 text-sm font-medium capitalize whitespace-nowrap transition-colors ${activeTab === tab ? 'text-[#ff5722] border-b-2 border-[#ff5722]' : 'text-gray-500 hover:text-gray-700'}`}>{tab}</button>
               ))}
             </div>
             <div className="p-5">
@@ -277,7 +277,7 @@ export default function CRMModule() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[['Total Deals', '3'], ['Cars Bought', '2'], ['Cars Sold', '1'], ['Total Value', '₦15.2M']].map(([l, v]) => (
                       <div key={l} className="bg-gray-50 rounded-xl p-3 text-center">
-                        <p className="text-lg font-bold text-[#1E3A5F]">{v}</p>
+                        <p className="text-lg font-bold text-[#ff5722]">{v}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{l}</p>
                       </div>
                     ))}
@@ -287,7 +287,7 @@ export default function CRMModule() {
                     <div className="flex gap-3">
                       <input type="date" className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                       <input type="text" placeholder="Note..." className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                      <button className="px-4 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors">Set</button>
+                      <button className="px-4 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors">Set</button>
                     </div>
                   </div>
                 </div>
@@ -295,14 +295,14 @@ export default function CRMModule() {
               {activeTab === 'cars' && (
                 <div className="space-y-3">
                   <div className="flex justify-end">
-                    <a href="/cars" className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors"><Plus size={14} /> Link a Car</a>
+                    <a href="/cars" className="flex items-center gap-1.5 px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors"><Plus size={14} /> Link a Car</a>
                   </div>
                   {[{ ckId: 'CK-41', name: 'Toyota Camry 2011', role: 'Buyer', price: '₦5,100,000', date: '2025-01-15', status: 'Sold' }].map(car => (
                     <div key={car.ckId} className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
                       <div className="flex items-center gap-3">
                         <a href={`/cars/${car.ckId}`} className="font-mono text-xs font-bold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md hover:bg-teal-100 transition-colors">{car.ckId}</a>
                         <div>
-                          <a href={`/cars/${car.ckId}`} className="text-sm font-semibold text-gray-800 hover:text-[#1E3A5F] hover:underline transition-colors">{car.name}</a>
+                          <a href={`/cars/${car.ckId}`} className="text-sm font-semibold text-gray-800 hover:text-[#ff5722] hover:underline transition-colors">{car.name}</a>
                           <p className="text-xs text-gray-400">{car.role} • {car.date}</p>
                         </div>
                       </div>
@@ -316,7 +316,7 @@ export default function CRMModule() {
               )}
               {activeTab === 'communications' && (
                 <div className="space-y-3">
-                  <button onClick={() => setShowLogComm(true)} className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors"><Plus size={14} /> Log Communication</button>
+                  <button onClick={() => setShowLogComm(true)} className="flex items-center gap-1.5 px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors"><Plus size={14} /> Log Communication</button>
                   {communications.map((comm, i) => (
                     <div key={i} className="flex gap-3 p-3 border border-gray-100 rounded-xl">
                       <span className="text-lg">{comm.icon}</span>
@@ -334,7 +334,7 @@ export default function CRMModule() {
               {activeTab === 'offers' && (
                 <div className="space-y-3">
                   <div className="flex justify-end">
-                    <a href="/offers?view=create" className="flex items-center gap-1.5 px-3 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors"><Plus size={14} /> Create Offer</a>
+                    <a href="/offers?view=create" className="flex items-center gap-1.5 px-3 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors"><Plus size={14} /> Create Offer</a>
                   </div>
                   <a href="/offers" className="block p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
                     <div className="flex items-center justify-between">
@@ -350,8 +350,8 @@ export default function CRMModule() {
               {activeTab === 'notes' && (
                 <div className="space-y-3">
                   <div className="flex gap-2">
-                    <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Add a note..." rows={2} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 resize-none" />
-                    <button onClick={addNote} className="px-4 py-2 bg-[#1E3A5F] text-white rounded-lg text-sm font-semibold hover:bg-[#162d4a] transition-colors self-start">Add Note</button>
+                    <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Add a note..." rows={2} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 resize-none" />
+                    <button onClick={addNote} className="px-4 py-2 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] transition-colors self-start">Add Note</button>
                   </div>
                   {notes.map((note, i) => (
                     <div key={i} className="p-3 bg-yellow-50 border border-yellow-100 rounded-xl">
@@ -372,14 +372,14 @@ export default function CRMModule() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-[#1E3A5F]">Log Communication</h3>
+              <h3 className="font-bold text-[#ff5722]">Log Communication</h3>
               <button onClick={() => setShowLogComm(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"><X size={16} /></button>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-2">Type</label>
               <div className="flex gap-2">
                 {(['SMS', 'Email', 'Call', 'Note'] as const).map(t => (
-                  <button key={t} onClick={() => setCommType(t)} className={`flex-1 py-2 text-xs font-semibold rounded-lg border-2 transition-all ${commType === t ? 'border-[#1E3A5F] bg-[#1E3A5F]/5 text-[#1E3A5F]' : 'border-gray-200 text-gray-500'}`}>
+                  <button key={t} onClick={() => setCommType(t)} className={`flex-1 py-2 text-xs font-semibold rounded-lg border-2 transition-all ${commType === t ? 'border-[#ff5722] bg-[#ff5722]/5 text-[#ff5722]' : 'border-gray-200 text-gray-500'}`}>
                     {COMM_ICONS[t]} {t}
                   </button>
                 ))}
@@ -395,7 +395,7 @@ export default function CRMModule() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShowLogComm(false)} className="flex-1 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button onClick={addCommunication} className="flex-1 py-2 bg-[#1E3A5F] text-white rounded-xl text-sm font-bold hover:bg-[#162d4a] transition-colors">Log</button>
+              <button onClick={addCommunication} className="flex-1 py-2 bg-[#ff5722] text-white rounded-xl text-sm font-bold hover:bg-[#e64a19] transition-colors">Log</button>
             </div>
           </div>
         </div>

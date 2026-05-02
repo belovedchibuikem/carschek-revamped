@@ -49,13 +49,13 @@ export default function OrdersModule() {
               <button
                 key={`view-${mode}`}
                 onClick={() => setViewMode(mode)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md capitalize transition-all ${viewMode === mode ? 'bg-white text-[#1E3A5F] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md capitalize transition-all ${viewMode === mode ? 'bg-white text-[#ff5722] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
               >
                 {mode === 'list' ? 'List View' : 'Pipeline View'}
               </button>
             ))}
           </div>
-          <button className="px-4 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98]">
+          <button className="px-4 py-2 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all active:scale-[0.98]">
             + New Order
           </button>
         </div>

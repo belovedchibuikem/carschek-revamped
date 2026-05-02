@@ -63,38 +63,36 @@ export default function VehicleListingsModule() {
     return <ListingDetail listing={selectedListing} onBack={handleBack} />;
   }
 
-  if (activeView === 'pricing') {
-    return <PricingGuidanceTool onBack={handleBack} />;
-  }
-
-  if (activeView === 'dealer') {
-    return <DealerPortal onBack={handleBack} listings={MOCK_LISTINGS} />;
-  }
-
   return (
     <div className="space-y-4">
       {/* Tab bar */}
       <div className="flex gap-2">
         <button
           onClick={() => setActiveView('table')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'table' ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'table' ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
         >
           All Listings
         </button>
         <button
           onClick={() => setActiveView('pricing')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'pricing' ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'pricing' ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
         >
           Pricing Guidance
         </button>
         <button
           onClick={() => setActiveView('dealer')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'dealer' ? 'bg-[#1E3A5F] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeView === 'dealer' ? 'bg-[#ff5722] text-white' : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F6F8]'}`}
         >
           Dealer Portal
         </button>
       </div>
-      <ListingsTable listings={MOCK_LISTINGS} onViewDetail={handleViewDetail} onOpenPricing={() => setActiveView('pricing')} />
+      {activeView === 'pricing' ? (
+        <PricingGuidanceTool onBack={handleBack} />
+      ) : activeView === 'dealer' ? (
+        <DealerPortal onBack={handleBack} listings={MOCK_LISTINGS} />
+      ) : (
+        <ListingsTable listings={MOCK_LISTINGS} onViewDetail={handleViewDetail} onOpenPricing={() => setActiveView('pricing')} />
+      )}
     </div>
   );
 }

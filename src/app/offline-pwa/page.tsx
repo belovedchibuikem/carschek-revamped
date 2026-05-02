@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
+import { playReconnectSyncSequenceDemo } from '@/components/providers/NetworkProvider';
+import { toast as sonnerToast } from 'sonner';
 import { Wifi, WifiOff, RefreshCw, X, ChevronDown, ChevronUp, HardDrive, Info, AlertTriangle, Download, Smartphone, ClipboardList, Camera, Zap, Shield } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -80,8 +82,8 @@ function SyncStatusPanel({ networkState, onClose }: { networkState: NetworkState
         <div className="space-y-3">
           {SYNC_QUEUE.map(item => (
             <div key={item.id} className="flex items-start gap-3 p-3 bg-[#F9FAFB] rounded-xl border border-[#E5E7EB]">
-              <div className="w-8 h-8 bg-[#1E3A5F]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <ClipboardList size={16} className="text-[#1E3A5F]" />
+              <div className="w-8 h-8 bg-[#ff5722]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <ClipboardList size={16} className="text-[#ff5722]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-[#1F2937] truncate">{item.label}</p>
@@ -108,7 +110,7 @@ function SyncStatusPanel({ networkState, onClose }: { networkState: NetworkState
         </div>
         <div className="h-2 bg-[#E5E7EB] rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#2E75B6] rounded-full transition-all"
+            className="h-full bg-[#ff8a65] rounded-full transition-all"
             style={{ width: `${(storageUsed / storageTotal) * 100}%` }}
           />
         </div>
@@ -118,14 +120,14 @@ function SyncStatusPanel({ networkState, onClose }: { networkState: NetworkState
       <div className="px-5 pb-4">
         <button
           onClick={() => setExplainerOpen(!explainerOpen)}
-          className="w-full flex items-center justify-between text-xs text-[#2E75B6] font-medium py-2 hover:text-[#1E3A5F] transition-colors"
+          className="w-full flex items-center justify-between text-xs text-[#ff8a65] font-medium py-2 hover:text-[#ff5722] transition-colors"
         >
           <span className="flex items-center gap-1.5"><Info size={13} />What happens when I reconnect?</span>
           {explainerOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </button>
         {explainerOpen && (
           <div className="bg-blue-50 rounded-xl p-3 mt-1">
-            <p className="text-xs text-[#2E75B6] leading-relaxed">
+            <p className="text-xs text-[#ff8a65] leading-relaxed">
               Your inspection data will automatically upload. If the same inspection was edited on another device, the most recent version will be kept.
             </p>
           </div>
@@ -138,7 +140,7 @@ function SyncStatusPanel({ networkState, onClose }: { networkState: NetworkState
           disabled={!isOnline}
           className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
             isOnline
-              ? 'bg-[#1E3A5F] text-white hover:bg-[#2E75B6]'
+              ? 'bg-[#ff5722] text-white hover:bg-[#ff8a65]'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
         >
@@ -158,14 +160,14 @@ function ReconnectionToastDemo() {
   const runSequence = () => {
     if (running) return;
     setRunning(true);
-    setToastStep('back-online');
-    setTimeout(() => setToastStep('syncing'), 2000);
-    setTimeout(() => setToastStep('synced'), 4500);
-    setTimeout(() => { setToastStep(null); setRunning(false); }, 7500);
+    void playReconnectSyncSequenceDemo({ onPhase: setToastStep }).finally(() => {
+      setToastStep(null);
+      setRunning(false);
+    });
   };
 
   const runFailure = () => {
-    setToastStep('failed');
+    void playReconnectSyncSequenceDemo({ simulateFailure: true, onPhase: setToastStep });
   };
 
   return (
@@ -174,7 +176,7 @@ function ReconnectionToastDemo() {
       <p className="text-xs text-[#6B7280] mb-5">Simulates the 3-step toast flow when network is restored.</p>
 
       <div className="flex gap-3 mb-6">
-        <button onClick={runSequence} disabled={running} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${running ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#1E3A5F] text-white hover:bg-[#2E75B6]'}`}>
+        <button onClick={runSequence} disabled={running} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${running ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#ff5722] text-white hover:bg-[#ff8a65]'}`}>
           <Wifi size={14} />
           Simulate Reconnect
         </button>
@@ -182,7 +184,14 @@ function ReconnectionToastDemo() {
           <AlertTriangle size={14} />
           Simulate Failure
         </button>
-        <button onClick={() => { setToastStep(null); setRunning(false); }} className="flex items-center gap-2 px-4 py-2 text-sm text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-all">
+        <button
+          onClick={() => {
+            setToastStep(null);
+            setRunning(false);
+            sonnerToast.dismiss();
+          }}
+          className="flex items-center gap-2 px-4 py-2 text-sm text-[#6B7280] rounded-lg hover:bg-[#F4F6F8] transition-all"
+        >
           <X size={14} />
           Clear
         </button>
@@ -199,7 +208,7 @@ function ReconnectionToastDemo() {
           </div>
         )}
         {toastStep === 'syncing' && (
-          <div className="relative z-10 flex items-center gap-3 bg-[#1E3A5F] text-white px-4 py-3 rounded-xl shadow-lg">
+          <div className="relative z-10 flex items-center gap-3 bg-[#ff5722] text-white px-4 py-3 rounded-xl shadow-lg">
             <RefreshCw size={16} className="animate-spin flex-shrink-0" />
             <span className="text-sm font-semibold">Syncing 2 inspections...</span>
           </div>
@@ -228,7 +237,7 @@ function ReconnectionToastDemo() {
           { step: 2, label: 'Syncing...', color: 'bg-blue-100 text-blue-700', active: toastStep === 'syncing' },
           { step: 3, label: 'All synced ✓', color: 'bg-green-100 text-green-700', active: toastStep === 'synced' },
         ].map(s => (
-          <div key={s.step} className={`flex items-center gap-2 p-2.5 rounded-lg border transition-all ${s.active ? 'border-[#1E3A5F] bg-[#EEF2FF]' : 'border-[#E5E7EB]'}`}>
+          <div key={s.step} className={`flex items-center gap-2 p-2.5 rounded-lg border transition-all ${s.active ? 'border-[#ff5722] bg-[#EEF2FF]' : 'border-[#E5E7EB]'}`}>
             <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${s.color}`}>{s.step}</span>
             <span className="text-xs text-[#374151]">{s.label}</span>
           </div>
@@ -244,7 +253,7 @@ function PWAInstallPrompt({ onDismiss }: { onDismiss: () => void }) {
     <div className="bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] w-full max-w-sm overflow-hidden">
       <div className="p-6">
         <div className="flex items-start gap-4 mb-5">
-          <div className="w-16 h-16 bg-[#1E3A5F] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+          <div className="w-16 h-16 bg-[#ff5722] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
             <Smartphone size={32} className="text-white" />
           </div>
           <div>
@@ -254,14 +263,14 @@ function PWAInstallPrompt({ onDismiss }: { onDismiss: () => void }) {
         </div>
         <div className="flex items-center gap-4 mb-5 text-xs text-[#6B7280]">
           <span className="flex items-center gap-1"><Shield size={12} className="text-[#1A7A4A]" />Works offline</span>
-          <span className="flex items-center gap-1"><Download size={12} className="text-[#2E75B6]" />No app store</span>
+          <span className="flex items-center gap-1"><Download size={12} className="text-[#ff8a65]" />No app store</span>
           <span className="flex items-center gap-1"><Zap size={12} className="text-[#D35400]" />Auto-updates</span>
         </div>
         <div className="flex gap-3">
           <button onClick={onDismiss} className="flex-1 px-4 py-2.5 text-sm border border-[#E5E7EB] rounded-xl hover:bg-[#F4F6F8] transition-colors text-[#374151]">
             Not now
           </button>
-          <button className="flex-1 px-4 py-2.5 text-sm font-semibold bg-[#1E3A5F] text-white rounded-xl hover:bg-[#2E75B6] transition-colors flex items-center justify-center gap-2">
+          <button className="flex-1 px-4 py-2.5 text-sm font-semibold bg-[#ff5722] text-white rounded-xl hover:bg-[#ff8a65] transition-colors flex items-center justify-center gap-2">
             <Download size={15} />
             Install
           </button>
@@ -274,7 +283,7 @@ function PWAInstallPrompt({ onDismiss }: { onDismiss: () => void }) {
 // ─── Component 5: Offline Onboarding Overlay ─────────────────────────────────
 function OfflineOnboardingOverlay({ onDismiss }: { onDismiss: () => void }) {
   return (
-    <div className="fixed inset-0 bg-[#1E3A5F]/95 flex items-center justify-center z-50 p-6">
+    <div className="fixed inset-0 bg-[#ff5722]/95 flex items-center justify-center z-50 p-6">
       <div className="max-w-md w-full text-center">
         <div className="w-20 h-20 bg-amber-400/20 rounded-full flex items-center justify-center mx-auto mb-6">
           <WifiOff size={36} className="text-amber-400" />
@@ -296,7 +305,7 @@ function OfflineOnboardingOverlay({ onDismiss }: { onDismiss: () => void }) {
           ))}
         </div>
 
-        <button onClick={onDismiss} className="px-8 py-3 bg-white text-[#1E3A5F] font-semibold rounded-xl hover:bg-white/90 transition-colors">
+        <button onClick={onDismiss} className="px-8 py-3 bg-white text-[#ff5722] font-semibold rounded-xl hover:bg-white/90 transition-colors">
           Got it, let's go
         </button>
       </div>
@@ -351,7 +360,7 @@ export default function OfflinePWAPage() {
 
         <div className="bg-[#F4F6F8] rounded-xl p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#1E3A5F] rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#ff5722] rounded-lg flex items-center justify-center">
               <Smartphone size={16} className="text-white" />
             </div>
             <span className="text-sm font-semibold text-[#1F2937]">Carschek Header</span>
@@ -381,7 +390,7 @@ export default function OfflinePWAPage() {
           </div>
           <button
             onClick={() => setShowSyncPanel(!showSyncPanel)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#1E3A5F] text-white rounded-lg hover:bg-[#2E75B6] transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#ff5722] text-white rounded-lg hover:bg-[#ff8a65] transition-all"
           >
             {showSyncPanel ? 'Hide Panel' : 'Show Panel'}
           </button>
@@ -407,7 +416,7 @@ export default function OfflinePWAPage() {
           </div>
           <button
             onClick={() => setShowPWAPrompt(!showPWAPrompt)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#1E3A5F] text-white rounded-lg hover:bg-[#2E75B6] transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#ff5722] text-white rounded-lg hover:bg-[#ff8a65] transition-all"
           >
             {showPWAPrompt ? 'Hide Prompt' : 'Show Prompt'}
           </button>
@@ -428,12 +437,12 @@ export default function OfflinePWAPage() {
           </div>
           <button
             onClick={() => setShowOnboarding(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#1E3A5F] text-white rounded-lg hover:bg-[#2E75B6] transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#ff5722] text-white rounded-lg hover:bg-[#ff8a65] transition-all"
           >
             Show Overlay
           </button>
         </div>
-        <div className="bg-[#1E3A5F]/10 rounded-xl p-4 text-center">
+        <div className="bg-[#ff5722]/10 rounded-xl p-4 text-center">
           <p className="text-sm text-[#6B7280]">Click "Show Overlay" to preview the full-screen offline onboarding experience.</p>
         </div>
       </div>

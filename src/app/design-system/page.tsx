@@ -37,7 +37,7 @@ function ScoreDonut({ score }: { score: number }) {
 const SECTION = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="mb-12">
     <h2 className="text-lg font-heading font-bold text-[#1F2937] mb-1">{title}</h2>
-    <div className="w-12 h-0.5 bg-[#2E75B6] mb-5 rounded-full" />
+    <div className="w-12 h-0.5 bg-[#ff8a65] mb-5 rounded-full" />
     {children}
   </section>
 );
@@ -86,7 +86,7 @@ export default function DesignSystemPage() {
           <div key={t.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium pointer-events-auto animate-fade-in min-w-[260px] ${
             t.type === 'success' ? 'bg-[#1A7A4A] text-white' :
             t.type === 'warning' ? 'bg-[#D35400] text-white' :
-            t.type === 'error' ? 'bg-[#C0392B] text-white' : 'bg-[#1E3A5F] text-white'
+            t.type === 'error' ? 'bg-[#C0392B] text-white' : 'bg-[#ff5722] text-white'
           }`}>
             {t.type === 'success' ? <CheckCircle size={16} /> : t.type === 'warning' ? <AlertCircle size={16} /> : t.type === 'error' ? <XCircle size={16} /> : <Info size={16} />}
             {t.msg}
@@ -106,7 +106,7 @@ export default function DesignSystemPage() {
             <p className="text-sm text-[#6B7280] mb-5">This is a modal dialog with an overlay. It can contain forms, confirmations, or any content. Click outside or the X to close.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowModal(false)} className="flex-1 py-2 border border-[#E5E7EB] text-sm font-semibold text-[#6B7280] rounded-lg hover:bg-[#F4F6F8]">Cancel</button>
-              <button onClick={() => setShowModal(false)} className="flex-1 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F]">Confirm</button>
+              <button onClick={() => setShowModal(false)} className="flex-1 py-2 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19]">Confirm</button>
             </div>
           </div>
         </div>
@@ -123,8 +123,8 @@ export default function DesignSystemPage() {
         <SECTION title="1. Brand Color Tokens">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
             {[
-              { name: 'Primary', hex: '#1E3A5F', label: 'Headers, CTAs' },
-              { name: 'Secondary', hex: '#2E75B6', label: 'Accents, links' },
+              { name: 'Primary', hex: '#ff5722', label: 'Headers, CTAs' },
+              { name: 'Secondary', hex: '#ff8a65', label: 'Accents, links' },
               { name: 'Success', hex: '#1A7A4A', label: 'Pass, positive' },
               { name: 'Danger', hex: '#C0392B', label: 'Fail, critical' },
               { name: 'Warning', hex: '#D35400', label: 'Pending, amber' },
@@ -146,9 +146,9 @@ export default function DesignSystemPage() {
         <SECTION title="2. Navigation Sidebar">
           <div className="flex gap-4">
             {/* Expanded */}
-            <div className="w-56 bg-[#1E3A5F] rounded-xl overflow-hidden shadow-lg flex-shrink-0">
+            <div className="w-56 bg-[#ff5722] rounded-xl overflow-hidden shadow-lg flex-shrink-0">
               <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-                <div className="w-7 h-7 bg-[#2E75B6] rounded-lg flex items-center justify-center"><Car size={14} className="text-white" /></div>
+                <div className="w-7 h-7 bg-[#ff8a65] rounded-lg flex items-center justify-center"><Car size={14} className="text-white" /></div>
                 <span className="font-heading font-bold text-white text-sm tracking-tight">CARSCHEK</span>
               </div>
               <div className="py-3 px-2">
@@ -157,7 +157,7 @@ export default function DesignSystemPage() {
                   <div key={`nav-exp-${item.label}`} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 cursor-pointer transition-all ${i === 0 ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
                     <item.icon size={15} className="flex-shrink-0" />
                     <span className="text-xs font-medium flex-1">{item.label}</span>
-                    {item.badge && <span className="bg-[#2E75B6] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{item.badge}</span>}
+                    {item.badge && <span className="bg-[#ff8a65] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{item.badge}</span>}
                   </div>
                 ))}
                 <p className="px-2 mt-3 mb-1.5 text-[9px] font-semibold uppercase tracking-widest text-white/40">CRM</p>
@@ -165,21 +165,21 @@ export default function DesignSystemPage() {
                   <div key={`nav-exp2-${item.label}`} className="flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 cursor-pointer text-white/60 hover:bg-white/10 hover:text-white transition-all">
                     <item.icon size={15} className="flex-shrink-0" />
                     <span className="text-xs font-medium flex-1">{item.label}</span>
-                    {item.badge && <span className="bg-[#2E75B6] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{item.badge}</span>}
+                    {item.badge && <span className="bg-[#ff8a65] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{item.badge}</span>}
                   </div>
                 ))}
               </div>
             </div>
             {/* Collapsed */}
-            <div className="w-14 bg-[#1E3A5F] rounded-xl overflow-hidden shadow-lg flex-shrink-0">
+            <div className="w-14 bg-[#ff5722] rounded-xl overflow-hidden shadow-lg flex-shrink-0">
               <div className="flex items-center justify-center py-3 border-b border-white/10">
-                <div className="w-7 h-7 bg-[#2E75B6] rounded-lg flex items-center justify-center"><Car size={14} className="text-white" /></div>
+                <div className="w-7 h-7 bg-[#ff8a65] rounded-lg flex items-center justify-center"><Car size={14} className="text-white" /></div>
               </div>
               <div className="py-3 px-2 flex flex-col gap-0.5">
                 {NAV_ITEMS.map((item, i) => (
                   <div key={`nav-col-${item.label}`} className={`relative flex items-center justify-center p-2 rounded-lg cursor-pointer transition-all ${i === 0 ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
                     <item.icon size={16} />
-                    {item.badge && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#2E75B6] rounded-full" />}
+                    {item.badge && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#ff8a65] rounded-full" />}
                   </div>
                 ))}
               </div>
@@ -189,9 +189,9 @@ export default function DesignSystemPage() {
               <ul className="space-y-1 text-xs">
                 <li>• Expanded: 256px width</li>
                 <li>• Collapsed: 64px width</li>
-                <li>• Background: #1E3A5F (deep navy)</li>
+                <li>• Background: #ff5722 (deep navy)</li>
                 <li>• Active state: bg-white/15 + left accent bar</li>
-                <li>• Badge: #2E75B6 pill</li>
+                <li>• Badge: #ff8a65 pill</li>
                 <li>• Smooth 300ms transition</li>
               </ul>
             </div>
@@ -202,7 +202,7 @@ export default function DesignSystemPage() {
         <SECTION title="3. Top Header Bar">
           <div className="bg-white border border-[#E5E7EB] rounded-xl shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 h-14 gap-4">
-              <div className="flex items-center gap-2 flex-1 max-w-xs bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg px-3 py-2 cursor-pointer hover:border-[#2E75B6] transition-colors">
+              <div className="flex items-center gap-2 flex-1 max-w-xs bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg px-3 py-2 cursor-pointer hover:border-[#ff8a65] transition-colors">
                 <Search size={14} className="text-[#6B7280]" />
                 <span className="text-sm text-[#6B7280] flex-1">Search…</span>
                 <kbd className="text-[10px] bg-white border border-[#E5E7EB] rounded px-1.5 py-0.5 text-[#6B7280] font-mono">⌘K</kbd>
@@ -216,7 +216,7 @@ export default function DesignSystemPage() {
                   <span className="absolute top-1 right-1 w-4 h-4 bg-[#C0392B] text-white text-[9px] font-bold rounded-full flex items-center justify-center">8</span>
                 </button>
                 <div className="flex items-center gap-2 cursor-pointer hover:bg-[#F4F6F8] px-2 py-1.5 rounded-lg transition-colors">
-                  <div className="w-7 h-7 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">PN</div>
+                  <div className="w-7 h-7 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">PN</div>
                   <div className="hidden sm:block">
                     <p className="text-xs font-semibold text-[#1F2937] leading-none">Promise Ndem</p>
                     <span className="text-[9px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full font-semibold">Super Admin</span>
@@ -232,10 +232,10 @@ export default function DesignSystemPage() {
         <SECTION title="4. KPI Stat Cards">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total Inspections Today', value: '47', trend: '+12%', up: true, color: '#1E3A5F', data: [20,25,22,30,28,35,40,38,42,47] },
+              { label: 'Total Inspections Today', value: '47', trend: '+12%', up: true, color: '#ff5722', data: [20,25,22,30,28,35,40,38,42,47] },
               { label: 'Pending Orders', value: '23', trend: '+5%', up: false, color: '#D35400', data: [15,18,20,19,22,21,23,20,22,23] },
               { label: 'Revenue MTD', value: '₦2.45M', trend: '+18%', up: true, color: '#1A7A4A', data: [800,1000,1200,1400,1600,1800,2000,2100,2300,2450] },
-              { label: 'Avg Carschek Score', value: '78', trend: '+3%', up: true, color: '#2E75B6', data: [70,72,74,73,75,76,77,76,78,78] },
+              { label: 'Avg Carschek Score', value: '78', trend: '+3%', up: true, color: '#ff8a65', data: [70,72,74,73,75,76,77,76,78,78] },
             ].map(k => (
               <div key={k.label} className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm hover:shadow-md transition-shadow">
                 <p className="text-xs font-semibold text-[#6B7280] mb-2">{k.label}</p>
@@ -297,7 +297,7 @@ export default function DesignSystemPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                           {row.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div>
@@ -333,12 +333,12 @@ export default function DesignSystemPage() {
         <SECTION title="7. Button Variants">
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <div className="flex flex-wrap gap-3 items-center">
-              <button className="px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98] shadow-sm">Primary</button>
-              <button className="px-5 py-2.5 bg-[#2E75B6] text-white text-sm font-semibold rounded-lg hover:bg-[#2563A0] transition-all active:scale-[0.98] shadow-sm">Secondary</button>
+              <button className="px-5 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all active:scale-[0.98] shadow-sm">Primary</button>
+              <button className="px-5 py-2.5 bg-[#ff8a65] text-white text-sm font-semibold rounded-lg hover:bg-[#2563A0] transition-all active:scale-[0.98] shadow-sm">Secondary</button>
               <button className="px-5 py-2.5 border border-[#E5E7EB] text-[#1F2937] text-sm font-semibold rounded-lg hover:bg-[#F4F6F8] transition-all active:scale-[0.98]">Ghost</button>
               <button className="px-5 py-2.5 bg-[#C0392B] text-white text-sm font-semibold rounded-lg hover:bg-[#A93226] transition-all active:scale-[0.98] shadow-sm">Destructive</button>
-              <button className="px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg opacity-50 cursor-not-allowed" disabled>Disabled</button>
-              <button className="px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg flex items-center gap-2">
+              <button className="px-5 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg opacity-50 cursor-not-allowed" disabled>Disabled</button>
+              <button className="px-5 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg flex items-center gap-2">
                 <Loader2 size={14} className="animate-spin" /> Loading…
               </button>
             </div>
@@ -352,14 +352,14 @@ export default function DesignSystemPage() {
               {/* Normal input */}
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Full Name <span className="text-[#C0392B]">*</span></label>
-                <input type="text" placeholder="e.g. Adaeze Mbah" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+                <input type="text" placeholder="e.g. Adaeze Mbah" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
                 <p className="text-[10px] text-[#6B7280] mt-1">Enter the customer's full legal name</p>
               </div>
               {/* Select */}
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Zone</label>
                 <div className="relative">
-                  <select className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] appearance-none bg-white transition-all">
+                  <select className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all">
                     <option>Lagos Island</option>
                     <option>Lekki</option>
                     <option>VI</option>
@@ -383,7 +383,7 @@ export default function DesignSystemPage() {
               {/* Textarea */}
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Notes</label>
-                <textarea rows={3} placeholder="Add any relevant notes…" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] resize-none transition-all" />
+                <textarea rows={3} placeholder="Add any relevant notes…" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] resize-none transition-all" />
               </div>
             </div>
           </div>
@@ -392,7 +392,7 @@ export default function DesignSystemPage() {
         {/* 9. Modal */}
         <SECTION title="9. Modal / Dialog">
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm flex items-center gap-4">
-            <button onClick={() => setShowModal(true)} className="px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+            <button onClick={() => setShowModal(true)} className="px-5 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
               Open Modal
             </button>
             <p className="text-sm text-[#6B7280]">Click to preview the modal dialog with overlay and backdrop blur.</p>
@@ -406,14 +406,14 @@ export default function DesignSystemPage() {
               <button onClick={() => addToast('success', 'Order #1234 approved successfully')} className="px-4 py-2 bg-[#1A7A4A] text-white text-xs font-semibold rounded-lg hover:bg-[#155F3A] transition-all">Success Toast</button>
               <button onClick={() => addToast('warning', 'Inspector approaching SLA deadline')} className="px-4 py-2 bg-[#D35400] text-white text-xs font-semibold rounded-lg hover:bg-[#B84600] transition-all">Warning Toast</button>
               <button onClick={() => addToast('error', 'Failed to assign inspector — try again')} className="px-4 py-2 bg-[#C0392B] text-white text-xs font-semibold rounded-lg hover:bg-[#A93226] transition-all">Error Toast</button>
-              <button onClick={() => addToast('info', 'New booking from Adaeze M. received')} className="px-4 py-2 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F] transition-all">Info Toast</button>
+              <button onClick={() => addToast('info', 'New booking from Adaeze M. received')} className="px-4 py-2 bg-[#ff5722] text-white text-xs font-semibold rounded-lg hover:bg-[#e64a19] transition-all">Info Toast</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 { type: 'success', msg: 'Report #445 approved by Admin', icon: CheckCircle, cls: 'bg-[#1A7A4A]' },
                 { type: 'warning', msg: 'Order #1234 approaching SLA', icon: AlertCircle, cls: 'bg-[#D35400]' },
                 { type: 'error', msg: 'Payment failed — retry required', icon: XCircle, cls: 'bg-[#C0392B]' },
-                { type: 'info', msg: 'New booking from Adaeze M.', icon: Info, cls: 'bg-[#1E3A5F]' },
+                { type: 'info', msg: 'New booking from Adaeze M.', icon: Info, cls: 'bg-[#ff5722]' },
               ].map(t => (
                 <div key={t.type} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-white text-sm font-medium ${t.cls}`}>
                   <t.icon size={16} />
@@ -432,7 +432,7 @@ export default function DesignSystemPage() {
             </div>
             <h3 className="text-base font-heading font-semibold text-[#1F2937] mb-1">No orders found</h3>
             <p className="text-sm text-[#6B7280] mb-5 max-w-xs">Try adjusting your filters or search terms to find what you're looking for.</p>
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all">
+            <button className="flex items-center gap-2 px-5 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
               <Plus size={15} /> Create New Order
             </button>
           </div>
@@ -482,7 +482,7 @@ export default function DesignSystemPage() {
             <div><p className="text-[10px] text-[#6B7280] font-mono mb-1">text-xl / font-semibold</p><h3 className="text-xl font-heading font-semibold text-[#1F2937]">Heading 3 — Order #1234</h3></div>
             <div><p className="text-[10px] text-[#6B7280] font-mono mb-1">text-base / font-normal / leading-relaxed</p><p className="text-base text-[#1F2937] leading-relaxed">Body text — The vehicle inspection was completed successfully. All 27 sections were reviewed by the assigned inspector. The Carschek Score reflects the overall condition of the vehicle.</p></div>
             <div><p className="text-[10px] text-[#6B7280] font-mono mb-1">text-sm / text-[#6B7280]</p><p className="text-sm text-[#6B7280]">Muted / helper text — Last updated 2 minutes ago by Promise Ndem</p></div>
-            <div><p className="text-[10px] text-[#6B7280] font-mono mb-1">font-mono / Fira Code — IDs & references</p><p className="font-mono text-sm text-[#1E3A5F] bg-[#F4F6F8] px-3 py-1.5 rounded-lg inline-block">ORD-1892 · VIN: 4T1BF1FK5KU123456 · RPT-501</p></div>
+            <div><p className="text-[10px] text-[#6B7280] font-mono mb-1">font-mono / Fira Code — IDs & references</p><p className="font-mono text-sm text-[#ff5722] bg-[#F4F6F8] px-3 py-1.5 rounded-lg inline-block">ORD-1892 · VIN: 4T1BF1FK5KU123456 · RPT-501</p></div>
           </div>
         </SECTION>
 

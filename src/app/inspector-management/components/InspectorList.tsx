@@ -31,10 +31,10 @@ export default function InspectorList({ inspectors, onSelectInspector }: Props) 
         </div>
         <div className="flex items-center gap-3">
           <div className="flex gap-1 bg-[#F4F6F8] p-1 rounded-lg border border-[#E5E7EB]">
-            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-[#1E3A5F]' : 'text-[#6B7280]'}`}><Grid size={14} /></button>
-            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-[#1E3A5F]' : 'text-[#6B7280]'}`}><List size={14} /></button>
+            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-[#ff5722]' : 'text-[#6B7280]'}`}><Grid size={14} /></button>
+            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-[#ff5722]' : 'text-[#6B7280]'}`}><List size={14} /></button>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98]">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all active:scale-[0.98]">
             <UserPlus size={15} /> Invite Inspector
           </button>
         </div>
@@ -44,7 +44,7 @@ export default function InspectorList({ inspectors, onSelectInspector }: Props) 
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or zone…" className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or zone…" className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
         </div>
         <div className="relative">
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="appearance-none pl-3 pr-8 py-2 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none bg-white">
@@ -63,7 +63,7 @@ export default function InspectorList({ inspectors, onSelectInspector }: Props) 
             <div key={insp.id} className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm hover:shadow-md transition-all group cursor-pointer" onClick={() => onSelectInspector(insp)}>
               <div className="flex items-start justify-between mb-4">
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-lg font-bold">{insp.avatar}</div>
+                  <div className="w-14 h-14 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-lg font-bold">{insp.avatar}</div>
                   <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${STATUS_CONFIG[insp.status].dot}`} />
                 </div>
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_CONFIG[insp.status].badge}`}>{STATUS_CONFIG[insp.status].label}</span>
@@ -77,7 +77,7 @@ export default function InspectorList({ inspectors, onSelectInspector }: Props) 
               </div>
               <div className="flex flex-wrap gap-1 mb-4">
                 {insp.zones.slice(0, 2).map(z => (
-                  <span key={`zone-${insp.id}-${z}`} className="text-[9px] bg-blue-50 text-[#2E75B6] border border-blue-100 px-1.5 py-0.5 rounded-full font-medium">{z}</span>
+                  <span key={`zone-${insp.id}-${z}`} className="text-[9px] bg-blue-50 text-[#ff8a65] border border-blue-100 px-1.5 py-0.5 rounded-full font-medium">{z}</span>
                 ))}
                 {insp.zones.length > 2 && <span className="text-[9px] bg-[#F4F6F8] text-[#6B7280] px-1.5 py-0.5 rounded-full">+{insp.zones.length - 2}</span>}
               </div>
@@ -88,7 +88,7 @@ export default function InspectorList({ inspectors, onSelectInspector }: Props) 
                 </div>
                 <span className="text-[10px] font-semibold text-[#1A7A4A]">₦{(insp.earningsMTD / 1000).toFixed(0)}k MTD</span>
               </div>
-              <button className="mt-3 w-full py-1.5 text-xs font-semibold text-[#2E75B6] border border-[#2E75B6]/30 rounded-lg hover:bg-blue-50 transition-colors opacity-0 group-hover:opacity-100">
+              <button className="mt-3 w-full py-1.5 text-xs font-semibold text-[#ff8a65] border border-[#ff8a65]/30 rounded-lg hover:bg-blue-50 transition-colors opacity-0 group-hover:opacity-100">
                 View Profile →
               </button>
             </div>
@@ -114,7 +114,7 @@ export default function InspectorList({ inspectors, onSelectInspector }: Props) 
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">{insp.avatar}</div>
+                        <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">{insp.avatar}</div>
                         <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${STATUS_CONFIG[insp.status].dot}`} />
                       </div>
                       <div>
@@ -126,7 +126,7 @@ export default function InspectorList({ inspectors, onSelectInspector }: Props) 
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
                       {insp.zones.slice(0, 2).map(z => (
-                        <span key={`ztbl-${insp.id}-${z}`} className="text-[9px] bg-blue-50 text-[#2E75B6] px-1.5 py-0.5 rounded-full">{z}</span>
+                        <span key={`ztbl-${insp.id}-${z}`} className="text-[9px] bg-blue-50 text-[#ff8a65] px-1.5 py-0.5 rounded-full">{z}</span>
                       ))}
                     </div>
                   </td>

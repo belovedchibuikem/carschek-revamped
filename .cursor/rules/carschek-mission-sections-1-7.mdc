@@ -1,0 +1,48 @@
+---
+description: Carschek mission — Parts 1–7 (wiring, parity, autosave, reference, cars, inspector reports)
+alwaysApply: true
+---
+
+# Carschek mission (Sections 1–7)
+
+**Goal:** Complete implementation pass — wire existing UI, no redesign. Preserve design tokens: `#1E3A5F`, `#2E75B6`, `#1A7A4A`, `#C0392B`, `#D35400`, Inter, Fira Code for IDs.
+
+## Stack & APIs
+
+- Prefer **Next.js App Router**, **TypeScript**, **Tailwind**, existing UI patterns in-repo.
+- **Centralize HTTP** in one module (e.g. `src/lib/api/client.ts`) when API work lands; mocks must be swappable via a single import change.
+- **Before adding packages**, align `package.json` with the agreed stack (Query, Zustand, Dexie, shadcn, etc.) — do not introduce duplicate patterns.
+
+## Zero dead interactions
+
+- **Nav:** `Link` for internal routes; tabs use **URL search params**; back uses `router.back()` + fallback; table actions pass real IDs.
+- **Buttons:** Real handlers — modals, mutations, CSV/PDF/export, clipboard, maps `window.open`, bulk actions, row menus.
+- **Forms:** RHF + Zod where used; validation feedback; loading on submit; drafts per project rules (30s localStorage for admin forms; inspection = IndexedDB when Dexie is in use).
+- **Tables:** Debounced search, sort, pagination, skeletons, empty/error states.
+
+## Inspector PWA ↔ Inspector App parity
+
+- **PWA:** `src/app/inspector/*` (field, bottom nav).
+- **Admin shell:** `src/app/inspector-app/*` — must expose the **same flows and URLs** as the PWA (e.g. `/inspector/inspect/[id]/review` ↔ `/inspector-app/inspect/[id]/review`). Refactor shared logic into reusable modules; avoid one-off duplicate behavior in a single mega-component long term.
+
+## Auto-save
+
+- Inspection checklist: immediate persistence for toggles/photos when offline storage exists; debounced text; visible save indicator; timer sync.
+- Admin: `draft_[formName]_[userId]` drafts, restore/discard banners, clear on success.
+- Car detail tabs: per-tab dirty state + navigate-away guard as specified.
+
+## Reference data (`/reference/years`, `/reference/brands`, `/reference/models`)
+
+- Years: functional list, toggles, batch year range, quick registration cascade Brand → Model → Year opening registration with locked chips + stats strip.
+- Brands/models: CRUD, search, import where specified, protection on delete when linked.
+
+## Cars module
+
+- `/cars`, `/cars/new`, `/cars/[id]`: full filter/sort/pagination, wizard, detail tabs, marketplace/auction hooks, document overlay — all wired per spec.
+
+## Inspector review & report
+
+- Review: live score from stored inspection data, defects list, signature required, submit states + offline queue when implemented.
+- Report: modern + classic views, share actions, PDF path, QA flag; public `/reports/[id]` behavior as specified.
+
+When in doubt: **read existing components first**, then extend; **do not restyle** finished screens unless required for behavior.

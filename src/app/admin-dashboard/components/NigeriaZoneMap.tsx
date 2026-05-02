@@ -22,7 +22,7 @@ export default function NigeriaZoneMap() {
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 shadow-sm">
       <div className="flex items-center gap-2 mb-4">
-        <MapPin size={18} className="text-[#2E75B6]" />
+        <MapPin size={18} className="text-[#ff8a65]" />
         <h2 className="text-base font-heading font-semibold text-[#1F2937]">Geographic Activity</h2>
       </div>
 
@@ -87,7 +87,7 @@ export default function NigeriaZoneMap() {
         {ZONES.map(z => (
           <div key={`zone-stat-${z.id}`} className="text-center">
             <p className="text-[10px] font-semibold text-[#1F2937] truncate">{z.name}</p>
-            <p className="text-xs font-bold tabular-nums text-[#2E75B6]">{z.inspections}</p>
+            <p className="text-xs font-bold tabular-nums text-[#ff8a65]">{z.inspections}</p>
             <p className="text-[9px] text-[#6B7280]">inspections</p>
           </div>
         ))}

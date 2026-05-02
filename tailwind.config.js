@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -14,15 +15,19 @@ module.exports = {
       },
       colors: {
         primary: {
-          DEFAULT: '#1E3A5F',
-          light: '#2E75B6',
+          DEFAULT: '#ff5722',
+          light: '#ff8a65',
+          dark: '#e64a19',
+        },
+        secondary: {
+          DEFAULT: '#ffffff',
         },
         success: '#1A7A4A',
         danger: '#C0392B',
         warning: '#D35400',
         brand: {
-          navy: '#1E3A5F',
-          blue: '#2E75B6',
+          navy: '#ff5722',
+          blue: '#ff8a65',
         },
       },
       borderRadius: {

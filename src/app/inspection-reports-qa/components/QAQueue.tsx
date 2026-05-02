@@ -47,11 +47,11 @@ export default function QAQueue({ reports, onSelectReport }: Props) {
             <button
               key={`qa-tab-${tab.id}`}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-all border-b-2 -mb-px ${activeTab === tab.id ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-all border-b-2 -mb-px ${activeTab === tab.id ? 'border-[#ff5722] text-[#ff5722]' : 'border-transparent text-[#6B7280] hover:text-[#1F2937]'}`}
             >
               {tab.label}
               {tab.count > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-[#1E3A5F] text-white' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>{tab.count}</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-[#ff5722] text-white' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>{tab.count}</span>
               )}
             </button>
           ))}
@@ -89,7 +89,7 @@ export default function QAQueue({ reports, onSelectReport }: Props) {
                     <tr key={report.id} className="hover:bg-[#F4F6F8]/60 transition-colors group">
                       <td className="px-5 py-3">
                         <div>
-                          <span className="font-mono text-xs font-bold text-[#1E3A5F]">{report.id}</span>
+                          <span className="font-mono text-xs font-bold text-[#ff5722]">{report.id}</span>
                           <p className="text-[10px] text-[#6B7280] font-mono">{report.orderId}</p>
                         </div>
                       </td>
@@ -99,7 +99,7 @@ export default function QAQueue({ reports, onSelectReport }: Props) {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-[9px] font-bold">{report.inspectorAvatar}</div>
+                          <div className="w-6 h-6 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-[9px] font-bold">{report.inspectorAvatar}</div>
                           <span className="text-xs text-[#1F2937]">{report.inspector}</span>
                         </div>
                       </td>
@@ -127,7 +127,7 @@ export default function QAQueue({ reports, onSelectReport }: Props) {
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => onSelectReport(report)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1E3A5F] text-white text-xs font-semibold rounded-lg hover:bg-[#16304F] transition-all active:scale-[0.98] ml-auto"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ff5722] text-white text-xs font-semibold rounded-lg hover:bg-[#e64a19] transition-all active:scale-[0.98] ml-auto"
                         >
                           <Eye size={12} /> Review
                         </button>

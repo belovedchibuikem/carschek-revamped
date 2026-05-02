@@ -119,7 +119,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
 
   const getStepColor = (step: number, current: number) => {
     if (step < current) return 'bg-[#1A7A4A] border-[#1A7A4A] text-white';
-    if (step === current) return 'bg-[#1E3A5F] border-[#1E3A5F] text-white ring-4 ring-[#1E3A5F]/20';
+    if (step === current) return 'bg-[#ff5722] border-[#ff5722] text-white ring-4 ring-[#ff5722]/20';
     return 'bg-white border-[#E5E7EB] text-[#6B7280]';
   };
 
@@ -146,7 +146,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-lg font-bold">
+              <div className="w-14 h-14 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-lg font-bold">
                 {selectedCandidate.name.split(' ').map(n => n[0]).join('')}
               </div>
               <div>
@@ -180,7 +180,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
                       {isComplete ? <CheckCircle size={18} /> : <step.icon size={16} />}
                     </div>
                     <div className="text-center">
-                      <p className={`text-[10px] font-semibold ${isCurrent ? 'text-[#1E3A5F]' : isComplete ? 'text-[#1A7A4A]' : 'text-[#6B7280]'}`}>{step.label}</p>
+                      <p className={`text-[10px] font-semibold ${isCurrent ? 'text-[#ff5722]' : isComplete ? 'text-[#1A7A4A]' : 'text-[#6B7280]'}`}>{step.label}</p>
                     </div>
                   </div>
                 );
@@ -193,7 +193,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
         {selectedCandidate.step >= 2 && (
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
             <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-4 flex items-center gap-2">
-              <FileText size={15} className="text-[#2E75B6]" /> Document Review
+              <FileText size={15} className="text-[#ff8a65]" /> Document Review
             </h3>
             <div className="space-y-3">
               {selectedCandidate.documents.map(doc => (
@@ -203,7 +203,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
                       <Shield size={18} className={
                         doc.status === 'approved' ? 'text-[#1A7A4A]' :
                         doc.status === 'rejected' ? 'text-[#C0392B]' :
-                        doc.status === 'uploaded' ? 'text-[#2E75B6]' : 'text-[#6B7280]'
+                        doc.status === 'uploaded' ? 'text-[#ff8a65]' : 'text-[#6B7280]'
                       } />
                       <div>
                         <p className="text-sm font-semibold text-[#1F2937]">{doc.label}</p>
@@ -303,7 +303,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
         </div>
         <button
           onClick={() => setShowInviteModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all"
         >
           <Mail size={15} /> Invite Inspector
         </button>
@@ -315,7 +315,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
           const count = candidates.filter(c => c.step === step.id).length;
           return (
             <div key={step.id} className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm text-center">
-              <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${count > 0 ? 'bg-[#1E3A5F] text-white' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>
+              <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${count > 0 ? 'bg-[#ff5722] text-white' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>
                 <step.icon size={14} />
               </div>
               <p className="text-xl font-heading font-bold text-[#1F2937] tabular-nums">{count}</p>
@@ -338,7 +338,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
             const hasRejected = candidate.documents.some(d => d.status === 'rejected');
             return (
               <div key={candidate.id} className="flex items-center gap-4 px-5 py-4 hover:bg-[#F4F6F8]/60 transition-colors group">
-                <div className="w-10 h-10 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                   {candidate.name.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -351,7 +351,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
                 </div>
                 <div className="hidden sm:flex items-center gap-1">
                   {STEPS.map((s, idx) => (
-                    <div key={s.id} className={`w-2 h-2 rounded-full ${idx < candidate.step ? 'bg-[#1A7A4A]' : idx === candidate.step ? 'bg-[#1E3A5F]' : 'bg-[#E5E7EB]'}`} />
+                    <div key={s.id} className={`w-2 h-2 rounded-full ${idx < candidate.step ? 'bg-[#1A7A4A]' : idx === candidate.step ? 'bg-[#ff5722]' : 'bg-[#E5E7EB]'}`} />
                   ))}
                 </div>
                 <div className="hidden md:block text-center">
@@ -365,7 +365,7 @@ export default function OnboardingWorkflow({ onBack }: Props) {
                 }`}>{step?.label}</span>
                 <button
                   onClick={() => setSelectedCandidate(candidate)}
-                  className="flex items-center gap-1 text-xs text-[#2E75B6] font-semibold hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="flex items-center gap-1 text-xs text-[#ff8a65] font-semibold hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   Review <ChevronRight size={13} />
                 </button>
@@ -385,19 +385,19 @@ export default function OnboardingWorkflow({ onBack }: Props) {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Full Name</label>
-                <input type="text" value={inviteName} onChange={e => setInviteName(e.target.value)} placeholder="e.g. Kelechi Obi" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+                <input type="text" value={inviteName} onChange={e => setInviteName(e.target.value)} placeholder="e.g. Kelechi Obi" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Email Address</label>
-                <input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="inspector@example.com" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] transition-all" />
+                <input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="inspector@example.com" className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] transition-all" />
               </div>
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-xs text-[#2E75B6]">Role: <span className="font-semibold">Inspector</span> · The candidate will receive a link to complete their profile and upload documents.</p>
+                <p className="text-xs text-[#ff8a65]">Role: <span className="font-semibold">Inspector</span> · The candidate will receive a link to complete their profile and upload documents.</p>
               </div>
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setShowInviteModal(false)} className="flex-1 py-2.5 border border-[#E5E7EB] text-sm font-semibold text-[#6B7280] rounded-lg hover:bg-[#F4F6F8]">Cancel</button>
-              <button onClick={handleSendInvite} className="flex-1 py-2.5 bg-[#1E3A5F] text-white text-sm font-semibold rounded-lg hover:bg-[#16304F] flex items-center justify-center gap-2">
+              <button onClick={handleSendInvite} className="flex-1 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] flex items-center justify-center gap-2">
                 <Mail size={14} /> Send Invite
               </button>
             </div>

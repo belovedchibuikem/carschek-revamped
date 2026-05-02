@@ -32,7 +32,7 @@ export default function OrderDetailPanel({ order, onClose }: Props) {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-sm font-bold text-[#1E3A5F]">{order.id}</span>
+            <span className="font-mono text-sm font-bold text-[#ff5722]">{order.id}</span>
             <StatusBadge status={order.status} />
             <span className="text-xs text-[#6B7280]">Created {order.createdAt}</span>
           </div>
@@ -50,8 +50,8 @@ export default function OrderDetailPanel({ order, onClose }: Props) {
                 {TIMELINE.map((step, idx) => (
                   <div key={step.id} className="flex gap-4">
                     <div className="flex flex-col items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all ${step.done ? 'bg-[#1A7A4A] border-[#1A7A4A]' : idx === TIMELINE.findIndex(s => !s.done) ? 'bg-white border-[#2E75B6] animate-pulse-ring' : 'bg-white border-[#E5E7EB]'}`}>
-                        {step.done ? <CheckCircle size={14} className="text-white" /> : <div className={`w-2 h-2 rounded-full ${idx === TIMELINE.findIndex(s => !s.done) ? 'bg-[#2E75B6]' : 'bg-[#E5E7EB]'}`} />}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all ${step.done ? 'bg-[#1A7A4A] border-[#1A7A4A]' : idx === TIMELINE.findIndex(s => !s.done) ? 'bg-white border-[#ff8a65] animate-pulse-ring' : 'bg-white border-[#E5E7EB]'}`}>
+                        {step.done ? <CheckCircle size={14} className="text-white" /> : <div className={`w-2 h-2 rounded-full ${idx === TIMELINE.findIndex(s => !s.done) ? 'bg-[#ff8a65]' : 'bg-[#E5E7EB]'}`} />}
                       </div>
                       {idx < TIMELINE.length - 1 && (
                         <div className={`w-0.5 h-10 ${step.done ? 'bg-[#1A7A4A]' : 'bg-[#E5E7EB]'}`} />
@@ -78,7 +78,7 @@ export default function OrderDetailPanel({ order, onClose }: Props) {
                     </div>
                     <button
                       onClick={() => setShowAssignModal(true)}
-                      className="text-xs font-semibold text-[#2E75B6] hover:text-[#1E3A5F] px-3 py-1.5 border border-[#2E75B6]/30 rounded-lg hover:bg-blue-50 transition-colors"
+                      className="text-xs font-semibold text-[#ff8a65] hover:text-[#ff5722] px-3 py-1.5 border border-[#ff8a65]/30 rounded-lg hover:bg-blue-50 transition-colors"
                     >
                       Reassign
                     </button>
@@ -86,7 +86,7 @@ export default function OrderDetailPanel({ order, onClose }: Props) {
                 ) : (
                   <button
                     onClick={() => setShowAssignModal(true)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-[#2E75B6]/40 rounded-lg text-sm font-semibold text-[#2E75B6] hover:bg-blue-50 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-[#ff8a65]/40 rounded-lg text-sm font-semibold text-[#ff8a65] hover:bg-blue-50 transition-colors"
                   >
                     <UserPlus size={16} /> Assign Inspector
                   </button>
@@ -100,7 +100,7 @@ export default function OrderDetailPanel({ order, onClose }: Props) {
               <div>
                 <h4 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Customer</h4>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#2E75B6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">{order.customer.avatar}</div>
+                  <div className="w-10 h-10 rounded-full bg-[#ff8a65] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">{order.customer.avatar}</div>
                   <div>
                     <p className="text-sm font-semibold text-[#1F2937]">{order.customer.name}</p>
                     <div className="flex items-center gap-1 mt-1 text-xs text-[#6B7280]">
@@ -142,7 +142,7 @@ export default function OrderDetailPanel({ order, onClose }: Props) {
                   <span>{order.zone}, Lagos</span>
                 </div>
                 <div className="flex items-center gap-2 mt-1.5 text-xs text-[#1F2937]">
-                  <Clock size={13} className="text-[#2E75B6]" />
+                  <Clock size={13} className="text-[#ff8a65]" />
                   <span>{order.scheduledAt}</span>
                 </div>
               </div>
@@ -194,16 +194,16 @@ export default function OrderDetailPanel({ order, onClose }: Props) {
             </div>
             <div className="p-4">
               <div className="relative mb-4">
-                <input type="text" placeholder="Search inspectors…" className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]" />
+                <input type="text" placeholder="Search inspectors…" className="w-full pl-9 pr-4 py-2 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722]" />
               </div>
               <div className="space-y-2">
                 {INSPECTORS_AVAILABLE.map(insp => (
                   <button
                     key={insp.id}
                     onClick={() => { setShowAssignModal(false); toast.success(`${insp.name} assigned to ${order.id}`); }}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-[#E5E7EB] hover:border-[#2E75B6] hover:bg-blue-50/30 transition-all text-left"
+                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-[#E5E7EB] hover:border-[#ff8a65] hover:bg-blue-50/30 transition-all text-left"
                   >
-                    <div className="w-9 h-9 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs font-bold">{insp.avatar}</div>
+                    <div className="w-9 h-9 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">{insp.avatar}</div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-[#1F2937]">{insp.name}</p>
                       <p className="text-[10px] text-[#6B7280]">{insp.zone}</p>

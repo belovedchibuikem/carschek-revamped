@@ -86,12 +86,12 @@ export default function CarDetailModule({ carId }: { carId: string }) {
         <div className="px-4 py-3 flex flex-wrap items-center gap-4">
           {/* Back + Left */}
           <div className="flex items-center gap-3 flex-shrink-0">
-            <button onClick={() => router.push('/cars')} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-[#1E3A5F]">
+            <button onClick={() => router.push('/cars')} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-[#ff5722]">
               <ArrowLeft size={16} />
             </button>
             <span className="font-mono text-sm font-bold bg-teal-50 text-teal-700 px-2.5 py-1 rounded-lg">{car.id}</span>
             <div>
-              <p className="font-bold text-[#1E3A5F] text-base leading-tight">{car.make} {car.model} {car.transmission} {car.year}</p>
+              <p className="font-bold text-[#ff5722] text-base leading-tight">{car.make} {car.model} {car.transmission} {car.year}</p>
               <p className="text-xs text-gray-400">📍 Current Location: {car.currentStatus} (Lekki)</p>
             </div>
           </div>
@@ -106,14 +106,14 @@ export default function CarDetailModule({ carId }: { carId: string }) {
                   <div className="flex flex-col items-center gap-1 flex-shrink-0">
                     <button
                       onClick={() => setShowStatusModal(s)}
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all cursor-pointer hover:scale-110 ${done ? 'bg-[#1E3A5F] text-white' : active ? 'bg-amber-400 text-white ring-2 ring-amber-200 ring-offset-1' : 'bg-gray-100 text-gray-400 border-2 border-gray-200'}`}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all cursor-pointer hover:scale-110 ${done ? 'bg-[#ff5722] text-white' : active ? 'bg-amber-400 text-white ring-2 ring-amber-200 ring-offset-1' : 'bg-gray-100 text-gray-400 border-2 border-gray-200'}`}
                     >
                       {done ? <Check size={12} /> : i + 1}
                     </button>
-                    <span className={`text-[9px] font-medium whitespace-nowrap ${active ? 'text-amber-600' : done ? 'text-[#1E3A5F]' : 'text-gray-400'}`}>{s}</span>
+                    <span className={`text-[9px] font-medium whitespace-nowrap ${active ? 'text-amber-600' : done ? 'text-[#ff5722]' : 'text-gray-400'}`}>{s}</span>
                   </div>
                   {i < PIPELINE_STEPS.length - 1 && (
-                    <div className={`w-8 h-0.5 mx-1 mb-3 ${i < car.currentStep ? 'bg-[#1E3A5F]' : 'bg-gray-200'}`} />
+                    <div className={`w-8 h-0.5 mx-1 mb-3 ${i < car.currentStep ? 'bg-[#ff5722]' : 'bg-gray-200'}`} />
                   )}
                 </React.Fragment>
               );
@@ -198,7 +198,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative px-4 py-3 text-sm font-medium transition-colors ${activeTab === tab.id ? 'text-[#1E3A5F] border-b-2 border-[#1E3A5F]' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`relative px-4 py-3 text-sm font-medium transition-colors ${activeTab === tab.id ? 'text-[#ff5722] border-b-2 border-[#ff5722]' : 'text-gray-500 hover:text-gray-700'}`}
             >
               {tab.label}
               {tab.id === 'main' && unsaved && <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-amber-400 rounded-full" />}
@@ -214,8 +214,8 @@ export default function CarDetailModule({ carId }: { carId: string }) {
             {/* Car Details Card */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#1E3A5F] text-sm">Car Details</h3>
-                <button onClick={() => handleEdit('details')} className="text-xs text-[#1E3A5F] hover:underline">{editingCard === 'details' ? 'Editing…' : 'Edit'}</button>
+                <h3 className="font-bold text-[#ff5722] text-sm">Car Details</h3>
+                <button onClick={() => handleEdit('details')} className="text-xs text-[#ff5722] hover:underline">{editingCard === 'details' ? 'Editing…' : 'Edit'}</button>
               </div>
               <div className="space-y-3">
                 {[
@@ -229,7 +229,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
                   <div key={label as string} className="flex flex-col gap-0.5 pb-2 border-b border-gray-50 last:border-0">
                     <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{label}</span>
                     {editingCard === 'details' ? (
-                      <input defaultValue={value as string} className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1E3A5F]/20" />
+                      <input defaultValue={value as string} className="text-sm border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#ff5722]/20" />
                     ) : (
                       <span className="text-sm text-gray-800 font-medium">{value}</span>
                     )}
@@ -241,8 +241,8 @@ export default function CarDetailModule({ carId }: { carId: string }) {
             {/* Contact Card */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#1E3A5F] text-sm">Contact (Seller)</h3>
-                <button onClick={() => handleEdit('contact')} className="text-xs text-[#1E3A5F] hover:underline">Edit</button>
+                <h3 className="font-bold text-[#ff5722] text-sm">Contact (Seller)</h3>
+                <button onClick={() => handleEdit('contact')} className="text-xs text-[#ff5722] hover:underline">Edit</button>
               </div>
               <div className="space-y-3">
                 {[
@@ -272,7 +272,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
               </div>
               <button
                 onClick={() => router.push('/crm')}
-                className="mt-4 w-full py-2 border border-[#1E3A5F]/20 text-[#1E3A5F] text-xs font-semibold rounded-lg hover:bg-[#1E3A5F]/5 transition-colors flex items-center justify-center gap-1.5"
+                className="mt-4 w-full py-2 border border-[#ff5722]/20 text-[#ff5722] text-xs font-semibold rounded-lg hover:bg-[#ff5722]/5 transition-colors flex items-center justify-center gap-1.5"
               >
                 <ExternalLink size={12} /> View in CRM
               </button>
@@ -281,11 +281,11 @@ export default function CarDetailModule({ carId }: { carId: string }) {
             {/* Documents Card */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#1E3A5F] text-sm">Car Documents</h3>
+                <h3 className="font-bold text-[#ff5722] text-sm">Car Documents</h3>
               </div>
               <div className="mb-3">
                 <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Handover From Seller Date</label>
-                <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
               </div>
               <div className="space-y-2">
                 {DOCUMENTS_LIST.map(doc => (
@@ -303,7 +303,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
               </div>
               <button
                 onClick={() => router.push('/offers?view=documents')}
-                className="mt-4 w-full py-2 border border-[#1E3A5F]/20 text-[#1E3A5F] text-xs font-semibold rounded-lg hover:bg-[#1E3A5F]/5 transition-colors"
+                className="mt-4 w-full py-2 border border-[#ff5722]/20 text-[#ff5722] text-xs font-semibold rounded-lg hover:bg-[#ff5722]/5 transition-colors"
               >
                 Open Document Review
               </button>
@@ -314,7 +314,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
         {activeTab === 'purchase' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-[#1E3A5F] text-sm mb-4">Purchase Details</h3>
+              <h3 className="font-bold text-[#ff5722] text-sm mb-4">Purchase Details</h3>
               <div className="space-y-3">
                 {[['Channel', car.purchase.channel], ['Date', car.purchase.date], ['Sales Person', car.purchase.salesPerson], ['Location', car.purchase.location]].map(([l, v]) => (
                   <div key={l as string} className="flex flex-col gap-0.5 pb-2 border-b border-gray-50 last:border-0">
@@ -326,8 +326,8 @@ export default function CarDetailModule({ carId }: { carId: string }) {
             </div>
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#1E3A5F] text-sm">Purchase Prices</h3>
-                <button onClick={() => setAddingPrice(!addingPrice)} className="text-xs text-[#1E3A5F] hover:underline">+ Add Price</button>
+                <h3 className="font-bold text-[#ff5722] text-sm">Purchase Prices</h3>
+                <button onClick={() => setAddingPrice(!addingPrice)} className="text-xs text-[#ff5722] hover:underline">+ Add Price</button>
               </div>
               <div className="space-y-2 mb-3">
                 <div className="flex items-center justify-between py-2 border-b border-gray-50">
@@ -346,15 +346,15 @@ export default function CarDetailModule({ carId }: { carId: string }) {
                   </select>
                   <input type="date" className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none" />
                   <div className="flex gap-2">
-                    <button className="flex-1 py-1.5 bg-[#1E3A5F] text-white text-xs rounded-md">Save</button>
+                    <button className="flex-1 py-1.5 bg-[#ff5722] text-white text-xs rounded-md">Save</button>
                     <button onClick={() => setAddingPrice(false)} className="flex-1 py-1.5 border border-gray-200 text-xs rounded-md">Cancel</button>
                   </div>
                 </div>
               )}
             </div>
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-[#1E3A5F] text-sm mb-4">Purchase Payments</h3>
-              <p className="text-2xl font-bold text-[#1E3A5F]">₦5,000,000.00</p>
+              <h3 className="font-bold text-[#ff5722] text-sm mb-4">Purchase Payments</h3>
+              <p className="text-2xl font-bold text-[#ff5722]">₦5,000,000.00</p>
               <span className="inline-block mt-1 bg-green-50 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">Done</span>
               <div className="mt-3 space-y-1 text-xs text-gray-500">
                 <p>Payment Date: 2024-12-03</p>
@@ -367,7 +367,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
         {activeTab === 'sales' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-[#1E3A5F] text-sm mb-4">Sales Details</h3>
+              <h3 className="font-bold text-[#ff5722] text-sm mb-4">Sales Details</h3>
               <div className="space-y-3">
                 {[['Channel', car.sales.channel], ['Sold To', car.sales.soldTo], ['Sold Date', car.sales.soldDate], ['Sales Person', car.sales.salesPerson], ['Location', car.sales.location], ['Invoice #', car.sales.invoiceNo]].map(([l, v]) => (
                   <div key={l as string} className="flex flex-col gap-0.5 pb-2 border-b border-gray-50 last:border-0">
@@ -378,7 +378,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-[#1E3A5F] text-sm mb-4">Selling Price</h3>
+              <h3 className="font-bold text-[#ff5722] text-sm mb-4">Selling Price</h3>
               <div className="space-y-3">
                 <div>
                   <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Purchase Price (Reference)</p>
@@ -386,7 +386,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
                 </div>
                 <div>
                   <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Selling Price</p>
-                  <input type="number" defaultValue={car.sales.sellingPrice} onChange={() => setUnsaved(true)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                  <input type="number" defaultValue={car.sales.sellingPrice} onChange={() => setUnsaved(true)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
                 </div>
                 <div>
                   <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Margin (Auto-calculated)</p>
@@ -395,8 +395,8 @@ export default function CarDetailModule({ carId }: { carId: string }) {
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-[#1E3A5F] text-sm mb-4">Selling Payments</h3>
-              <p className="text-2xl font-bold text-[#1E3A5F]">₦{car.sales.sellingPrice.toLocaleString()}.00</p>
+              <h3 className="font-bold text-[#ff5722] text-sm mb-4">Selling Payments</h3>
+              <p className="text-2xl font-bold text-[#ff5722]">₦{car.sales.sellingPrice.toLocaleString()}.00</p>
               <span className="inline-block mt-1 bg-green-50 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">Done</span>
               <p className="mt-3 text-xs text-gray-500">Payment by Buyer: ₦{car.sales.sellingPrice.toLocaleString()}</p>
             </div>
@@ -408,7 +408,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
             {/* Auction Panel */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#1E3A5F] text-sm">Auction Settings</h3>
+                <h3 className="font-bold text-[#ff5722] text-sm">Auction Settings</h3>
                 <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">No Active Auction</span>
               </div>
               <div className="text-center py-8 space-y-3">
@@ -423,30 +423,30 @@ export default function CarDetailModule({ carId }: { carId: string }) {
 
             {/* Marketplace Panel */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-[#1E3A5F] text-sm mb-4">Marketplace Settings</h3>
+              <h3 className="font-bold text-[#ff5722] text-sm mb-4">Marketplace Settings</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-2">Visibility</label>
                   <div className="flex rounded-lg border border-gray-200 overflow-hidden">
                     {(['Not Visible', 'Visible', 'Featured'] as const).map(v => (
-                      <button key={v} onClick={() => setMarketplaceVisible(v)} className={`flex-1 py-2 text-xs font-medium transition-colors ${marketplaceVisible === v ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{v}</button>
+                      <button key={v} onClick={() => setMarketplaceVisible(v)} className={`flex-1 py-2 text-xs font-medium transition-colors ${marketplaceVisible === v ? 'bg-[#ff5722] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{v}</button>
                     ))}
                   </div>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">Current Marketplace Price</label>
-                  <p className="text-2xl font-bold text-[#1E3A5F]">₦5,200,000</p>
+                  <p className="text-2xl font-bold text-[#ff5722]">₦5,200,000</p>
                   <p className="text-xs text-gray-400 mt-0.5">Previous: ₦5,100,000</p>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">New Price (₦)</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
-                    <input type="number" value={newMarketPrice} onChange={e => { setNewMarketPrice(e.target.value); setUnsaved(true); }} placeholder="Enter new price" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                    <input type="number" value={newMarketPrice} onChange={e => { setNewMarketPrice(e.target.value); setUnsaved(true); }} placeholder="Enter new price" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
                   </div>
                 </div>
-                <button onClick={handleSave} className="w-full py-2.5 bg-[#1E3A5F] text-white font-semibold rounded-xl hover:bg-[#162d4a] transition-colors text-sm">Update Marketplace Listing</button>
-                <button onClick={() => router.push('/vehicle-listings')} className="w-full py-2 border border-[#1E3A5F]/20 text-[#1E3A5F] font-semibold rounded-xl hover:bg-[#1E3A5F]/5 transition-colors text-sm">View Marketplace Listings</button>
+                <button onClick={handleSave} className="w-full py-2.5 bg-[#ff5722] text-white font-semibold rounded-xl hover:bg-[#e64a19] transition-colors text-sm">Update Marketplace Listing</button>
+                <button onClick={() => router.push('/vehicle-listings')} className="w-full py-2 border border-[#ff5722]/20 text-[#ff5722] font-semibold rounded-xl hover:bg-[#ff5722]/5 transition-colors text-sm">View Marketplace Listings</button>
               </div>
             </div>
           </div>
@@ -460,7 +460,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-[#1E3A5F]">Start Auction</h2>
+                  <h2 className="text-lg font-bold text-[#ff5722]">Start Auction</h2>
                   <p className="text-xs text-gray-500 mt-0.5">Toyota Camry Automatic 2011 — CK-41</p>
                 </div>
                 <button onClick={() => setShowAuctionModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 text-xl leading-none">×</button>
@@ -471,26 +471,26 @@ export default function CarDetailModule({ carId }: { carId: string }) {
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Auction Starting Price (₦) *</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₦</span>
-                  <input type="number" value={auctionPrice} onChange={e => setAuctionPrice(e.target.value)} placeholder="0" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-3 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                  <input type="number" value={auctionPrice} onChange={e => setAuctionPrice(e.target.value)} placeholder="0" className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-3 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-2">Platform Fee %</label>
                 <div className="flex rounded-lg border border-gray-200 overflow-hidden">
                   {[1, 5, 10, 15, 20].map(f => (
-                    <button key={f} onClick={() => setPlatformFee(f)} className={`flex-1 py-2 text-xs font-bold transition-colors ${platformFee === f ? 'bg-[#1E3A5F] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{f}%</button>
+                    <button key={f} onClick={() => setPlatformFee(f)} className={`flex-1 py-2 text-xs font-bold transition-colors ${platformFee === f ? 'bg-[#ff5722] text-white' : 'text-gray-600 hover:bg-gray-50'}`}>{f}%</button>
                   ))}
                 </div>
                 {auctionPrice && (
                   <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-500">₦{parseInt(auctionPrice).toLocaleString()} × (1 - {platformFee}%) = <span className="font-bold text-[#1E3A5F]">₦{(parseInt(auctionPrice) * (1 - platformFee / 100)).toLocaleString()}</span></p>
+                    <p className="text-xs text-gray-500">₦{parseInt(auctionPrice).toLocaleString()} × (1 - {platformFee}%) = <span className="font-bold text-[#ff5722]">₦{(parseInt(auctionPrice) * (1 - platformFee / 100)).toLocaleString()}</span></p>
                     <p className="text-[10px] text-gray-400 mt-0.5">Amount after platform fee (visible to bidders)</p>
                   </div>
                 )}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Auction End Date & Time</label>
-                <input type="datetime-local" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20" />
+                <input type="datetime-local" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20" />
               </div>
               {auctionPrice && (
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
@@ -501,7 +501,7 @@ export default function CarDetailModule({ carId }: { carId: string }) {
             </div>
             <div className="p-6 border-t border-gray-100 flex gap-3">
               <button onClick={() => setShowAuctionModal(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Close</button>
-              <button className="flex-1 py-2.5 border border-[#1E3A5F] text-[#1E3A5F] rounded-xl text-sm font-semibold hover:bg-[#1E3A5F]/5 transition-colors">Save Draft</button>
+              <button className="flex-1 py-2.5 border border-[#ff5722] text-[#ff5722] rounded-xl text-sm font-semibold hover:bg-[#ff5722]/5 transition-colors">Save Draft</button>
               <button
                 onClick={() => { setShowAuctionModal(false); router.push('/auctions'); }}
                 className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-colors"
@@ -518,17 +518,17 @@ export default function CarDetailModule({ carId }: { carId: string }) {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-[#1E3A5F]">Change Status</h3>
+              <h3 className="font-bold text-[#ff5722]">Change Status</h3>
               <button onClick={() => setShowStatusModal(null)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"><X size={16} /></button>
             </div>
-            <p className="text-sm text-gray-600 mb-4">Move <span className="font-semibold">{car.id}</span> to <span className="font-semibold text-[#1E3A5F]">{showStatusModal}</span>?</p>
+            <p className="text-sm text-gray-600 mb-4">Move <span className="font-semibold">{car.id}</span> to <span className="font-semibold text-[#ff5722]">{showStatusModal}</span>?</p>
             <div className="mb-4">
               <label className="block text-xs font-semibold text-gray-600 mb-1">Note (optional)</label>
               <textarea rows={2} placeholder="Add a note about this status change..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShowStatusModal(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button onClick={() => setShowStatusModal(null)} className="flex-1 py-2.5 bg-[#1E3A5F] text-white rounded-xl text-sm font-bold hover:bg-[#162d4a] transition-colors">Confirm</button>
+              <button onClick={() => setShowStatusModal(null)} className="flex-1 py-2.5 bg-[#ff5722] text-white rounded-xl text-sm font-bold hover:bg-[#e64a19] transition-colors">Confirm</button>
             </div>
           </div>
         </div>
