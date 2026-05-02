@@ -15,6 +15,8 @@ import {
 import { INSPECTION_SECTIONS } from '@/lib/mockData';
 import { getSectionDef, countToggleItems, type SectionDef, type ToggleItem, type ToggleType,  } from '@/lib/inspection/inspectionSections';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
+import { VehiclePhotos } from '@/components/inspection/VehiclePhotos';
+import { DamagePhotosHubScreen } from '@/components/inspection/screens/DamagePhotosHubScreen';
 
 type ToggleValue = 'yes' | 'no' | 'na' | null;
 
@@ -596,14 +598,21 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
           <SummarySection jobId={jobId} onSave={handleSaveReport} />
         )}
         {(isPhotos || isDamages) && (
-          <div className="flex flex-col items-center gap-3 py-8 text-center">
-            <span className="text-4xl">{isPhotos ? '📷' : '🔍'}</span>
-            <p className="text-sm font-semibold text-[#374151]">
-              {isPhotos ? 'Vehicle Photos' : 'Damage Assessment'}
-            </p>
-            <p className="text-xs text-[#6B7280]">
-              This section is handled by a dedicated screen.
-            </p>
+          <div>
+            {isPhotos && (
+              <VehiclePhotos
+                inspectionId={jobId}
+                layout="compact"
+                presentation="embedded"
+              />
+            )}
+            {isDamages && (
+              <DamagePhotosHubScreen
+                layout={layout}
+                jobId={jobId}
+                backHref={href(`inspect/${jobId}/overview`)}
+              />
+            )}
           </div>
         )}
         {!def && (
