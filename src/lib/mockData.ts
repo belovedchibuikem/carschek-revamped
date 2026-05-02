@@ -187,7 +187,7 @@ export const INSPECTION_SECTIONS = [
   { id: 'S01', name: 'Customer Details', weight: 4, items: 11, timeEstimate: '5 min' },
   { id: 'S02', name: 'Documentation', weight: 4, items: 9, timeEstimate: '4 min' },
   { id: 'S03', name: 'Car Details', weight: 5, items: 16, timeEstimate: '6 min' },
-  { id: 'S04', name: 'Photos', weight: 5, items: 0, timeEstimate: '10 min' },
+  { id: 'S04', name: 'Photos', weight: 5, items: 11, timeEstimate: '10 min' },
   { id: 'S05', name: 'Body Frame Checklist', weight: 8, items: 15, timeEstimate: '7 min' },
   { id: 'S06', name: 'Shields', weight: 5, items: 15, timeEstimate: '6 min' },
   { id: 'S07', name: 'Lights', weight: 4, items: 6, timeEstimate: '4 min' },

@@ -7,7 +7,7 @@ import {
   LayoutDashboard, ClipboardList, Users, FileText, Car, Gavel, UserCircle,
   MessageSquare, Tag, ShoppingBag, Handshake, DollarSign, Bell, Settings,
   ChevronLeft, ChevronRight, ChevronDown, LogOut, X, Database, Calendar, BarChart2,
-  Activity, Shield, Layers, BookOpen, Smartphone, ArrowRightLeft, FileEdit, TrendingUp, Briefcase,
+  Activity, Shield, Layers, BookOpen, Smartphone, ArrowRightLeft, FileEdit, TrendingUp, Briefcase, BadgeDollarSign,
 } from 'lucide-react';
 
 type NavSubItem = { label: string; path: string; unconfirmedBadge?: boolean };
@@ -75,6 +75,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     label: 'Finance',
     items: [
       { icon: DollarSign, label: 'Finance', path: '/finance', badge: null },
+      { icon: BadgeDollarSign, label: 'Vehicle Valuation', path: '/vehicle-valuation', badge: null },
     ],
   },
   {

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Camera } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Camera, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { CameraCaptureModal } from '@/components/inspection/CameraCaptureModal';
 import { PhotoLightbox, type LightboxSlide } from '@/components/inspection/PhotoLightbox';
@@ -75,6 +75,8 @@ export function DamagePhotoCapture({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState(0);
   const [aiStep, setAiStep] = useState(0);
+  const [captureMode, setCaptureMode] = useState<'camera' | 'device'>('camera');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const revokeRef = React.useRef<(() => void) | null>(null);
 
   const ai = useAIDefectAnalysis();
@@ -143,8 +145,68 @@ export function DamagePhotoCapture({
     });
   };
 
+  const handleAddPhoto = () => {
+    if (captureMode === 'camera') {
+      setCameraOpen(true);
+    } else {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    try {
+      const buf = await file.arrayBuffer();
+      await persistDamagePhotoBlob(inspectionOrderId, sectionId, itemKey, buf, {
+        mimeType: file.type || 'image/jpeg',
+        sizeKb: Math.round(file.size / 1024),
+      });
+      reload();
+      toast.success('Damage photo saved');
+      // Run AI on device-picked photo
+      const blob = new Blob([buf], { type: file.type || 'image/jpeg' });
+      void ai.analyzePhoto(blob).then(result => {
+        if (result) onAnalyzed?.(result);
+      });
+    } catch {
+      toast.error('Failed to save photo');
+    }
+  };
+
   return (
     <div className="space-y-3">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* Capture mode toggle */}
+      <div className="flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2">
+        <div className="flex items-center gap-1.5">
+          {captureMode === 'camera' ? (
+            <Camera size={13} className="text-[#ff5722]" />
+          ) : (
+            <FolderOpen size={13} className="text-[#ff5722]" />
+          )}
+          <span className="text-[11px] font-semibold text-[#374151]">
+            {captureMode === 'camera' ? 'Live Camera' : 'From Device'}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setCaptureMode(m => (m === 'camera' ? 'device' : 'camera'))}
+          className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] bg-white px-2.5 py-1 text-[10px] font-bold text-[#374151] transition hover:bg-[#F4F6F8]"
+        >
+          {captureMode === 'camera' ? <><FolderOpen size={10} /> Gallery</> : <><Camera size={10} /> Camera</>}
+        </button>
+      </div>
+
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-[#6B7280]">
           DAMAGE PHOTOS ({photos.length}/{maxPhotos})
@@ -152,10 +214,11 @@ export function DamagePhotoCapture({
         {photos.length < maxPhotos && (
           <button
             type="button"
-            onClick={() => setCameraOpen(true)}
+            onClick={handleAddPhoto}
             className="inline-flex items-center gap-1 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-xs font-semibold text-[#374151]"
           >
-            <Camera size={14} /> Add Photo
+            {captureMode === 'camera' ? <Camera size={14} /> : <FolderOpen size={14} />}
+            {captureMode === 'camera' ? 'Add Photo' : 'Choose Photo'}
           </button>
         )}
       </div>
@@ -188,7 +251,7 @@ export function DamagePhotoCapture({
         {photos.length < maxPhotos && (
           <button
             type="button"
-            onClick={() => setCameraOpen(true)}
+            onClick={handleAddPhoto}
             className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-[#D1D5DB] bg-white text-[#9CA3AF]"
           >
             +
@@ -251,7 +314,7 @@ export function DamagePhotoCapture({
               onClick={() => applyAI('ignore')}
               className="rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-[10px] font-bold text-[#6B7280]"
             >
-              ✗ Ignore
+              Ignore
             </button>
           </div>
         </div>
@@ -259,20 +322,22 @@ export function DamagePhotoCapture({
 
       <CameraCaptureModal
         open={cameraOpen}
-        title="DAMAGE PHOTO"
+        title="Damage Photo"
+        subtitle="Capture clear photo of the damage"
+        showAiBadge
+        allowCameraFlip
         showGuideOverlay={false}
-        compressOptions={{ maxWidth: 800, maxHeight: 800, quality: 0.8 }}
+        compressOptions={{ maxWidth: 1600, maxHeight: 1600, quality: 0.85 }}
         onClose={() => setCameraOpen(false)}
         onCapture={async blob => {
-          const buf = await blob.arrayBuffer();
-          await persistDamagePhotoBlob(inspectionOrderId, sectionId, itemKey, buf, {
+          await persistDamagePhotoBlob(inspectionOrderId, sectionId, itemKey, await blob.arrayBuffer(), {
             mimeType: blob.type || 'image/jpeg',
             sizeKb: Math.round(blob.size / 1024),
           });
           reload();
-          ai.clearResult();
-          void ai.analyzePhoto(blob).then(r => {
-            if (r) onAnalyzed?.(r);
+          toast.success('Damage photo saved');
+          void ai.analyzePhoto(blob).then(result => {
+            if (result) onAnalyzed?.(result);
           });
         }}
       />
@@ -283,10 +348,6 @@ export function DamagePhotoCapture({
         initialIndex={lightboxIdx}
         variant="light"
         onClose={() => setLightboxOpen(false)}
-        onRetake={() => {
-          setLightboxOpen(false);
-          setCameraOpen(true);
-        }}
       />
     </div>
   );
