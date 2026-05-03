@@ -150,7 +150,7 @@ function NewCarPageInner() {
   useEffect(() => {
     const id = window.setInterval(() => {
       const f = formRef.current;
-      const s = stepRef.current;
+      let s = stepRef.current;
       const hasContent =
         s > 0 ||
         !!f.brandId ||
@@ -289,7 +289,7 @@ function NewCarPageInner() {
   };
 
   const validateStep = () => {
-    const errs = validateStepAt(step);
+    let errs = validateStepAt(step);
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };

@@ -61,13 +61,9 @@ export default function InvoiceDetailPage() {
           </div>
           <span
             className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
-              inv.status === 'Paid'
-                ? 'bg-green-100 text-green-700'
-                : inv.status === 'Overdue'
-                  ? 'bg-red-100 text-red-700'
-                  : inv.status === 'Draft'
-                    ? 'bg-slate-100 text-slate-700'
-                    : 'bg-blue-100 text-blue-700'
+              inv.status === 'Paid' ?'bg-green-100 text-green-700'
+                : inv.status === 'Overdue' ?'bg-red-100 text-red-700'
+                  : inv.status === 'Draft' ?'bg-slate-100 text-slate-700' :'bg-blue-100 text-blue-700'
             }`}
           >
             {inv.status}

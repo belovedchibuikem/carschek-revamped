@@ -7,7 +7,7 @@ import {
   LayoutDashboard, ClipboardList, Users, FileText, Car, Gavel, UserCircle,
   MessageSquare, Tag, ShoppingBag, Handshake, DollarSign, Bell, Settings,
   ChevronLeft, ChevronRight, ChevronDown, LogOut, X, Database, Calendar, BarChart2,
-  Activity, Shield, Layers, BookOpen, Smartphone, ArrowRightLeft, FileEdit, TrendingUp, Briefcase,
+  Activity, Shield, Layers, BookOpen, Smartphone, ArrowRightLeft, FileEdit, TrendingUp, Briefcase, BadgeDollarSign,
 } from 'lucide-react';
 
 type NavSubItem = { label: string; path: string; unconfirmedBadge?: boolean };
@@ -75,6 +75,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     label: 'Finance',
     items: [
       { icon: DollarSign, label: 'Finance', path: '/finance', badge: null },
+      { icon: BadgeDollarSign, label: 'Vehicle Valuation', path: '/vehicle-valuation', badge: null },
     ],
   },
   {
@@ -195,8 +196,7 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
                         relative flex items-center justify-center gap-3 mx-2 px-3 rounded-lg mb-0.5 transition-all duration-150 group
                         min-h-[40px] focus-visible:ring-offset-[#ff5722]
                         ${branchActive
-                          ? 'bg-white/15 text-white'
-                          : 'text-white/60 hover:bg-white/10 hover:text-white'
+                          ? 'bg-white/15 text-white' :'text-white/60 hover:bg-white/10 hover:text-white'
                         }
                       `}
                       title={item.label}

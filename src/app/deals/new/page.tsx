@@ -9,7 +9,7 @@ import { Handshake } from 'lucide-react';
 function NewDealContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const auctionId = searchParams.get('auction');
+  const auctionId = searchParams?.get('auction');
 
   return (
     <AppLayout currentPath={pathname}>

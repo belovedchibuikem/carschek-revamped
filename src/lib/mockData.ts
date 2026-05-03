@@ -162,8 +162,8 @@ export const LISTINGS = [
 ];
 
 /** @deprecated for list UIs — use GET /api/appointments (mutable store). Kept for typing importers. */
-export { APPOINTMENTS_SEED as APPOINTMENTS } from '@/lib/appointments/seed';
-export type { Appointment } from '@/lib/appointments/types';
+export const APPOINTMENTS: unknown[] = [];
+export type Appointment = Record<string, unknown>;
 
 export const USERS = [
   { id: 'USR-001', name: 'Promise Ndem', email: 'promise@carschek.com', role: 'super-admin', status: 'Active', lastLogin: '2026-04-13T08:00:00', avatar: 'PN' },
@@ -184,33 +184,33 @@ export const SALES_STAFF = [
 ];
 
 export const INSPECTION_SECTIONS = [
-  { id: 'S01', name: 'Engine & Powertrain', weight: 20, items: 8, timeEstimate: '8 min' },
-  { id: 'S02', name: 'Frame & Body', weight: 15, items: 12, timeEstimate: '10 min' },
-  { id: 'S03', name: 'Electrical System', weight: 10, items: 10, timeEstimate: '7 min' },
-  { id: 'S04', name: 'Transmission', weight: 8, items: 6, timeEstimate: '5 min' },
-  { id: 'S05', name: 'Brakes', weight: 8, items: 8, timeEstimate: '6 min' },
-  { id: 'S06', name: 'Suspension & Steering', weight: 7, items: 10, timeEstimate: '7 min' },
-  { id: 'S07', name: 'Tyres & Wheels', weight: 5, items: 8, timeEstimate: '5 min' },
-  { id: 'S08', name: 'Cooling System', weight: 5, items: 6, timeEstimate: '4 min' },
-  { id: 'S09', name: 'Fuel System', weight: 4, items: 5, timeEstimate: '4 min' },
-  { id: 'S10', name: 'Exhaust System', weight: 3, items: 4, timeEstimate: '3 min' },
-  { id: 'S11', name: 'Interior Condition', weight: 3, items: 15, timeEstimate: '8 min' },
-  { id: 'S12', name: 'Exterior Condition', weight: 3, items: 12, timeEstimate: '7 min' },
-  { id: 'S13', name: 'Glass & Mirrors', weight: 2, items: 8, timeEstimate: '4 min' },
-  { id: 'S14', name: 'Lights & Signals', weight: 2, items: 10, timeEstimate: '5 min' },
-  { id: 'S15', name: 'Air Conditioning', weight: 2, items: 6, timeEstimate: '4 min' },
-  { id: 'S16', name: 'Safety Features', weight: 2, items: 8, timeEstimate: '5 min' },
-  { id: 'S17', name: 'Documents & Compliance', weight: 1, items: 5, timeEstimate: '3 min' },
-  { id: 'S18', name: 'Battery & Charging', weight: 1, items: 6, timeEstimate: '4 min' },
-  { id: 'S19', name: 'Undercarriage & Rust', weight: 1, items: 8, timeEstimate: '6 min' },
-  { id: 'S20', name: 'Audio & Infotainment', weight: 1, items: 6, timeEstimate: '4 min' },
-  { id: 'S21', name: 'ADAS & Sensors', weight: 1, items: 7, timeEstimate: '5 min' },
-  { id: 'S22', name: 'Roof & Sunroof', weight: 1, items: 5, timeEstimate: '3 min' },
-  { id: 'S23', name: 'Doors & Locks', weight: 1, items: 8, timeEstimate: '5 min' },
-  { id: 'S24', name: 'Boot / Cargo Area', weight: 1, items: 5, timeEstimate: '3 min' },
-  { id: 'S25', name: 'Fluids & Leaks', weight: 1, items: 6, timeEstimate: '4 min' },
-  { id: 'S26', name: 'Road Test Notes', weight: 1, items: 4, timeEstimate: '5 min' },
-  { id: 'S27', name: 'Final Walk-Around', weight: 1, items: 6, timeEstimate: '4 min' },
+  { id: 'S01', name: 'Customer Details', weight: 4, items: 11, timeEstimate: '5 min' },
+  { id: 'S02', name: 'Documentation', weight: 4, items: 9, timeEstimate: '4 min' },
+  { id: 'S03', name: 'Car Details', weight: 5, items: 16, timeEstimate: '6 min' },
+  { id: 'S04', name: 'Photos', weight: 5, items: 11, timeEstimate: '10 min' },
+  { id: 'S05', name: 'Body Frame Checklist', weight: 8, items: 15, timeEstimate: '7 min' },
+  { id: 'S06', name: 'Shields', weight: 5, items: 15, timeEstimate: '6 min' },
+  { id: 'S07', name: 'Lights', weight: 4, items: 6, timeEstimate: '4 min' },
+  { id: 'S08', name: 'Mirrors', weight: 3, items: 6, timeEstimate: '3 min' },
+  { id: 'S09', name: 'Equipment', weight: 3, items: 5, timeEstimate: '3 min' },
+  { id: 'S10', name: 'Fluids / Filters Check', weight: 6, items: 15, timeEstimate: '6 min' },
+  { id: 'S11', name: 'Car Frame', weight: 5, items: 6, timeEstimate: '4 min' },
+  { id: 'S12', name: 'Exhaust Check', weight: 4, items: 4, timeEstimate: '3 min' },
+  { id: 'S13', name: 'Engine Check', weight: 8, items: 8, timeEstimate: '6 min' },
+  { id: 'S14', name: 'Brakes', weight: 6, items: 4, timeEstimate: '4 min' },
+  { id: 'S15', name: 'Suspension Steering', weight: 6, items: 8, timeEstimate: '5 min' },
+  { id: 'S16', name: 'Steering Control', weight: 4, items: 7, timeEstimate: '4 min' },
+  { id: 'S17', name: 'Transmission', weight: 6, items: 10, timeEstimate: '5 min' },
+  { id: 'S18', name: 'Seats', weight: 4, items: 11, timeEstimate: '5 min' },
+  { id: 'S19', name: 'Windows', weight: 3, items: 6, timeEstimate: '3 min' },
+  { id: 'S20', name: 'Electronic Control', weight: 4, items: 7, timeEstimate: '4 min' },
+  { id: 'S21', name: 'General Upholstery', weight: 4, items: 10, timeEstimate: '5 min' },
+  { id: 'S22', name: 'AC', weight: 4, items: 6, timeEstimate: '4 min' },
+  { id: 'S23', name: 'Electrical Electronics', weight: 4, items: 4, timeEstimate: '3 min' },
+  { id: 'S24', name: 'OBD', weight: 5, items: 15, timeEstimate: '6 min' },
+  { id: 'S25', name: 'Damages', weight: 5, items: 0, timeEstimate: '8 min' },
+  { id: 'S26', name: 'Comments', weight: 2, items: 6, timeEstimate: '4 min' },
+  { id: 'S27', name: 'Save Report', weight: 1, items: 0, timeEstimate: '2 min' },
 ];
 
 export const formatNaira = (amount: number): string => {

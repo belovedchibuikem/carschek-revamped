@@ -476,13 +476,9 @@ export default function DataMigrationPage() {
                               <td className="px-4 py-2.5">
                                 <span
                                   className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                                    row.outcome === 'ok'
-                                      ? 'bg-green-100 text-green-800'
-                                      : row.outcome === 'warning'
-                                        ? 'bg-amber-100 text-amber-900'
-                                        : row.outcome === 'error'
-                                          ? 'bg-red-100 text-red-800'
-                                          : 'bg-gray-100 text-gray-700'
+                                    row.outcome === 'ok' ?'bg-green-100 text-green-800'
+                                      : row.outcome === 'warning' ?'bg-amber-100 text-amber-900'
+                                        : row.outcome === 'error' ?'bg-red-100 text-red-800' :'bg-gray-100 text-gray-700'
                                   }`}
                                 >
                                   {row.outcome}

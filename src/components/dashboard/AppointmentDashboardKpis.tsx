@@ -51,7 +51,7 @@ export function AppointmentDashboardKpis() {
       color: '#D35400',
     },
     {
-      label: "Today's appointments",
+      label: "Today\'s appointments",
       value: stats.todayCount,
       sub: stats.nextTodaySlot ? `Next: ${stats.nextTodaySlot}` : 'No upcoming today',
       href: '/appointments?date=today',

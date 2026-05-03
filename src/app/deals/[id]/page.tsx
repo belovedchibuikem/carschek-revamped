@@ -110,11 +110,8 @@ export default function DealDetailPage() {
                   <div
                     key={m.id}
                     className={`rounded-lg px-3 py-2 text-sm ${
-                      m.role === 'system'
-                        ? 'bg-[#F9FAFB] text-[#6B7280] text-center'
-                        : m.role === 'buyer'
-                          ? 'bg-blue-50 text-[#1F2937] border border-blue-100'
-                          : 'bg-[#F4F6F8] text-[#1F2937] ml-8'
+                      m.role === 'system' ?'bg-[#F9FAFB] text-[#6B7280] text-center'
+                        : m.role === 'buyer' ?'bg-blue-50 text-[#1F2937] border border-blue-100' :'bg-[#F4F6F8] text-[#1F2937] ml-8'
                     }`}
                   >
                     {m.role !== 'system' && (

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Bell, Menu, ChevronDown, X, Sun, Moon, Command, Car, ClipboardList, Users, UserCircle, Check } from 'lucide-react';
-import { toast } from 'sonner';
+import { Search, Bell, Menu, ChevronDown, X, Sun, Moon, Command, Check } from 'lucide-react';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';

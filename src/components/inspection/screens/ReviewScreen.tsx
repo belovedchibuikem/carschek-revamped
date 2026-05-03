@@ -273,11 +273,8 @@ export function ReviewScreen({ layout, jobId }: Props) {
                   </p>
                   <span
                     className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                      d.severity === 'Critical'
-                        ? 'bg-red-100 text-red-700'
-                        : d.severity === 'Major'
-                          ? 'bg-orange-100 text-orange-700'
-                          : 'bg-amber-100 text-amber-800'
+                      d.severity === 'Critical' ?'bg-red-100 text-red-700'
+                        : d.severity === 'Major' ?'bg-orange-100 text-orange-700' :'bg-amber-100 text-amber-800'
                     }`}
                   >
                     {d.severity}

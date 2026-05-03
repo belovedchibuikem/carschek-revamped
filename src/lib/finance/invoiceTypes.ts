@@ -1,12 +1,7 @@
 export type ClientType = 'Individual' | 'Dealer' | 'Corporate';
 
 export type InvoiceForOption =
-  | 'Inspection Service'
-  | 'Vehicle Sale Commission'
-  | 'Re-inspection Fee'
-  | 'Loan Referral'
-  | 'Dealer Package'
-  | 'Custom';
+  | 'Inspection Service' |'Vehicle Sale Commission' |'Re-inspection Fee' |'Loan Referral' |'Dealer Package' |'Custom';
 
 export type DiscountType = '%' | '₦';
 

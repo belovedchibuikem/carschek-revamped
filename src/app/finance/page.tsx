@@ -434,13 +434,9 @@ export default function FinancePage() {
                       <td className="px-4 py-3">
                         <span
                           className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                            inv.status === 'Paid'
-                              ? 'bg-green-100 text-green-700'
-                              : inv.status === 'Overdue'
-                                ? 'bg-red-100 text-red-700'
-                                : inv.status === 'Draft'
-                                  ? 'bg-slate-100 text-slate-700'
-                                  : 'bg-blue-100 text-blue-700'
+                            inv.status === 'Paid' ?'bg-green-100 text-green-700'
+                              : inv.status === 'Overdue' ?'bg-red-100 text-red-700'
+                                : inv.status === 'Draft' ?'bg-slate-100 text-slate-700' :'bg-blue-100 text-blue-700'
                           }`}
                         >
                           {inv.status}

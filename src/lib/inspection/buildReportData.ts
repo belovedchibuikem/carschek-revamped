@@ -80,10 +80,8 @@ function enrichDefect(
   const aiAnalysis =
     dexieDamageUrls.length > 0
       ? null
-      : d.severity === 'Critical'
-        ? 'Structural / safety concern — 89% confidence (demo)'
-        : d.severity === 'Major'
-          ? 'Oil seal degradation — 91% confidence (demo)'
+      : d.severity === 'Critical' ?'Structural / safety concern — 89% confidence (demo)'
+        : d.severity === 'Major' ?'Oil seal degradation — 91% confidence (demo)'
           : null;
   return { ...d, damagePhotoUrls, aiAnalysis };
 }

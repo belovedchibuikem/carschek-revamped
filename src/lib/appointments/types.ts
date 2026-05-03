@@ -3,11 +3,7 @@ export type AppointmentStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelle
 export type ServiceType = 'Inspection' | 'Buy a Car' | 'Sell a Car' | 'General Service';
 
 export type CallStatus =
-  | 'Not Called'
-  | 'Called - No Answer'
-  | 'Called & Confirmed'
-  | 'Called & Rejected'
-  | 'Rescheduled';
+  | 'Not Called' |'Called - No Answer' |'Called & Confirmed' |'Called & Rejected' |'Rescheduled';
 
 export interface Appointment {
   id: string;

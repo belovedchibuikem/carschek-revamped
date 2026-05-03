@@ -78,7 +78,7 @@ function CarDetailPageContent() {
     { id: string; amount: number; type: 'Ear' | 'Final' | 'Revised'; date: string; by: string }[]
   >([{ id: '1', amount: car.purchasePrice, type: 'Final', date: car.createdAt, by: 'Promise Ndem' }]);
   const [addingPrice, setAddingPrice] = useState(false);
-  const [newPriceRow, setNewPriceRow] = useState({ amount: '', type: 'Ear' as 'Ear' | 'Final' | 'Revised', date: '' });
+  const [newPriceRow, setNewPriceRow] = useState({ amount: '', type: 'Ear\' as \'Ear\' | \'Final\' | \'Revised', date: '' });
   const [paymentStatus, setPaymentStatus] = useState<'Done' | 'Pending' | 'Overdue'>('Done');
   const [sellingPrice, setSellingPrice] = useState(car.salePrice ?? 0);
   const [salePaymentStatus, setSalePaymentStatus] = useState<'Done' | 'Pending' | 'Overdue'>('Done');
@@ -518,7 +518,7 @@ function CarDetailPageContent() {
                         if (!n || !newPriceRow.date) return;
                         setPurchasePrices(x => [
                           ...x,
-                          { id: `np-${Date.now()}`, amount: n, type: newPriceRow.type, date: newPriceRow.date, by: 'You' },
+                          { id: `np-${Date.now()}`, amount: n, type: newPriceRow.type as 'Ear' | 'Final' | 'Revised', date: newPriceRow.date, by: 'You' },
                         ]);
                         setAddingPrice(false);
                         markDirty(1);

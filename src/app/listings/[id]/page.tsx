@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { LISTINGS, formatNaira } from '@/lib/mockData';
+import { LISTINGS } from '@/lib/mockData';
 import { CarschekScore } from '@/components/shared/CarschekScore';
 import { ShoppingBag, Eye, Save } from 'lucide-react';
 import { toast } from 'sonner';

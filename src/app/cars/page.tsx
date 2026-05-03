@@ -37,19 +37,7 @@ const CHANNELS = ['Auction', 'Market Place', 'Offline', 'B2B', 'Other'];
 type CarRow = (typeof CARS)[number];
 
 type ColKey =
-  | 'ckId'
-  | 'vehicle'
-  | 'plate'
-  | 'status'
-  | 'purchase'
-  | 'sales'
-  | 'score'
-  | 'docs'
-  | 'vin'
-  | 'year'
-  | 'channel'
-  | 'created'
-  | 'warnings';
+  | 'ckId' |'vehicle' |'plate' |'status' |'purchase' |'sales' |'score' |'docs' |'vin' |'year' |'channel' |'created' |'warnings';
 
 const ALL_COLUMNS: { key: ColKey; label: string; defaultOn: boolean }[] = [
   { key: 'ckId', label: 'CK ID', defaultOn: true },

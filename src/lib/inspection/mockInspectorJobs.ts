@@ -1,11 +1,7 @@
 import type { VehicleAngleId } from '@/lib/inspection/vehiclePhotoAngles';
 
 export type InspectorJobStatusUi =
-  | 'upcoming'
-  | 'en-route'
-  | 'in-progress'
-  | 'awaiting-qa'
-  | 'completed';
+  | 'upcoming' |'en-route' |'in-progress' |'awaiting-qa' |'completed';
 
 export type InspectorJobCard = {
   id: string;

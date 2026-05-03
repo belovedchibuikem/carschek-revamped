@@ -112,8 +112,7 @@ async function processQueueItem(row: SyncQueueRow): Promise<void> {
       if (Number.isFinite(secPk)) await db.sections.update(secPk, { synced: true });
       break;
     }
-    case 'inspectionSubmit':
-    case 'inspection-submit-qa': {
+    case 'inspectionSubmit': case'inspection-submit-qa': {
       const inspectionId = String(payload.inspectionId ?? payload.jobId ?? row.entityId);
       if (!inspectionId) throw new Error('inspectionSubmit missing id');
       if (!USE_API_MOCK) {
@@ -125,8 +124,7 @@ async function processQueueItem(row: SyncQueueRow): Promise<void> {
       if (!Number.isNaN(inspPk)) await db.inspections.update(inspPk, { status: 'submitted' });
       break;
     }
-    case 'qa-report-approve':
-    case 'qaReportApprove': {
+    case 'qa-report-approve': case'qaReportApprove': {
       const reportId = row.entityId;
       if (!USE_API_MOCK) {
         await apiClient.post(`/reports/${encodeURIComponent(reportId)}/qa-approve`, payload);
