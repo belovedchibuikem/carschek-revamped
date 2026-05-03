@@ -3,8 +3,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CloudOff, ThumbsUp, ThumbsDown, Ban, X, ChevronDown } from 'lucide-react';
+import { ArrowLeft, CloudOff, ThumbsUp, ThumbsDown, Ban, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { SearchableSelect } from '@/components/shared/SearchableSelect';
 import { useInspectorHref } from '@/contexts/InspectorRouteContext';
 import {
   loadChecklistState,
@@ -137,31 +138,39 @@ function FormSection({
         const hasError = showErrors && field.required && !val;
 
         if (field.type === 'dropdown') {
+          const options = field.options.map(opt => ({ value: opt, label: opt }));
           return (
             <div key={field.id}>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label htmlFor={`checklist-dd-${field.id}`} className="mb-1 block text-xs font-semibold text-[#374151]">
                 {field.label}
                 {field.required && <span className="ml-0.5 text-red-500">*</span>}
               </label>
               <div className="relative">
-                <select
+                <SearchableSelect
+                  id={`checklist-dd-${field.id}`}
+                  aria-label={field.label}
                   value={val}
-                  onChange={e => handleChange(field.id, e.target.value)}
-                  className={`w-full appearance-none rounded-xl border px-3 py-2.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 ${hasError ? 'border-red-400 bg-red-50' : 'border-[#E5E7EB] bg-white text-[#1F2937]'}`}
-                >
-                  <option value="">Select {field.label}</option>
-                  {field.options.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-                <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                  onChange={next => handleChange(field.id, next)}
+                  options={options}
+                  placeholder={`Select ${field.label}`}
+                  searchPlaceholder={`Search ${field.label}…`}
+                  emptyText="No matches"
+                  invalid={hasError}
+                  buttonClassName={[
+                    'px-3 py-2.5 text-sm min-h-[42px]',
+                    field.clearable && val ? 'pr-10' : '',
+                    'focus:ring-2 focus:ring-[#ff8a65]/30',
+                  ].join(' ')}
+                  className="w-full"
+                />
                 {field.clearable && val && (
                   <button
                     type="button"
                     onClick={() => clearField(field.id)}
-                    className="absolute right-7 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280]"
+                    className="absolute right-10 top-1/2 z-[101] -translate-y-1/2 rounded p-0.5 text-[#9CA3AF] hover:bg-[#F4F6F8] hover:text-[#6B7280]"
+                    aria-label={`Clear ${field.label}`}
                   >
-                    <X size={12} />
+                    <X size={14} />
                   </button>
                 )}
               </div>
