@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { completion } from '@rocketnew/llm-sdk';
+import { completion, normalizeMessages } from '@/lib/ai/vendorCompletion';
 
 const API_KEYS: Record<string, string | undefined> = {
   OPEN_AI: process.env.OPENAI_API_KEY,
@@ -41,10 +41,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const msgs = normalizeMessages(messages);
+
     if (stream) {
       const response = await completion({
+        provider,
         model,
-        messages,
+        messages: msgs,
         stream: true,
         api_key: apiKey,
         ...parameters,
@@ -81,8 +84,9 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await completion({
+      provider,
       model,
-      messages,
+      messages: msgs,
       stream: false,
       api_key: apiKey,
       ...parameters,

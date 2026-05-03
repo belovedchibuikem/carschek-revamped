@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { Users, Briefcase, CheckCircle, AlertTriangle, MapPin, Star, Eye, RefreshCw, Download, Search, Zap, MessageSquare, Bell, X, FileText, Phone, Send } from 'lucide-react';
 import { useChat } from '@/lib/hooks/useChat';
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Inspector {
@@ -687,8 +687,6 @@ export default function InspectorAdminDashboard() {
 
   return (
     <AppLayout>
-      <Toaster position="top-right" toastOptions={{ duration: 3000, style: { fontSize: '13px', fontWeight: '600', borderRadius: '12px' } }} />
-
       {selectedJobId && <JobDetailPanel jobId={selectedJobId} onClose={() => setSelectedJobId(null)} />}
       {selectedInspectorId && <InspectorDetailPanel inspectorId={selectedInspectorId} onClose={() => setSelectedInspectorId(null)} />}
       {showAI && <AIAdminAssistant onClose={() => setShowAI(false)} />}
