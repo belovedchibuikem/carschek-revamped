@@ -291,25 +291,12 @@ export function VehiclePhotos({
         </div>
       ) : null}
 
-      {!pageChrome ? (
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
-          <p className="text-sm font-medium text-[#374151]">
-            Vehicle Photos — {requiredCaptured}/{REQUIRED_VEHICLE_PHOTOS} required · {capturedCount}/11 total
-          </p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#F4F6F8]">
-            <div
-              className="h-full rounded-full bg-[#ff8a65] transition-all"
-              style={{ width: `${(capturedCount / 11) * 100}%` }}
-            />
-          </div>
-          <p className="mt-1 text-xs text-[#9CA3AF]">Minimum {REQUIRED_VEHICLE_PHOTOS} required angles to proceed</p>
-        </div>
-      ) : (
+      {pageChrome ? (
         <div className="mb-4 flex gap-2 rounded-xl border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-2.5 text-xs leading-snug text-[#ff5722]">
           <Eye size={14} className="mt-0.5 shrink-0 text-[#ff8a65]" aria-hidden />
           <p>Capture all 11 standard vehicle photos for the inspection report.</p>
         </div>
-      )}
+      ) : null}
 
       {/* Capture Mode Toggle */}
       <div className="flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 shadow-sm">
