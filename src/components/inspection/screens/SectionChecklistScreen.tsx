@@ -14,7 +14,7 @@ import {
   type ChecklistPersistPayload,
 } from '@/lib/inspectionChecklistPersistence';
 import { INSPECTION_SECTIONS } from '@/lib/mockData';
-import { getSectionDef, countToggleItems, type SectionDef, type ToggleItem, type ToggleType,  } from '@/lib/inspection/inspectionSections';
+import { getSectionDef, countToggleItems, type SectionDef, type ToggleItem } from '@/lib/inspection/inspectionSections';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
 import { VehiclePhotos } from '@/components/inspection/VehiclePhotos';
 import { DamagePhotosHubScreen } from '@/components/inspection/screens/DamagePhotosHubScreen';
@@ -35,21 +35,45 @@ function ToggleBtn({
   value,
   current,
   onSelect,
+  groupIndex,
 }: {
   value: ToggleValue;
   current: ToggleValue;
   onSelect: (v: ToggleValue) => void;
+  /** When set (0–2), equal-width row segment — shared outer border, vertical dividers only */
+  groupIndex?: 0 | 1 | 2;
 }) {
   const isSelected = current === value;
+  const inGroup = groupIndex !== undefined;
 
-  const baseClass = 'flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] font-bold transition-all border';
+  const baseClass = inGroup
+    ? [
+        'flex min-h-[40px] min-w-0 flex-1 basis-0 items-center justify-center gap-1 py-2 text-[11px] font-bold transition-all',
+        'rounded-none border-0',
+        groupIndex > 0 ? 'border-l border-[#E5E7EB]' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : 'flex items-center justify-center gap-1 rounded-lg border px-2 py-2 text-[11px] font-bold transition-all';
+
+  const selectedYes = `${inGroup ? 'z-[1] !border-[#1A7A4A]' : ''} bg-[#1A7A4A] ${inGroup ? 'border-transparent' : 'border-[#1A7A4A]'} text-white`;
+  const idleYes =
+    `${inGroup ? '' : 'border-[#E5E7EB]'} bg-white text-[#6B7280] hover:bg-green-50${inGroup ? '' : ' border-[#E5E7EB]'}`;
+
+  const selectedNo = `${inGroup ? 'z-[1] !border-[#C0392B]' : ''} bg-[#C0392B] ${inGroup ? 'border-transparent' : 'border-[#C0392B]'} text-white`;
+  const idleNo =
+    `${inGroup ? '' : 'border-[#E5E7EB]'} bg-white text-[#6B7280] hover:bg-red-50${inGroup ? '' : ' border-[#E5E7EB]'}`;
+
+  const selectedNa = `${inGroup ? 'z-[1] !border-[#0D6E6E]' : ''} bg-[#0D6E6E] ${inGroup ? 'border-transparent' : 'border-[#0D6E6E]'} text-white`;
+  const idleNa =
+    `${inGroup ? '' : 'border-[#E5E7EB]'} bg-white text-[#6B7280] hover:bg-teal-50${inGroup ? '' : ' border-[#E5E7EB]'}`;
 
   if (value === 'yes') {
     return (
       <button
         type="button"
         onClick={() => onSelect(isSelected ? null : 'yes')}
-        className={`${baseClass} ${isSelected ? 'bg-[#1A7A4A] border-[#1A7A4A] text-white' : 'border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-green-50'}`}
+        className={`${baseClass} ${isSelected ? selectedYes : idleYes}`}
       >
         <ThumbsUp size={11} />
         <span>Yes/Good</span>
@@ -61,19 +85,18 @@ function ToggleBtn({
       <button
         type="button"
         onClick={() => onSelect(isSelected ? null : 'no')}
-        className={`${baseClass} ${isSelected ? 'bg-[#C0392B] border-[#C0392B] text-white' : 'border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-red-50'}`}
+        className={`${baseClass} ${isSelected ? selectedNo : idleNo}`}
       >
         <ThumbsDown size={11} />
         <span>No/Bad</span>
       </button>
     );
   }
-  // na
   return (
     <button
       type="button"
       onClick={() => onSelect(isSelected ? null : 'na')}
-      className={`${baseClass} ${isSelected ? 'bg-[#0D6E6E] border-[#0D6E6E] text-white' : 'border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-teal-50'}`}
+      className={`${baseClass} ${isSelected ? selectedNa : idleNa}`}
     >
       <Ban size={11} />
       <span>N/A</span>
@@ -97,12 +120,12 @@ function ToggleItemCard({
   return (
     <div className={`rounded-xl border p-3 ${showError && value === null ? 'border-red-300 bg-red-50/50' : 'border-[#E5E7EB] bg-white'}`}>
       <p className="mb-2 text-[12px] font-semibold text-[#1F2937] leading-tight">{item.label}</p>
-      <div className="flex gap-1.5">
-        <ToggleBtn value="yes" current={value} onSelect={onChange} />
-        <ToggleBtn value="no" current={value} onSelect={onChange} />
-        {item.toggleType === 'yes-no-na' && (
-          <ToggleBtn value="na" current={value} onSelect={onChange} />
-        )}
+      <div
+        className={`flex w-full overflow-hidden rounded-lg border ${showError && value === null ? 'border-red-300' : 'border-[#E5E7EB]'}`}
+      >
+        <ToggleBtn value="yes" current={value} onSelect={onChange} groupIndex={0} />
+        <ToggleBtn value="no" current={value} onSelect={onChange} groupIndex={1} />
+        <ToggleBtn value="na" current={value} onSelect={onChange} groupIndex={2} />
       </div>
     </div>
   );
@@ -230,6 +253,16 @@ function FormSection({
 
 // ─── Toggle Grid Section ────────────────────────────────────────────────────
 
+function flattenToggleItems(def: SectionDef): ToggleItem[] {
+  const rows = def.toggleRows ?? [];
+  const out: ToggleItem[] = [];
+  for (const row of rows) {
+    out.push(row.left);
+    if (row.right) out.push(row.right);
+  }
+  return out;
+}
+
 function ToggleGridSection({
   def,
   toggleValues,
@@ -241,27 +274,18 @@ function ToggleGridSection({
   setToggleValues: React.Dispatch<React.SetStateAction<Record<string, ToggleValue>>>;
   showErrors: boolean;
 }) {
-  const rows = def.toggleRows ?? [];
+  const items = useMemo(() => flattenToggleItems(def), [def]);
 
   return (
-    <div className="space-y-3">
-      {rows.map((row, idx) => (
-        <div key={idx} className={`grid gap-3 ${row.right ? 'grid-cols-2' : 'grid-cols-1'}`}>
-          <ToggleItemCard
-            item={row.left}
-            value={toggleValues[row.left.id] ?? null}
-            onChange={v => setToggleValues(prev => ({ ...prev, [row.left.id]: v }))}
-            showError={showErrors}
-          />
-          {row.right && (
-            <ToggleItemCard
-              item={row.right}
-              value={toggleValues[row.right.id] ?? null}
-              onChange={v => setToggleValues(prev => ({ ...prev, [row.right!.id]: v }))}
-              showError={showErrors}
-            />
-          )}
-        </div>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {items.map(item => (
+        <ToggleItemCard
+          key={item.id}
+          item={item}
+          value={toggleValues[item.id] ?? null}
+          onChange={v => setToggleValues(prev => ({ ...prev, [item.id]: v }))}
+          showError={showErrors}
+        />
       ))}
     </div>
   );
