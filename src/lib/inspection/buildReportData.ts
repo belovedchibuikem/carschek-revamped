@@ -1,7 +1,7 @@
 'use client';
 
 import { db } from '@/lib/db/schema';
-import { INSPECTION_SECTIONS, getGaugeConditionLabel, getGaugeStrokeColor } from '@/lib/mockData';
+import { INSPECTION_SECTIONS, ORDERS, getGaugeConditionLabel, getGaugeStrokeColor } from '@/lib/mockData';
 import { loadChecklistState } from '@/lib/inspectionChecklistPersistence';
 import {
   SECTION_ITEMS,
@@ -89,39 +89,70 @@ function enrichDefect(
 /** Offline-first report payload; merges Dexie checklist rows + optional live photo URLs from UI store. */
 export async function buildReportData(
   inspectionId: string,
-  opts?: { photoUrls?: Partial<Record<VehicleAngleId, string>> }
+  opts?: {
+    photoUrls?: Partial<Record<VehicleAngleId, string>>;
+    /** Recorded score from the reports register — used when no local checklist data exists. */
+    fallbackScore?: number;
+    /** Inspector of record (e.g. from the admin reports register). */
+    inspectorName?: string;
+  }
 ): Promise<InspectionReportData> {
   const job = findMockJob(inspectionId);
+  // Admin orders register — keeps superadmin-side reports tallying with the
+  // order/report rows when the order is not one of the inspector PWA mock jobs.
+  const adminOrder = job ? undefined : ORDERS.find(o => o.id === inspectionId);
   const durationSec = await loadSessionTimerSeconds(inspectionId);
   const signatureDataUrl = await loadSignatureBase64(inspectionId);
 
-  const vehicle = job
-    ? {
-        make: job.vehicleLabel.split(/\s+/)[1] ?? 'Toyota',
-        model: job.vehicleLabel.split(/\s+/).slice(2).join(' ') || 'Camry',
-        trim: inspectionId === 'ORD-1892' ? 'LE' : '',
-        year: parseInt(job.vehicleLabel.split(/\s+/)[0] ?? '', 10) || 2019,
-        plate: job.plate,
-        vin: job.vin,
-        mileage: inspectionId === 'ORD-1892' ? '137,373 km' : '—',
-        colour: 'Silver',
-        transmission: 'Automatic',
-        engineNumber: '—',
-        city: 'Lagos',
-      }
-    : {
-        make: 'Toyota',
-        model: 'Camry',
-        trim: 'LE',
-        year: 2019,
-        plate: 'LSD260JE',
-        vin: '4T1BF3EK9BU228086',
-        mileage: '137,373 km',
-        colour: 'Silver',
-        transmission: 'Automatic',
-        engineNumber: '—',
-        city: 'Lagos',
-      };
+  let vehicle: InspectionReportData['vehicle'];
+  if (job) {
+    vehicle = {
+      make: job.vehicleLabel.split(/\s+/)[1] ?? 'Toyota',
+      model: job.vehicleLabel.split(/\s+/).slice(2).join(' ') || 'Camry',
+      trim: inspectionId === 'ORD-1892' ? 'LE' : '',
+      year: parseInt(job.vehicleLabel.split(/\s+/)[0] ?? '', 10) || 2019,
+      plate: job.plate,
+      vin: job.vin,
+      mileage: inspectionId === 'ORD-1892' ? '137,373 km' : '—',
+      colour: 'Silver',
+      transmission: 'Automatic',
+      engineNumber: '—',
+      city: 'Lagos',
+    };
+  } else if (adminOrder) {
+    // Admin order vehicle labels are "Make Model… Year" (year last).
+    const tokens = adminOrder.vehicle.split(/\s+/);
+    const lastTok = tokens[tokens.length - 1] ?? '';
+    const year = /^\d{4}$/.test(lastTok) ? parseInt(lastTok, 10) : 0;
+    const nameTokens = year ? tokens.slice(0, -1) : tokens;
+    vehicle = {
+      make: nameTokens[0] ?? '—',
+      model: nameTokens.slice(1).join(' ') || '—',
+      trim: '',
+      year: year || new Date().getFullYear(),
+      plate: adminOrder.plate,
+      vin: '—',
+      mileage: '—',
+      colour: '—',
+      transmission: '—',
+      engineNumber: '—',
+      city: adminOrder.zone || 'Lagos',
+    };
+  } else {
+    vehicle = {
+      make: 'Toyota',
+      model: 'Camry',
+      trim: 'LE',
+      year: 2019,
+      plate: 'LSD260JE',
+      vin: '4T1BF3EK9BU228086',
+      mileage: '137,373 km',
+      colour: 'Silver',
+      transmission: 'Automatic',
+      engineNumber: '—',
+      city: 'Lagos',
+    };
+  }
 
   const defectsBase: (Omit<DefectSummary, 'damagePhotoUrls' | 'aiAnalysis'> & { itemKey: string })[] = [];
   const items: InspectionItemSummary[] = [];
@@ -270,7 +301,7 @@ export async function buildReportData(
     })
   );
 
-  let scoreNum = 73;
+  let scoreNum = opts?.fallbackScore ?? 73;
   if (db) {
     const row = await db.inspections.where('orderId').equals(inspectionId).first();
     if (row?.score != null) scoreNum = row.score;
@@ -309,6 +340,7 @@ export async function buildReportData(
 
   const reportNumber = reportNumberFromId(inspectionId);
   const qrVerifyUrl = `https://carschek.com/verify/${encodeURIComponent(reportNumber)}`;
+  const inspectorName = opts?.inspectorName ?? adminOrder?.inspectorName ?? REPORT_INSPECTOR_NAME;
 
   const criticalDefects = defects.filter(d => d.severity === 'Critical');
   const repairCosts = repairRowsFromDefects(defects);
@@ -325,17 +357,18 @@ export async function buildReportData(
       durationHuman: formatDurationHuman(durationSec || 522),
       score: scoreNum,
       version: 1,
-      zone: 'Lekki',
-      photoDocSubheading: `Photos captured by ${REPORT_INSPECTOR_NAME} on ${inspectionDateLong} at ${completedAtTime}`,
+      zone: adminOrder?.zone ?? 'Lekki',
+      photoDocSubheading: `Photos captured by ${inspectorName} on ${inspectionDateLong} at ${completedAtTime}`,
       qrVerifyUrl,
     },
     vehicle,
     inspector: {
-      name: REPORT_INSPECTOR_NAME,
+      name: inspectorName,
       certNumber: REPORT_CERT,
       signatureDataUrl,
       photoUrl: null,
-      initials: REPORT_INSPECTOR_NAME.split(' ')
+      initials: inspectorName
+        .split(' ')
         .map(w => w[0])
         .join('')
         .slice(0, 2)
