@@ -3,11 +3,7 @@
 import { db } from '@/lib/db/schema';
 import { INSPECTION_SECTIONS, ORDERS, getGaugeConditionLabel, getGaugeStrokeColor } from '@/lib/mockData';
 import { loadChecklistState } from '@/lib/inspectionChecklistPersistence';
-import {
-  SECTION_ITEMS,
-  itemHasFail,
-  type ItemResult,
-} from '@/lib/inspector/sectionChecklist';
+import { getSectionDef, type ToggleItem } from '@/lib/inspection/inspectionSections';
 import { findMockJob } from '@/lib/inspection/mockInspectorJobs';
 import { loadSignatureBase64, loadSessionTimerSeconds } from '@/lib/inspection/sessionDexie';
 import { VEHICLE_PHOTO_SLOTS, type VehicleAngleId } from '@/lib/inspection/vehiclePhotoAngles';
@@ -159,131 +155,99 @@ export async function buildReportData(
   const sections: InspectionSectionSummary[] = [];
   const sectionBreakdowns: ReportSectionBreakdown[] = [];
 
+  /** Stored toggle values are 'yes'/'no'/'na' (legacy data may hold 'pass'/'fail'). */
+  const mapToggle = (v: string | null | undefined): 'pass' | 'fail' | 'na' | null => {
+    if (v === 'yes' || v === 'pass') return 'pass';
+    if (v === 'no' || v === 'fail') return 'fail';
+    if (v === 'na') return 'na';
+    return null;
+  };
+
   for (const sec of INSPECTION_SECTIONS) {
+    const def = getSectionDef(sec.id);
     const state = await loadChecklistState(inspectionId, sec.id);
-    let status = 'not-started';
-    if (state?.results && Object.keys(state.results).length > 0) {
-      const anyFail = SECTION_ITEMS.some(item => itemHasFail(item, state.results as Record<string, ItemResult>));
-      const allDone = SECTION_ITEMS.every(
-        item =>
-          item.type === 'paired'
-            ? state.results[`${item.id}-L`] != null && state.results[`${item.id}-R`] != null
-            : state.results[item.id] != null
-      );
-      if (anyFail) status = 'complete-fail';
-      else if (allDone) status = 'complete-pass';
-      else status = 'in-progress';
-    }
-    sections.push({ id: sec.id, name: sec.name, itemCount: sec.items, status });
+    const results = (state?.results ?? {}) as Record<string, string | null>;
+    const storedDefects = (state?.defects ?? {}) as Record<string, { severity: string; note: string }>;
 
     const lines: SectionLineResult[] = [];
     let passN = 0;
-    let totalN = 0;
+    let totalItems = sec.items;
 
-    if (!state) {
-      sectionBreakdowns.push({
-        sectionId: sec.id,
-        name: sec.name,
-        passed: 0,
-        total: SECTION_ITEMS.reduce((n, i) => n + (i.type === 'paired' ? 2 : 1), 0),
-        pct: 0,
-        anyFailure: false,
-        lines: [],
-      });
-      continue;
-    }
-
-    const results = state.results as Record<string, ItemResult>;
-
-    for (const item of SECTION_ITEMS) {
-      const pushLine = (label: string, key: string) => {
-        const r = results[key];
-        if (r === 'pass') passN++;
-        if (r === 'fail' || r === 'pass' || r === 'na') totalN++;
-        const sev = state.defects[item.id]?.severity;
-        const note = state.defects[item.id]?.note;
-        if (r === 'pass' || r === 'fail' || r === 'na') {
-          lines.push({
-            label,
-            result: r,
-            severity: r === 'fail' ? sev : undefined,
-            note: r === 'fail' ? note : undefined,
-          });
-        }
-      };
-
-      if (item.type === 'paired') {
-        pushLine(`${item.name} (Left)`, `${item.id}-L`);
-        pushLine(`${item.name} (Right)`, `${item.id}-R`);
-        items.push({
-          sectionId: sec.id,
-          itemKey: `${item.id}-L`,
-          label: `${item.name} (Left)`,
-          result: results[`${item.id}-L`] ?? null,
-        });
-        items.push({
-          sectionId: sec.id,
-          itemKey: `${item.id}-R`,
-          label: `${item.name} (Right)`,
-          result: results[`${item.id}-R`] ?? null,
-        });
-      } else {
-        pushLine(item.name, item.id);
-        items.push({
-          sectionId: sec.id,
-          itemKey: item.id,
-          label: item.name,
-          result: results[item.id] ?? null,
-        });
+    if (def?.layout === 'toggle-grid') {
+      // Real checklist items the inspector ticked — Yes/Good → OK, No/Bad → NOT OK, N/A
+      const toggleItems: ToggleItem[] = [];
+      for (const row of def.toggleRows ?? []) {
+        toggleItems.push(row.left);
+        if (row.right) toggleItems.push(row.right);
       }
+      totalItems = toggleItems.length;
 
-      if (itemHasFail(item, results)) {
-        const d = state.defects[item.id];
-        const sev = (d?.severity ?? 'Minor') as DefectSummary['severity'];
-        const note = d?.note ?? '';
-        if (item.type === 'paired') {
-          if (results[`${item.id}-L`] === 'fail') {
-            defectsBase.push({
-              sectionId: sec.id,
-              sectionName: sec.name,
-              itemLabel: `${item.name} (Left)`,
-              severity: sev,
-              note,
-              itemKey: item.id,
-            });
-          }
-          if (results[`${item.id}-R`] === 'fail') {
-            defectsBase.push({
-              sectionId: sec.id,
-              sectionName: sec.name,
-              itemLabel: `${item.name} (Right)`,
-              severity: sev,
-              note,
-              itemKey: item.id,
-            });
-          }
-        } else {
+      for (const item of toggleItems) {
+        const r = mapToggle(results[item.id]);
+        items.push({ sectionId: sec.id, itemKey: item.id, label: item.label, result: r });
+        if (r == null) continue;
+        if (r === 'pass') passN++;
+        const d = storedDefects[item.id];
+        lines.push({
+          label: item.label,
+          result: r,
+          severity: r === 'fail' ? (d?.severity ?? 'Minor') : undefined,
+          note: r === 'fail' ? d?.note : undefined,
+        });
+        if (r === 'fail') {
           defectsBase.push({
             sectionId: sec.id,
             sectionName: sec.name,
-            itemLabel: item.name,
-            severity: sev,
-            note,
+            itemLabel: item.label,
+            severity: (d?.severity ?? 'Minor') as DefectSummary['severity'],
+            note: d?.note ?? '',
             itemKey: item.id,
           });
         }
       }
+    } else if (def?.layout === 'form') {
+      // Form sections (Customer / Car Details): show recorded values
+      const fields = def.fields ?? [];
+      totalItems = fields.length;
+      for (const field of fields) {
+        const value = storedDefects[`form_${field.id}`]?.note ?? '';
+        items.push({ sectionId: sec.id, itemKey: field.id, label: field.label, result: value || null });
+        if (!value) continue;
+        passN++;
+        lines.push({ label: field.label, result: 'pass', value });
+      }
+    } else if (def?.layout === 'comments') {
+      const fields = def.commentFields ?? [];
+      totalItems = fields.length;
+      for (const field of fields) {
+        const value = storedDefects[`comment_${field.id}`]?.note ?? '';
+        items.push({ sectionId: sec.id, itemKey: field.id, label: field.label, result: value || null });
+        if (!value) continue;
+        passN++;
+        lines.push({ label: field.label, result: 'pass', value });
+      }
     }
+    // photos / damages / summary sections are rendered by dedicated report blocks
 
-    const denom = lines.length || 1;
-    const pct = Math.round((passN / denom) * 100);
+    const answered = lines.length;
+    const anyFailure = lines.some(l => l.result === 'fail');
+    let status = 'not-started';
+    if (answered > 0) {
+      if (anyFailure) status = 'complete-fail';
+      else if (answered >= totalItems) status = 'complete-pass';
+      else status = 'in-progress';
+    }
+    sections.push({ id: sec.id, name: sec.name, itemCount: totalItems, status });
+
+    const denom = answered || 1;
+    const pct = answered === 0 ? 0 : Math.round((passN / denom) * 100);
     sectionBreakdowns.push({
       sectionId: sec.id,
       name: sec.name,
       passed: passN,
-      total: lines.length,
+      total: answered > 0 ? answered : totalItems,
       pct,
-      anyFailure: lines.some(l => l.result === 'fail'),
+      anyFailure,
       lines,
     });
   }

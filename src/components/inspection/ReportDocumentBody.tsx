@@ -42,8 +42,8 @@ function resultIcon(result: 'pass' | 'fail' | 'na', classic: boolean) {
 }
 
 function resultLabel(result: 'pass' | 'fail' | 'na'): string {
-  if (result === 'pass') return 'PASS';
-  if (result === 'fail') return 'FAIL';
+  if (result === 'pass') return 'OK';
+  if (result === 'fail') return 'NOT OK';
   return 'N/A';
 }
 
@@ -164,6 +164,8 @@ function ModernSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; defe
   const passLines = sec.lines.filter(l => l.result === 'pass');
   const failLines = sec.lines.filter(l => l.result === 'fail');
   const naLines = sec.lines.filter(l => l.result === 'na');
+  /** Form/comment sections record values rather than OK/NOT OK ticks */
+  const isValueSection = sec.lines.length > 0 && sec.lines.every(l => l.value !== undefined);
 
   const statusColor = sec.pct >= 80 ? '#1A7A4A' : sec.pct >= 60 ? '#D35400' : '#C0392B';
   const statusBg = sec.pct >= 80 ? 'bg-green-50 border-green-200' : sec.pct >= 60 ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200';
@@ -182,7 +184,9 @@ function ModernSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; defe
           <div className={`rounded-lg border px-2 py-0.5 text-[10px] font-bold ${statusBg}`} style={{ color: statusColor }}>
             {sec.pct}%
           </div>
-          <span className="text-[10px] text-[#6B7280]">{sec.passed}/{sec.total} passed</span>
+          <span className="text-[10px] text-[#6B7280]">
+            {sec.passed}/{sec.total} {isValueSection ? 'recorded' : 'passed'}
+          </span>
         </div>
       </div>
 
@@ -192,29 +196,40 @@ function ModernSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; defe
       </div>
 
       {/* Summary stats */}
-      <div className="flex gap-4 border-b border-[#F4F6F8] px-4 py-2">
-        <div className="flex items-center gap-1 text-[11px]">
-          <CheckCircle size={11} className="text-[#1A7A4A]" />
-          <span className="font-semibold text-[#1A7A4A]">{passLines.length} Pass</span>
+      {!isValueSection && (
+        <div className="flex gap-4 border-b border-[#F4F6F8] px-4 py-2">
+          <div className="flex items-center gap-1 text-[11px]">
+            <CheckCircle size={11} className="text-[#1A7A4A]" />
+            <span className="font-semibold text-[#1A7A4A]">{passLines.length} OK</span>
+          </div>
+          {failLines.length > 0 && (
+            <div className="flex items-center gap-1 text-[11px]">
+              <XCircle size={11} className="text-[#C0392B]" />
+              <span className="font-semibold text-[#C0392B]">{failLines.length} NOT OK</span>
+            </div>
+          )}
+          {naLines.length > 0 && (
+            <div className="flex items-center gap-1 text-[11px]">
+              <MinusCircle size={11} className="text-[#9CA3AF]" />
+              <span className="font-semibold text-[#9CA3AF]">{naLines.length} N/A</span>
+            </div>
+          )}
         </div>
-        {failLines.length > 0 && (
-          <div className="flex items-center gap-1 text-[11px]">
-            <XCircle size={11} className="text-[#C0392B]" />
-            <span className="font-semibold text-[#C0392B]">{failLines.length} Fail</span>
-          </div>
-        )}
-        {naLines.length > 0 && (
-          <div className="flex items-center gap-1 text-[11px]">
-            <MinusCircle size={11} className="text-[#9CA3AF]" />
-            <span className="font-semibold text-[#9CA3AF]">{naLines.length} N/A</span>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Line items */}
       {sec.lines.length > 0 && (
         <div className="divide-y divide-[#F4F6F8] px-4">
           {sec.lines.map((line, idx) => {
+            // Form/comment lines carry a recorded value instead of an OK/NOT OK tick
+            if (line.value !== undefined) {
+              return (
+                <div key={`${line.label}-${idx}`} className="flex items-baseline justify-between gap-3 py-2">
+                  <span className="text-xs text-[#6B7280]">{line.label}</span>
+                  <span className="min-w-0 text-right text-xs font-semibold text-[#1F2937]">{line.value}</span>
+                </div>
+              );
+            }
             const isFail = line.result === 'fail';
             const defect = isFail ? findDefectForLine(defects, sec.sectionId, line) : undefined;
             return (
@@ -286,6 +301,15 @@ function ClassicSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; def
         <table className="w-full border-collapse text-[9px]">
           <tbody>
             {sec.lines.map((line, idx) => {
+              if (line.value !== undefined) {
+                return (
+                  <tr key={`${line.label}-${idx}`} className={`border-b border-[#F4F6F8] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#FAFAFA]'}`}>
+                    <td className="w-5 px-2 py-1.5 text-center text-[#9CA3AF]">•</td>
+                    <td className="px-2 py-1.5 font-medium text-[#1F2937]">{line.label}</td>
+                    <td className="px-2 py-1.5 font-bold text-[#1F2937]" colSpan={2}>{line.value}</td>
+                  </tr>
+                );
+              }
               const isFail = line.result === 'fail';
               const defect = isFail ? findDefectForLine(defects, sec.sectionId, line) : undefined;
               return (

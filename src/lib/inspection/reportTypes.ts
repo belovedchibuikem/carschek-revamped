@@ -70,6 +70,8 @@ export type SectionLineResult = {
   result: 'pass' | 'fail' | 'na';
   severity?: string;
   note?: string;
+  /** For form/comment sections: the recorded value (rendered as label → value, no OK badge). */
+  value?: string;
 };
 
 export type ReportSectionBreakdown = {
