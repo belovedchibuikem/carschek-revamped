@@ -22,6 +22,9 @@ import { jsPDF } from 'jspdf';
 
 const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
+/** A4 width in CSS px at 96dpi — the layout width every PDF is typeset at. */
+const A4_LAYOUT_PX = 794;
+const PRINT_HOST_ID = '__pdf-print-host';
 
 /** Fraction of a page we are willing to "give up" to find a clean break. */
 const LOOKBACK_RATIO = 0.3;
@@ -33,7 +36,7 @@ export type CapturePdfOptions = {
   marginMm?: number;
   /** html2canvas render scale. Default 2. */
   scale?: number;
-  /** Force a layout width for the off-screen clone (html2canvas windowWidth). */
+  /** Layout width (CSS px) the print clone is typeset at. Default 794 (A4 @96dpi). */
   windowWidth?: number;
   /**
    * Progress callback. Phases:
@@ -225,65 +228,130 @@ function sliceToDataUrl(source: HTMLCanvasElement, sy: number, sh: number): stri
   return c.toDataURL('image/jpeg', 0.92);
 }
 
-/**
- * Rasterizes a DOM node to a multi-page A4 PDF with smart, content-aware
- * page breaks (no text lines or images cut in half).
- * External images should be CORS-enabled for reliable capture.
- */
 /** Yields to the event loop so progress toasts can paint between pages. */
 function nextFrame(): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, 0));
 }
 
+/**
+ * Mounts an invisible deep clone of `element` typeset at a fixed print width.
+ *
+ * The PDF must always be laid out for A4 paper — never a capture of the live
+ * (possibly mobile) layout. The clone is `visibility: hidden` so it still
+ * participates in layout (no-cut bands can be measured from it) without ever
+ * flashing on screen; html2canvas's `onclone` hook flips it visible inside the
+ * capture document only.
+ */
+function mountPrintClone(element: HTMLElement, widthPx: number): { clone: HTMLElement; cleanup: () => void } {
+  const host = document.createElement('div');
+  host.id = PRINT_HOST_ID;
+  host.style.cssText = [
+    'position:absolute',
+    'top:0',
+    'left:0',
+    `width:${widthPx}px`,
+    'background:#ffffff',
+    'visibility:hidden',
+    'pointer-events:none',
+    'z-index:-1',
+  ].join(';');
+
+  const clone = element.cloneNode(true) as HTMLElement;
+  clone.style.width = `${widthPx}px`;
+  clone.style.maxWidth = 'none';
+  clone.style.margin = '0';
+  clone.style.border = 'none';
+  clone.style.borderRadius = '0';
+  clone.style.boxShadow = 'none';
+
+  // cloneNode does not copy <canvas> bitmaps — redraw them onto the clone.
+  const srcCanvases = element.querySelectorAll('canvas');
+  const dstCanvases = clone.querySelectorAll('canvas');
+  srcCanvases.forEach((src, i) => {
+    const dst = dstCanvases[i];
+    if (!dst) return;
+    dst.width = src.width;
+    dst.height = src.height;
+    dst.getContext('2d')?.drawImage(src, 0, 0);
+  });
+
+  host.appendChild(clone);
+  document.body.appendChild(host);
+  return { clone, cleanup: () => host.remove() };
+}
+
+/**
+ * Rasterizes a DOM node to a multi-page A4 PDF with smart, content-aware
+ * page breaks (no text lines or images cut in half).
+ *
+ * The node is re-typeset off-screen at A4 width (794 CSS px @96dpi) before
+ * capture, so the PDF always uses the paper layout — regardless of whether
+ * the user is on a phone (inspector PWA) or desktop (superadmin).
+ * External images should be CORS-enabled for reliable capture.
+ */
 export async function captureElementToPdf(
   element: HTMLElement,
   filename: string,
   options: CapturePdfOptions = {}
 ): Promise<void> {
-  const { marginMm = 6, scale = 2, windowWidth, onProgress } = options;
+  const { marginMm = 6, scale = 2, windowWidth = A4_LAYOUT_PX, onProgress } = options;
 
-  await waitForImages(element);
+  const { clone, cleanup } = mountPrintClone(element, windowWidth);
+  try {
+    await document.fonts?.ready;
+    await waitForImages(clone);
 
-  onProgress?.('capture', 0, 0);
-  await nextFrame();
-
-  const canvas = await html2canvas(element, {
-    scale,
-    useCORS: true,
-    allowTaint: true,
-    logging: false,
-    backgroundColor: '#ffffff',
-    scrollY: -window.scrollY,
-    ...(windowWidth ? { windowWidth, width: windowWidth } : {}),
-  });
-
-  const contentWidthMm = A4_WIDTH_MM - marginMm * 2;
-  const contentHeightMm = A4_HEIGHT_MM - marginMm * 2;
-  const pageHeightPx = (contentHeightMm / contentWidthMm) * canvas.width;
-
-  // DOM band positions are only trustworthy when the live element width
-  // matches the captured width (i.e. windowWidth didn't force a relayout).
-  const liveWidth = element.getBoundingClientRect().width;
-  const capturedCssWidth = canvas.width / scale;
-  const layoutMatches = Math.abs(capturedCssWidth - liveWidth) < 4;
-  const domScale = canvas.width / liveWidth;
-  const bands = layoutMatches ? collectNoCutBands(element, domScale, pageHeightPx) : [];
-
-  const cuts = computeCutPoints(canvas, bands, pageHeightPx);
-
-  const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-  let prev = 0;
-  for (let i = 0; i < cuts.length; i++) {
-    onProgress?.('page', i + 1, cuts.length);
+    onProgress?.('capture', 0, 0);
     await nextFrame();
-    const cut = cuts[i];
-    const sliceH = Math.max(1, Math.floor(cut - prev));
-    const imgData = sliceToDataUrl(canvas, Math.floor(prev), sliceH);
-    const sliceHeightMm = (sliceH / canvas.width) * contentWidthMm;
-    if (i > 0) pdf.addPage();
-    pdf.addImage(imgData, 'JPEG', marginMm, marginMm, contentWidthMm, Math.min(sliceHeightMm, contentHeightMm), undefined, 'FAST');
-    prev = cut;
-  }
 
-  pdf.save(filename);
+    const contentWidthMm = A4_WIDTH_MM - marginMm * 2;
+    const contentHeightMm = A4_HEIGHT_MM - marginMm * 2;
+    const expectedPageHeightPx = (contentHeightMm / contentWidthMm) * windowWidth * scale;
+
+    // No-cut bands must be measured in the capture document, not the live
+    // one: media queries there evaluate at `windowWidth` (desktop grids),
+    // while on a phone the live clone is still laid out mobile-stacked.
+    let bands: Band[] = [];
+
+    const canvas = await html2canvas(clone, {
+      scale,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      // Evaluate media queries at the print width so `sm:`/`md:` desktop
+      // grids apply instead of the stacked mobile layout.
+      windowWidth,
+      width: windowWidth,
+      onclone: doc => {
+        const h = doc.getElementById(PRINT_HOST_ID);
+        if (!h) return;
+        h.style.visibility = 'visible';
+        const target = h.firstElementChild as HTMLElement | null;
+        if (target) bands = collectNoCutBands(target, scale, expectedPageHeightPx);
+      },
+    });
+
+    const pageHeightPx = (contentHeightMm / contentWidthMm) * canvas.width;
+
+    const cuts = computeCutPoints(canvas, bands, pageHeightPx);
+
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+    let prev = 0;
+    for (let i = 0; i < cuts.length; i++) {
+      onProgress?.('page', i + 1, cuts.length);
+      await nextFrame();
+      const cut = cuts[i];
+      const sliceH = Math.max(1, Math.floor(cut - prev));
+      const imgData = sliceToDataUrl(canvas, Math.floor(prev), sliceH);
+      const sliceHeightMm = (sliceH / canvas.width) * contentWidthMm;
+      if (i > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', marginMm, marginMm, contentWidthMm, Math.min(sliceHeightMm, contentHeightMm), undefined, 'FAST');
+      prev = cut;
+    }
+
+    pdf.save(filename);
+  } finally {
+    cleanup();
+  }
 }
