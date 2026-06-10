@@ -414,6 +414,8 @@ export const SECTION_DEFS: SectionDef[] = [
     name: 'OBD',
     layout: 'toggle-grid',
     toggleRows: [
+      { left: yna('s24_crank_shaft_sensor', 'Crank Shaft Sensor'), right: yna('s24_camshaft_sensor', 'Camshaft Sensor') },
+      { left: yna('s24_oxygen_sensor', 'Oxygen Sensor'), right: yna('s24_map_sensor', 'Map Sensor') },
       { left: yna('s24_throttle_position_sensor', 'Throttle Position Sensor'), right: yna('s24_coolant_sensor', 'Coolant Sensor') },
       { left: yna('s24_air_flow_sensor', 'Air Flow Sensor'), right: yna('s24_window_safety_lock', 'Window Safety Lock') },
       { left: yna('s24_evap', 'EVAP'), right: yna('s24_abs', 'ABS') },

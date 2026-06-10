@@ -10,6 +10,7 @@ import { useOnlineStatus } from '@/components/providers/NetworkProvider';
 import { clearCarschekSessionCookies } from '@/lib/auth/session';
 import { getSyncQueuePendingCount } from '@/lib/db/sync';
 import { NetworkStatusChip } from '@/components/network/NetworkStatusChip';
+import { RecentlyViewedMenu } from '@/components/shared/RecentlyViewedMenu';
 import { useCommandPaletteStore } from '@/stores/commandPaletteStore';
 
 interface TopbarProps {
@@ -211,6 +212,8 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
               </button>
             )}
           </div>
+
+          <RecentlyViewedMenu />
 
           <button
             type="button"

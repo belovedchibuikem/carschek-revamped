@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Home, Bell, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useInspectorBasePath } from '@/contexts/InspectorRouteContext';
+import { SyncStatusPill } from '@/components/inspection/SyncStatusPill';
 
 interface InspectorLayoutProps {
   children: React.ReactNode;
@@ -39,10 +40,7 @@ export default function InspectorLayout({ children }: InspectorLayoutProps) {
               </Link>
             );
           })}
-          <div className="flex flex-col items-center gap-1 px-4 py-2">
-            <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />
-            <span className="text-[10px] font-semibold text-[#9CA3AF]">Online</span>
-          </div>
+          <SyncStatusPill />
         </div>
       </div>
     </div>

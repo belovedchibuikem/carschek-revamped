@@ -11,8 +11,9 @@ import {
   UserCircle,
   Plus,
   Calendar,
+  FileText,
 } from 'lucide-react';
-import { CARS, CUSTOMERS, ORDERS, INSPECTORS } from '@/lib/mockData';
+import { CARS, CUSTOMERS, ORDERS, INSPECTORS, REPORTS } from '@/lib/mockData';
 import { useCommandPaletteStore } from '@/stores/commandPaletteStore';
 
 const RECENT_KEY = 'carschek-cmdk-recent-v2';
@@ -21,7 +22,7 @@ const DEBOUNCE_MS = 150;
 type RecentEntry = { label: string; href: string };
 
 type Hit = {
-  cat: 'CARS' | 'CUSTOMERS' | 'ORDERS' | 'INSPECTORS';
+  cat: 'CARS' | 'CUSTOMERS' | 'ORDERS' | 'INSPECTORS' | 'REPORTS';
   label: string;
   sub: string;
   href: string;
@@ -68,7 +69,8 @@ function collectHits(q: string): Hit[] {
     o =>
       o.id.toLowerCase().includes(d) ||
       o.vehicle.toLowerCase().includes(d) ||
-      o.customerName.toLowerCase().includes(d)
+      o.customerName.toLowerCase().includes(d) ||
+      o.plate?.toLowerCase().includes(d)
   )
     .slice(0, 3)
     .map(
@@ -97,7 +99,25 @@ function collectHits(q: string): Hit[] {
         }) satisfies Hit
     );
 
-  return [...cars, ...customers, ...orders, ...inspectors];
+  const reports = REPORTS.filter(
+    r =>
+      r.id.toLowerCase().includes(d) ||
+      r.carName.toLowerCase().includes(d) ||
+      r.inspectorName.toLowerCase().includes(d)
+  )
+    .slice(0, 3)
+    .map(
+      r =>
+        ({
+          cat: 'REPORTS',
+          label: `${r.id} — ${r.carName}`,
+          sub: `${r.status} · Score ${r.score}`,
+          href: `/reports/${r.id}`,
+          icon: FileText,
+        }) satisfies Hit
+    );
+
+  return [...cars, ...customers, ...orders, ...inspectors, ...reports];
 }
 
 const QUICK: { label: string; href: string; icon: typeof Plus }[] = [

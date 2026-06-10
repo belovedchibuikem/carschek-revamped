@@ -207,7 +207,7 @@ export const INSPECTION_SECTIONS = [
   { id: 'S21', name: 'General Upholstery', weight: 4, items: 10, timeEstimate: '5 min' },
   { id: 'S22', name: 'AC', weight: 4, items: 6, timeEstimate: '4 min' },
   { id: 'S23', name: 'Electrical Electronics', weight: 4, items: 4, timeEstimate: '3 min' },
-  { id: 'S24', name: 'OBD', weight: 5, items: 15, timeEstimate: '6 min' },
+  { id: 'S24', name: 'OBD', weight: 5, items: 17, timeEstimate: '6 min' },
   { id: 'S25', name: 'Damages', weight: 5, items: 0, timeEstimate: '8 min' },
   { id: 'S26', name: 'Comments', weight: 2, items: 6, timeEstimate: '4 min' },
   { id: 'S27', name: 'Save Report', weight: 1, items: 0, timeEstimate: '2 min' },

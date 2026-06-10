@@ -1,11 +1,13 @@
 'use client';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, CheckCircle } from 'lucide-react';
 import { REPORTS, STATUS_COLORS } from '@/lib/mockData';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useTableHotkeys } from '@/hooks/useTableHotkeys';
+import { FilterPresetBar } from '@/components/shared/FilterPresetBar';
 
 const TAB_CONFIG = [
   { param: 'qa', label: 'QA Queue' },
@@ -26,7 +28,7 @@ export default function ReportsClient() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
 
   const tabParam = useMemo(() => {
     const t = (searchParams.get('tab') || 'qa').toLowerCase();
@@ -48,6 +50,35 @@ export default function ReportsClient() {
 
   const debouncedSearch = useDebouncedValue(search, 300);
 
+  // Keep ?q= in the URL so filtered views are shareable
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const current = p.get('q') ?? '';
+    if (current === debouncedSearch) return;
+    if (debouncedSearch) p.set('q', debouncedSearch);
+    else p.delete('q');
+    const qs = p.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [debouncedSearch, pathname, router]);
+
+  const presetParams = useMemo(
+    () => ({ tab: activeParam === 'qa' ? '' : activeParam, q: debouncedSearch }),
+    [activeParam, debouncedSearch]
+  );
+
+  const applyPreset = useCallback(
+    (params: Record<string, string>) => {
+      setSearch(params.q ?? '');
+      const tab = params.tab && TAB_CONFIG.some(t => t.param === params.tab) ? params.tab : 'qa';
+      setActiveParam(tab as (typeof TAB_CONFIG)[number]['param']);
+      const p = new URLSearchParams();
+      p.set('tab', tab);
+      if (params.q) p.set('q', params.q);
+      router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+    },
+    [pathname, router]
+  );
+
   const filtered = REPORTS.filter(r => {
     const q = debouncedSearch.toLowerCase();
     const matchSearch =
@@ -56,6 +87,20 @@ export default function ReportsClient() {
       r.carName.toLowerCase().includes(q) ||
       r.inspectorName.toLowerCase().includes(q);
     return matchSearch && matchesTab(activeParam, r.status);
+  });
+
+  // ── Keyboard navigation (j/k move, Enter open, e review) ────────────────
+  const { activeIndex } = useTableHotkeys({
+    rowCount: filtered.length,
+    onOpen: i => {
+      const report = filtered[i];
+      if (report) router.push(`/reports/${report.id}`);
+    },
+    onEdit: i => {
+      const report = filtered[i];
+      if (!report) return;
+      router.push(report.status === 'QA Review' ? `/reports/${report.id}/review` : `/reports/${report.id}`);
+    },
   });
 
   const getQAPriority = (submittedAt: string) => {
@@ -92,13 +137,16 @@ export default function ReportsClient() {
           ))}
         </div>
 
-        <div className="relative max-w-sm">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
-          {isFiltering && (
-            <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
-          )}
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative max-w-sm flex-1 min-w-[220px]">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports…"
+              className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
+            {isFiltering && (
+              <p className="text-[11px] text-[#6B7280] mt-1.5">Filtering…</p>
+            )}
+          </div>
+          <FilterPresetBar pageKey="reports" currentParams={presetParams} onApply={applyPreset} />
         </div>
 
         <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
@@ -111,10 +159,18 @@ export default function ReportsClient() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(report => {
+              {filtered.map((report, idx) => {
                 const priority = getQAPriority(report.submittedAt);
                 return (
-                  <tr key={report.id} className="border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors">
+                  <tr
+                    key={report.id}
+                    ref={idx === activeIndex ? el => el?.scrollIntoView({ block: 'nearest' }) : undefined}
+                    onMouseEnter={() => router.prefetch(`/reports/${report.id}`)}
+                    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 61px' }}
+                    className={`border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors ${
+                      idx === activeIndex ? 'bg-[#FFF3EE] ring-1 ring-inset ring-[#ff8a65]/40' : ''
+                    }`}
+                  >
                     <td className="px-4 py-3">
                       <Link href={`/reports/${report.id}`} className="font-mono text-xs font-semibold text-[#ff8a65] hover:underline">{report.id}</Link>
                     </td>
@@ -172,6 +228,9 @@ export default function ReportsClient() {
               )}
             </tbody>
           </table>
+          <p className="hidden md:block px-4 py-2 text-[11px] text-[#9CA3AF] border-t border-[#F4F6F8]">
+            <kbd className="font-mono">j</kbd>/<kbd className="font-mono">k</kbd> navigate · <kbd className="font-mono">Enter</kbd> open · <kbd className="font-mono">e</kbd> review
+          </p>
         </div>
       </div>
     </AppLayout>

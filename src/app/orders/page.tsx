@@ -1,12 +1,15 @@
 'use client';
-import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Search, Eye, ChevronLeft, ChevronRight, Download } from 'lucide-react';
-import { ORDERS as ORDERS_SEED, STATUS_COLORS } from '@/lib/mockData';
+import { Plus, Search, Eye, ChevronLeft, ChevronRight, Download, CheckSquare, Square } from 'lucide-react';
+import { ORDERS as ORDERS_SEED, INSPECTORS, STATUS_COLORS } from '@/lib/mockData';
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useTableHotkeys } from '@/hooks/useTableHotkeys';
+import { FilterPresetBar } from '@/components/shared/FilterPresetBar';
+import { InlineSelectCell } from '@/components/shared/InlineEdit';
 
 const TABS = ['All', 'New', 'Assigned', 'In Progress', 'Reported', 'QA Review', 'Closed'] as const;
 type Tab = (typeof TABS)[number];
@@ -32,11 +35,13 @@ function OrdersPageInner() {
   const perPage = 25;
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [pendingPipelineOnly, setPendingPipelineOnly] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const lastWrittenQ = useRef<string | null>(null);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
     const statusRaw = searchParams.get('status')?.toLowerCase().trim() ?? '';
-    const q = searchParams.get('q');
+    const q = searchParams.get('q') ?? '';
 
     if (statusRaw === 'in-progress' || statusRaw === 'in progress') {
       setActiveTab('In Progress');
@@ -49,8 +54,22 @@ function OrdersPageInner() {
       const next: Tab = tab && TABS.includes(tab as Tab) ? (tab as Tab) : 'All';
       setActiveTab(next);
     }
-    if (q) setSearchInput(q);
+    // Skip q sync when we wrote it ourselves (prevents clobbering fast typing)
+    if (q !== lastWrittenQ.current) setSearchInput(q);
+    lastWrittenQ.current = q;
   }, [searchParams]);
+
+  // Keep ?q= in the URL so filtered views are shareable
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const current = p.get('q') ?? '';
+    if (current === debouncedSearch) return;
+    if (debouncedSearch) p.set('q', debouncedSearch);
+    else p.delete('q');
+    lastWrittenQ.current = debouncedSearch;
+    const qs = p.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [debouncedSearch, pathname, router]);
 
   const setTabInUrl = useCallback(
     (tab: Tab) => {
@@ -65,6 +84,29 @@ function OrdersPageInner() {
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
     [pathname, router, searchParams]
+  );
+
+  const presetParams = useMemo(
+    () => ({
+      tab: activeTab === 'All' ? '' : activeTab,
+      status: pendingPipelineOnly ? 'pending' : '',
+      q: debouncedSearch,
+    }),
+    [activeTab, pendingPipelineOnly, debouncedSearch]
+  );
+
+  const applyPreset = useCallback(
+    (params: Record<string, string>) => {
+      const p = new URLSearchParams();
+      for (const [k, v] of Object.entries(params)) {
+        if (v) p.set(k, v);
+      }
+      lastWrittenQ.current = null; // force q re-sync from URL
+      setPage(1);
+      const qs = p.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [pathname, router]
   );
 
   const filtered = useMemo(() => {
@@ -120,6 +162,117 @@ function OrdersPageInner() {
     setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: newStatus as OrderRow['status'] } : o)));
     toast.success(`Order ${orderId} → ${newStatus}`);
   };
+
+  // ── Inline edits (optimistic, with undo) ────────────────────────────────
+
+  const updateOrderInline = useCallback((id: string, label: string, mutate: (o: OrderRow) => OrderRow) => {
+    setOrders(prev => {
+      const before = prev.find(o => o.id === id);
+      if (!before) return prev;
+      toast.success(`${id}: ${label}`, {
+        duration: 10_000,
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            setOrders(cur => cur.map(o => (o.id === id ? before : o)));
+            toast.message('Reverted');
+          },
+        },
+      });
+      return prev.map(o => (o.id === id ? mutate(o) : o));
+    });
+  }, []);
+
+  const inlineAssignInspector = (orderId: string, inspectorId: string) => {
+    if (!inspectorId) {
+      updateOrderInline(orderId, 'Inspector unassigned', o => ({ ...o, inspectorId: '', inspectorName: '' }));
+      return;
+    }
+    const inspector = INSPECTORS.find(i => i.id === inspectorId);
+    if (!inspector) return;
+    updateOrderInline(orderId, `Assigned to ${inspector.name}`, o => ({
+      ...o,
+      inspectorId: inspector.id,
+      inspectorName: inspector.name,
+      status: o.status === 'New' ? ('Assigned' as OrderRow['status']) : o.status,
+    }));
+  };
+
+  // ── Bulk actions (30s undo window) ──────────────────────────────────────
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+
+  const toggleAllOnPage = () =>
+    setSelectedIds(prev =>
+      paginated.every(o => prev.includes(o.id))
+        ? prev.filter(id => !paginated.some(o => o.id === id))
+        : [...new Set([...prev, ...paginated.map(o => o.id)])]
+    );
+
+  const applyBulkWithUndo = useCallback(
+    (label: string, mutate: (o: OrderRow) => OrderRow) => {
+      const ids = [...selectedIds];
+      if (ids.length === 0) return;
+      setOrders(prev => {
+        const snapshot = prev.filter(o => ids.includes(o.id));
+        toast.success(`${label} — ${ids.length} order(s)`, {
+          duration: 30_000,
+          action: {
+            label: 'Undo',
+            onClick: () => {
+              setOrders(cur => cur.map(o => snapshot.find(s => s.id === o.id) ?? o));
+              toast.message('Reverted');
+            },
+          },
+        });
+        return prev.map(o => (ids.includes(o.id) ? mutate(o) : o));
+      });
+      setSelectedIds([]);
+    },
+    [selectedIds]
+  );
+
+  const bulkAssignInspector = (inspectorId: string) => {
+    const inspector = INSPECTORS.find(i => i.id === inspectorId);
+    if (!inspector) return;
+    applyBulkWithUndo(`Assigned to ${inspector.name}`, o => ({
+      ...o,
+      inspectorId: inspector.id,
+      inspectorName: inspector.name,
+      status: o.status === 'New' ? ('Assigned' as OrderRow['status']) : o.status,
+    }));
+  };
+
+  const bulkChangeStatus = (status: string) => {
+    applyBulkWithUndo(`Status → ${status}`, o => ({ ...o, status: status as OrderRow['status'] }));
+  };
+
+  const exportSelectionCsv = () => {
+    const rows = orders.filter(o => selectedIds.includes(o.id));
+    const headers = ['Order ID', 'Customer', 'Vehicle', 'Plate', 'Inspector', 'Zone', 'Status', 'Scheduled'];
+    const body = rows.map(o => [o.id, o.customerName, o.vehicle, o.plate || '', o.inspectorName || '', o.zone, o.status, o.scheduledAt]);
+    const csv = [headers, ...body].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `carschek-orders-selection-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${rows.length} selected order(s)`);
+    setSelectedIds([]);
+  };
+
+  // ── Keyboard navigation (j/k move, Enter open) ──────────────────────────
+  const { activeIndex } = useTableHotkeys({
+    rowCount: paginated.length,
+    enabled: viewMode === 'table',
+    onOpen: i => {
+      const order = paginated[i];
+      if (order) router.push(`/orders/${order.id}`);
+    },
+  });
 
   const onDrop = (e: React.DragEvent, status: string) => {
     e.preventDefault();
@@ -191,18 +344,63 @@ function OrdersPageInner() {
           ))}
         </div>
 
-        <div className="relative max-w-sm">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
-          <input
-            value={searchInput}
-            onChange={e => {
-              setSearchInput(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search orders… (debounced 300ms)"
-            className="w-full pl-9 pr-4 py-2.5 text-sm bg-white dark:bg-slate-900 border border-[#E5E7EB] dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
-          />
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative max-w-sm flex-1 min-w-[220px]">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+            <input
+              value={searchInput}
+              onChange={e => {
+                setSearchInput(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search orders… (debounced 300ms)"
+              className="w-full pl-9 pr-4 py-2.5 text-sm bg-white dark:bg-slate-900 border border-[#E5E7EB] dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+            />
+          </div>
+          <FilterPresetBar pageKey="orders" currentParams={presetParams} onApply={applyPreset} />
         </div>
+
+        {viewMode === 'table' && selectedIds.length > 0 && (
+          <div className="bg-[#ff5722] text-white rounded-xl px-4 py-3 flex flex-wrap items-center gap-3 animate-fade-in">
+            <span className="text-sm font-medium">{selectedIds.length} selected</span>
+            <div className="flex items-center gap-2 ml-auto flex-wrap">
+              <select
+                value=""
+                onChange={e => e.target.value && bulkAssignInspector(e.target.value)}
+                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-medium text-white border-0 focus:outline-none focus:ring-2 focus:ring-white/40 [&>option]:text-[#1F2937]"
+              >
+                <option value="">Assign inspector…</option>
+                {INSPECTORS.map(i => (
+                  <option key={i.id} value={i.id}>
+                    {i.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value=""
+                onChange={e => e.target.value && bulkChangeStatus(e.target.value)}
+                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-medium text-white border-0 focus:outline-none focus:ring-2 focus:ring-white/40 [&>option]:text-[#1F2937]"
+              >
+                <option value="">Change status…</option>
+                {KANBAN_COLS.map(s => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={exportSelectionCsv}
+                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-medium transition-colors"
+              >
+                Export selection
+              </button>
+              <button type="button" onClick={() => setSelectedIds([])} className="px-3 py-1.5 text-white/60 hover:text-white text-xs">
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {viewMode === 'table' ? (
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5E7EB] dark:border-slate-700 overflow-hidden">
@@ -210,6 +408,15 @@ function OrdersPageInner() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#E5E7EB] dark:border-slate-700 bg-[#F9FAFB] dark:bg-slate-800/50">
+                    <th className="px-4 py-3 text-left w-10">
+                      <button type="button" onClick={toggleAllOnPage} className="flex items-center" aria-label="Select all on page">
+                        {paginated.length > 0 && paginated.every(o => selectedIds.includes(o.id)) ? (
+                          <CheckSquare size={16} className="text-[#ff8a65]" />
+                        ) : (
+                          <Square size={16} className="text-[#9CA3AF]" />
+                        )}
+                      </button>
+                    </th>
                     {['Order ID', 'Customer', 'Vehicle', 'Inspector', 'Zone', 'Scheduled', 'Status', 'Actions'].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wide whitespace-nowrap">
                         {h}
@@ -218,8 +425,25 @@ function OrdersPageInner() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.map(order => (
-                    <tr key={order.id} className="border-b border-[#F4F6F8] dark:border-slate-800 hover:bg-[#F9FAFB] dark:hover:bg-slate-800/30 transition-colors">
+                  {paginated.map((order, idx) => (
+                    <tr
+                      key={order.id}
+                      ref={idx === activeIndex ? el => el?.scrollIntoView({ block: 'nearest' }) : undefined}
+                      onMouseEnter={() => router.prefetch(`/orders/${order.id}`)}
+                      style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 61px' }}
+                      className={`border-b border-[#F4F6F8] dark:border-slate-800 hover:bg-[#F9FAFB] dark:hover:bg-slate-800/30 transition-colors ${
+                        idx === activeIndex ? 'bg-[#FFF3EE] dark:bg-slate-800/60 ring-1 ring-inset ring-[#ff8a65]/40' : ''
+                      }`}
+                    >
+                      <td className="px-4 py-3">
+                        <button type="button" onClick={() => toggleSelect(order.id)} aria-label={`Select ${order.id}`}>
+                          {selectedIds.includes(order.id) ? (
+                            <CheckSquare size={16} className="text-[#ff8a65]" />
+                          ) : (
+                            <Square size={16} className="text-[#9CA3AF]" />
+                          )}
+                        </button>
+                      </td>
                       <td className="px-4 py-3">
                         <Link href={`/orders/${order.id}`} className="font-mono text-xs font-semibold text-[#ff8a65] hover:underline">
                           {order.id}
@@ -234,16 +458,23 @@ function OrdersPageInner() {
                         <p className="text-xs font-mono text-[#6B7280]">{order.plate}</p>
                       </td>
                       <td className="px-4 py-3">
-                        {order.inspectorName ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-[10px] font-bold">
-                              {order.inspectorName.split(' ').map(n => n[0]).join('')}
+                        <InlineSelectCell
+                          value={order.inspectorId || ''}
+                          options={[{ value: '', label: 'Unassigned' }, ...INSPECTORS.map(i => ({ value: i.id, label: i.name }))]}
+                          onCommit={v => inlineAssignInspector(order.id, v)}
+                          ariaLabel={`inspector for ${order.id}`}
+                        >
+                          {order.inspectorName ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-[10px] font-bold">
+                                {order.inspectorName.split(' ').map(n => n[0]).join('')}
+                              </div>
+                              <span className="text-xs text-[#1F2937] dark:text-slate-100">{order.inspectorName.split(' ')[0]}</span>
                             </div>
-                            <span className="text-xs text-[#1F2937] dark:text-slate-100">{order.inspectorName.split(' ')[0]}</span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-[#9CA3AF]">Unassigned</span>
-                        )}
+                          ) : (
+                            <span className="text-xs text-[#9CA3AF]">Unassigned</span>
+                          )}
+                        </InlineSelectCell>
                       </td>
                       <td className="px-4 py-3 text-xs text-[#6B7280]">{order.zone}</td>
                       <td className="px-4 py-3 text-xs text-[#6B7280] whitespace-nowrap">
@@ -252,9 +483,16 @@ function OrdersPageInner() {
                         {new Date(order.scheduledAt).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-700'}`}>
-                          {order.status}
-                        </span>
+                        <InlineSelectCell
+                          value={order.status}
+                          options={KANBAN_COLS.map(s => ({ value: s, label: s }))}
+                          onCommit={v => updateOrderInline(order.id, `Status → ${v}`, o => ({ ...o, status: v as OrderRow['status'] }))}
+                          ariaLabel={`status for ${order.id}`}
+                        >
+                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-700'}`}>
+                            {order.status}
+                          </span>
+                        </InlineSelectCell>
                       </td>
                       <td className="px-4 py-3">
                         <Link href={`/orders/${order.id}`} className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-[#F4F6F8] dark:hover:bg-slate-800 transition-colors">
@@ -265,7 +503,7 @@ function OrdersPageInner() {
                   ))}
                   {paginated.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="px-4 py-16 text-center text-[#6B7280]">
+                      <td colSpan={9} className="px-4 py-16 text-center text-[#6B7280]">
                         <p className="font-medium">No orders found</p>
                       </td>
                     </tr>
@@ -273,6 +511,9 @@ function OrdersPageInner() {
                 </tbody>
               </table>
             </div>
+            <p className="hidden md:block px-4 py-2 text-[11px] text-[#9CA3AF] border-t border-[#F4F6F8] dark:border-slate-800">
+              <kbd className="font-mono">j</kbd>/<kbd className="font-mono">k</kbd> navigate · <kbd className="font-mono">Enter</kbd> open
+            </p>
             {totalPages > 1 && (
               <div className="px-4 py-3 border-t border-[#E5E7EB] dark:border-slate-700 flex items-center justify-between">
                 <p className="text-xs text-[#6B7280]">

@@ -5,6 +5,7 @@ import { Camera, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { CameraCaptureModal } from '@/components/inspection/CameraCaptureModal';
 import { PhotoLightbox, type LightboxSlide } from '@/components/inspection/PhotoLightbox';
+import { compressImage } from '@/lib/imageCompressor';
 import type { AIDefectResult } from '@/hooks/useAIDefectAnalysis';
 import { useAIDefectAnalysis } from '@/hooks/useAIDefectAnalysis';
 import {
@@ -158,15 +159,17 @@ export function DamagePhotoCapture({
     if (!file) return;
     e.target.value = '';
     try {
-      const buf = await file.arrayBuffer();
+      // Gallery photos can be 5–12MB; compress like the camera path before Dexie
+      const { blob: compressed, sizeKb } = await compressImage(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.85 });
+      const buf = await compressed.arrayBuffer();
       await persistDamagePhotoBlob(inspectionOrderId, sectionId, itemKey, buf, {
-        mimeType: file.type || 'image/jpeg',
-        sizeKb: Math.round(file.size / 1024),
+        mimeType: compressed.type || 'image/jpeg',
+        sizeKb,
       });
       reload();
       toast.success('Damage photo saved');
       // Run AI on device-picked photo
-      const blob = new Blob([buf], { type: file.type || 'image/jpeg' });
+      const blob = compressed;
       void ai.analyzePhoto(blob).then(result => {
         if (result) onAnalyzed?.(result);
       });

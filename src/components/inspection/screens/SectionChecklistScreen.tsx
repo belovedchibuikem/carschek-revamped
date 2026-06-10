@@ -118,7 +118,10 @@ function ToggleItemCard({
   showError: boolean;
 }) {
   return (
-    <div className={`rounded-xl border p-3 ${showError && value === null ? 'border-red-300 bg-red-50/50' : 'border-[#E5E7EB] bg-white'}`}>
+    <div
+      style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 92px' }}
+      className={`rounded-xl border p-3 ${showError && value === null ? 'border-red-300 bg-red-50/50' : 'border-[#E5E7EB] bg-white'}`}
+    >
       <p className="mb-2 text-[12px] font-semibold text-[#1F2937] leading-tight">{item.label}</p>
       <div
         className={`flex w-full overflow-hidden rounded-lg border ${showError && value === null ? 'border-red-300' : 'border-[#E5E7EB]'}`}
@@ -276,17 +279,63 @@ function ToggleGridSection({
 }) {
   const items = useMemo(() => flattenToggleItems(def), [def]);
 
+  const answered = items.filter(item => (toggleValues[item.id] ?? null) !== null).length;
+
+  const markAll = (value: Exclude<ToggleValue, null>) => {
+    setToggleValues(prev => {
+      const next = { ...prev };
+      for (const item of items) next[item.id] = value;
+      return next;
+    });
+    toast.success(`All ${items.length} items marked ${value === 'yes' ? 'Yes/Good' : 'N/A'} — tap any item to override`);
+  };
+
+  const clearAll = () => {
+    setToggleValues(prev => {
+      const next = { ...prev };
+      for (const item of items) next[item.id] = null;
+      return next;
+    });
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {items.map(item => (
-        <ToggleItemCard
-          key={item.id}
-          item={item}
-          value={toggleValues[item.id] ?? null}
-          onChange={v => setToggleValues(prev => ({ ...prev, [item.id]: v }))}
-          showError={showErrors}
-        />
-      ))}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => markAll('yes')}
+          className="inline-flex items-center gap-1 rounded-lg border border-[#1A7A4A] px-3 py-1.5 text-[11px] font-bold text-[#1A7A4A] hover:bg-green-50 transition-colors"
+        >
+          <ThumbsUp size={11} /> All Yes/Good
+        </button>
+        <button
+          type="button"
+          onClick={() => markAll('na')}
+          className="inline-flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-[11px] font-bold text-[#6B7280] hover:bg-teal-50 transition-colors"
+        >
+          <Ban size={11} /> All N/A
+        </button>
+        {answered > 0 && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-medium text-[#9CA3AF] hover:text-[#C0392B] hover:bg-red-50 transition-colors"
+          >
+            <X size={11} /> Clear
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {items.map(item => (
+          <ToggleItemCard
+            key={item.id}
+            item={item}
+            value={toggleValues[item.id] ?? null}
+            onChange={v => setToggleValues(prev => ({ ...prev, [item.id]: v }))}
+            showError={showErrors}
+          />
+        ))}
+      </div>
     </div>
   );
 }

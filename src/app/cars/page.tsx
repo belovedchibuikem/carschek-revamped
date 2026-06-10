@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   Plus,
@@ -27,6 +27,9 @@ import { CircularScoreProgress } from '@/components/shared/CircularScoreProgress
 import { toast } from 'sonner';
 import { downloadCsv } from '@/lib/csv';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useTableHotkeys } from '@/hooks/useTableHotkeys';
+import { FilterPresetBar } from '@/components/shared/FilterPresetBar';
+import { InlineSelectCell, InlineNumberCell } from '@/components/shared/InlineEdit';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import DuplicateResolutionModal, { carToDuplicateSnapshot } from '@/components/cars/DuplicateResolutionModal';
 import AuctionSetupModal from '@/app/cars/components/AuctionSetupModal';
@@ -67,19 +70,21 @@ function findDuplicateMatch(car: CarRow): CarRow | null {
   return other ?? CARS.find(c => c.id !== car.id) ?? null;
 }
 
-export default function CarsPage() {
+function CarsPageInner() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [cars, setCars] = useState(CARS);
-  const [search, setSearch] = useState('');
+  // Filters initialise from the URL so views are shareable; changes write back below.
+  const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
   const debouncedSearch = useDebouncedValue(search, 300);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [brandFilter, setBrandFilter] = useState('');
-  const [modelFilter, setModelFilter] = useState('');
-  const [yearFilter, setYearFilter] = useState('');
-  const [channelFilter, setChannelFilter] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get('status') ?? '');
+  const [brandFilter, setBrandFilter] = useState(() => searchParams.get('brand') ?? '');
+  const [modelFilter, setModelFilter] = useState(() => searchParams.get('model') ?? '');
+  const [yearFilter, setYearFilter] = useState(() => searchParams.get('year') ?? '');
+  const [channelFilter, setChannelFilter] = useState(() => searchParams.get('channel') ?? '');
+  const [dateFrom, setDateFrom] = useState(() => searchParams.get('from') ?? '');
+  const [dateTo, setDateTo] = useState(() => searchParams.get('to') ?? '');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<CarRow | null>(null);
@@ -118,6 +123,44 @@ export default function CarsPage() {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, statusFilter, brandFilter, modelFilter, yearFilter, channelFilter, dateFrom, dateTo]);
+
+  const presetParams = useMemo(
+    () => ({
+      q: debouncedSearch,
+      status: statusFilter,
+      brand: brandFilter,
+      model: modelFilter,
+      year: yearFilter,
+      channel: channelFilter,
+      from: dateFrom,
+      to: dateTo,
+    }),
+    [debouncedSearch, statusFilter, brandFilter, modelFilter, yearFilter, channelFilter, dateFrom, dateTo]
+  );
+
+  // One-way write: filters → URL (state never re-reads it, so no loop)
+  useEffect(() => {
+    const p = new URLSearchParams();
+    for (const [k, v] of Object.entries(presetParams)) {
+      if (v) p.set(k, v);
+    }
+    const qs = p.toString();
+    const current = window.location.search.replace(/^\?/, '');
+    if (qs === current) return;
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [presetParams, pathname, router]);
+
+  const applyPreset = useCallback((params: Record<string, string>) => {
+    setSearch(params.q ?? '');
+    setStatusFilter(params.status ?? '');
+    setBrandFilter(params.brand ?? '');
+    setModelFilter(params.model ?? '');
+    setYearFilter(params.year ?? '');
+    setChannelFilter(params.channel ?? '');
+    setDateFrom(params.from ?? '');
+    setDateTo(params.to ?? '');
+    setPage(1);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.toLowerCase();
@@ -214,6 +257,60 @@ export default function CarsPage() {
     toast.success('CSV exported successfully');
   };
 
+  // ── Inline edits (optimistic, with undo) ────────────────────────────────
+
+  const updateCarInline = useCallback((id: string, label: string, mutate: (c: CarRow) => CarRow) => {
+    setCars(prev => {
+      const before = prev.find(c => c.id === id);
+      if (!before) return prev;
+      toast.success(`${id}: ${label}`, {
+        duration: 10_000,
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            setCars(cur => cur.map(c => (c.id === id ? before : c)));
+            toast.message('Reverted');
+          },
+        },
+      });
+      return prev.map(c => (c.id === id ? mutate(c) : c));
+    });
+  }, []);
+
+  const exportSelectedCSV = () => {
+    const rows: (string | number)[][] = [
+      ['CK ID', 'Brand', 'Model', 'Year', 'Plate', 'Status', 'Score', 'Purchase Price', 'Sale Price', 'Channel', 'Created'],
+    ];
+    cars
+      .filter(c => selectedIds.includes(c.id))
+      .forEach(c =>
+        rows.push([c.id, c.brand, c.model, c.year, c.plate, c.status, c.score, c.purchasePrice, c.salePrice ?? '', c.channel, c.createdAt])
+      );
+    downloadCsv('cars-selection-export.csv', rows);
+    toast.success(`Exported ${selectedIds.length} selected car(s)`);
+    setSelectedIds([]);
+  };
+
+  const handleBulkStatusChange = (status: string) => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    setCars(prev => {
+      const snapshot = prev.filter(c => ids.includes(c.id));
+      toast.success(`Status → ${status} — ${ids.length} car(s)`, {
+        duration: 30_000,
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            setCars(cur => cur.map(c => snapshot.find(s => s.id === c.id) ?? c));
+            toast.message('Reverted');
+          },
+        },
+      });
+      return prev.map(c => (ids.includes(c.id) ? { ...c, status: status as CarRow['status'] } : c));
+    });
+    setSelectedIds([]);
+  };
+
   const handleBulkDelete = () => {
     const ids = [...selectedIds];
     const removed = cars.filter(c => ids.includes(c.id));
@@ -246,6 +343,21 @@ export default function CarsPage() {
     cars.filter(c => c.id !== car.id && (c.vin === car.vin || c.plate === car.plate)).length;
 
   const activeColCount = ALL_COLUMNS.filter(c => visibleCols[c.key]).length;
+
+  // ── Keyboard navigation (j/k move, Enter open, e edit) ──────────────────
+  const hotkeysEnabled = !deleteConfirm && !duplicateFor && !auctionModalCar && !columnPanel && !openMenu && !isFiltering;
+  const { activeIndex } = useTableHotkeys({
+    rowCount: paginated.length,
+    enabled: hotkeysEnabled,
+    onOpen: i => {
+      const car = paginated[i];
+      if (car) router.push(`/cars/${car.id}`);
+    },
+    onEdit: i => {
+      const car = paginated[i];
+      if (car) router.push(`/cars/${car.id}?edit=1`);
+    },
+  });
 
   const renderCell = (car: CarRow, key: ColKey) => {
     switch (key) {
@@ -283,14 +395,29 @@ export default function CarsPage() {
         return <span className="font-mono text-xs text-[#6B7280]">{car.plate}</span>;
       case 'status':
         return (
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLORS[car.status] || 'bg-gray-100 text-gray-700'}`}>
-            {car.status}
-          </span>
+          <InlineSelectCell
+            value={car.status}
+            options={PIPELINE_STAGES.map(s => ({ value: s, label: s }))}
+            onCommit={v => updateCarInline(car.id, `Status → ${v}`, c => ({ ...c, status: v as CarRow['status'] }))}
+            ariaLabel={`status for ${car.id}`}
+          >
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLORS[car.status] || 'bg-gray-100 text-gray-700'}`}>
+              {car.status}
+            </span>
+          </InlineSelectCell>
         );
       case 'purchase':
         return <span className="text-sm text-[#1F2937] font-medium">{formatNaira(car.purchasePrice)}</span>;
       case 'sales':
-        return <span className="text-sm text-[#6B7280]">{car.salePrice ? formatNaira(car.salePrice) : '—'}</span>;
+        return (
+          <InlineNumberCell
+            value={car.salePrice ?? null}
+            onCommit={v => updateCarInline(car.id, `Sale price → ${formatNaira(v)}`, c => ({ ...c, salePrice: v }))}
+            ariaLabel={`sale price for ${car.id}`}
+          >
+            <span className="text-sm text-[#6B7280]">{car.salePrice ? formatNaira(car.salePrice) : '—'}</span>
+          </InlineNumberCell>
+        );
       case 'score':
         return <CircularScoreProgress score={car.score} size={56} />;
       case 'docs':
@@ -524,31 +651,36 @@ export default function CarsPage() {
               <Settings2 size={15} /> Column settings
             </button>
           </div>
-          {(search || statusFilter || brandFilter || modelFilter || yearFilter || channelFilter || dateFrom || dateTo) && (
-            <button
-              onClick={() => {
-                setSearch('');
-                setStatusFilter('');
-                setBrandFilter('');
-                setModelFilter('');
-                setYearFilter('');
-                setChannelFilter('');
-                setDateFrom('');
-                setDateTo('');
-                setPage(1);
-              }}
-              className="text-sm text-[#C0392B] hover:bg-red-50 rounded-lg px-2 py-1 w-fit"
-            >
-              Clear filters
-            </button>
-          )}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <FilterPresetBar pageKey="cars" currentParams={presetParams} onApply={applyPreset} />
+            {(search || statusFilter || brandFilter || modelFilter || yearFilter || channelFilter || dateFrom || dateTo) && (
+              <button
+                onClick={() => applyPreset({})}
+                className="text-sm text-[#C0392B] hover:bg-red-50 rounded-lg px-2 py-1 w-fit"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
         </div>
 
         {selectedIds.length > 0 && (
           <div className="bg-[#ff5722] text-white rounded-xl px-4 py-3 flex items-center gap-4 animate-fade-in">
             <span className="text-sm font-medium">{selectedIds.length} selected</span>
             <div className="flex items-center gap-2 ml-auto flex-wrap">
-              {['Push to Marketplace', 'Export', 'Delete'].map(action => (
+              <select
+                value=""
+                onChange={e => e.target.value && handleBulkStatusChange(e.target.value)}
+                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-medium text-white border-0 focus:outline-none focus:ring-2 focus:ring-white/40 [&>option]:text-[#1F2937]"
+              >
+                <option value="">Change status…</option>
+                {PIPELINE_STAGES.map(s => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              {['Push to Marketplace', 'Export selection', 'Delete'].map(action => (
                 <button
                   key={action}
                   onClick={() => {
@@ -556,8 +688,8 @@ export default function CarsPage() {
                       handleBulkDelete();
                       return;
                     }
-                    if (action === 'Export') {
-                      exportCSV();
+                    if (action === 'Export selection') {
+                      exportSelectedCSV();
                       return;
                     }
                     toast.success(`${action} queued for ${selectedIds.length} car(s)`);
@@ -606,16 +738,21 @@ export default function CarsPage() {
                   </tr>
                 )}
                 {!isFiltering &&
-                  paginated.map(car => (
+                  paginated.map((car, idx) => (
                     <tr
                       key={car.id}
                       role="button"
                       tabIndex={0}
+                      ref={idx === activeIndex ? el => el?.scrollIntoView({ block: 'nearest' }) : undefined}
+                      onMouseEnter={() => router.prefetch(`/cars/${car.id}`)}
+                      style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 73px' }}
                       onClick={() => router.push(`/cars/${car.id}`)}
                       onKeyDown={e => {
                         if (e.key === 'Enter') router.push(`/cars/${car.id}`);
                       }}
-                      className={`border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors cursor-pointer ${car.hasDuplicate ? 'border-l-4 border-l-amber-400' : ''}`}
+                      className={`border-b border-[#F4F6F8] hover:bg-[#F9FAFB] transition-colors cursor-pointer ${car.hasDuplicate ? 'border-l-4 border-l-amber-400' : ''} ${
+                        idx === activeIndex ? 'bg-[#FFF3EE] ring-1 ring-inset ring-[#ff8a65]/40' : ''
+                      }`}
                     >
                       <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                         <button type="button" onClick={() => toggleSelect(car.id)}>
@@ -724,6 +861,9 @@ export default function CarsPage() {
             </table>
           </div>
 
+          <p className="hidden md:block px-4 py-2 text-[11px] text-[#9CA3AF] border-t border-[#F4F6F8]">
+            <kbd className="font-mono">j</kbd>/<kbd className="font-mono">k</kbd> navigate · <kbd className="font-mono">Enter</kbd> open · <kbd className="font-mono">e</kbd> edit
+          </p>
           <div className="px-4 py-3 border-t border-[#E5E7EB] flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-[#6B7280]">
               Showing {sorted.length === 0 ? 0 : (pageClamped - 1) * perPage + 1}–{Math.min(pageClamped * perPage, sorted.length)} of {sorted.length}
@@ -798,5 +938,19 @@ export default function CarsPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function CarsPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout currentPath="/cars">
+          <div className="min-h-[40vh] flex items-center justify-center text-sm text-[#6B7280]">Loading cars…</div>
+        </AppLayout>
+      }
+    >
+      <CarsPageInner />
+    </Suspense>
   );
 }

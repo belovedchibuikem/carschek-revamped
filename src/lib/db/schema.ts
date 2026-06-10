@@ -88,6 +88,19 @@ export interface SyncQueueRow {
   error?: string;
 }
 
+/** Audio note attached to a damage photo (recorded on-site, offline-first). */
+export interface VoiceNoteRow {
+  id?: number;
+  orderId: string;
+  /** `damagePhotos` row id this note belongs to. */
+  damagePhotoId: number;
+  blob?: ArrayBuffer;
+  mimeType?: string;
+  durationSec?: number;
+  createdAt: number;
+  synced?: boolean;
+}
+
 export interface CachedJobRow {
   orderId: string;
   data: string;
@@ -125,6 +138,7 @@ export class CarschekDB extends Dexie {
   cachedJobs!: Table<CachedJobRow, string>;
   drafts!: Table<DraftRow, number>;
   checklistStates!: Table<ChecklistStateRow, number>;
+  voiceNotes!: Table<VoiceNoteRow, number>;
 
   constructor() {
     super('carschek_inspector');
@@ -155,6 +169,9 @@ export class CarschekDB extends Dexie {
       cachedJobs: 'orderId, data, cachedAt, expiresAt',
       drafts: '++id, formName, userId, data, savedAt',
       checklistStates: '++id, &orderSectionKey, orderId, sectionId, updatedAt',
+    });
+    this.version(6).stores({
+      voiceNotes: '++id, orderId, damagePhotoId, createdAt, synced',
     });
   }
 }

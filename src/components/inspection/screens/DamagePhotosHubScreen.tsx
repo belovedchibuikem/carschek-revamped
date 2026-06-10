@@ -12,6 +12,13 @@ import {
   persistOrderHubDamagePhoto,
   type OrderDamagePhotoRow,
 } from '@/lib/inspection/dexieDamagePhotos';
+import {
+  deleteVoiceNoteForDamagePhoto,
+  loadVoiceNotesForOrder,
+  persistDamageVoiceNote,
+  type VoiceNoteWithUrl,
+} from '@/lib/inspection/dexieVoiceNotes';
+import { VoiceNoteRecorder } from '@/components/inspection/VoiceNoteRecorder';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
 
 type Props = {
@@ -22,6 +29,7 @@ type Props = {
 
 export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
   const [photos, setPhotos] = useState<OrderDamagePhotoRow[]>([]);
+  const [voiceNotes, setVoiceNotes] = useState<Map<number, VoiceNoteWithUrl>>(new Map());
   const [addOpen, setAddOpen] = useState(false);
   const [damageName, setDamageName] = useState('');
   const [comment, setComment] = useState('');
@@ -29,20 +37,31 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
   const [pendingLabel, setPendingLabel] = useState('');
   const ai = useAIDefectAnalysis();
 
+  const reloadVoiceNotes = useCallback(() => {
+    void loadVoiceNotesForOrder(jobId).then(({ notes }) => setVoiceNotes(notes));
+  }, [jobId]);
+
   const reload = useCallback(() => {
     void loadDamagePhotosForOrder(jobId).then(({ photos: list }) => {
       setPhotos(list);
     });
-  }, [jobId]);
+    reloadVoiceNotes();
+  }, [jobId, reloadVoiceNotes]);
 
   useEffect(() => {
     let revokeLatest: (() => void) | null = null;
+    let revokeNotes: (() => void) | null = null;
     void loadDamagePhotosForOrder(jobId).then(({ photos: list, revoke: r }) => {
       revokeLatest = r;
       setPhotos(list);
     });
+    void loadVoiceNotesForOrder(jobId).then(({ notes, revoke: r }) => {
+      revokeNotes = r;
+      setVoiceNotes(notes);
+    });
     return () => {
       revokeLatest?.();
+      revokeNotes?.();
     };
   }, [jobId]);
 
@@ -63,7 +82,7 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
 
   const remove = (id: number) => {
     if (!confirm('Remove this damage photo?')) return;
-    void deleteDamagePhoto(id).then(() => {
+    void Promise.all([deleteDamagePhoto(id), deleteVoiceNoteForDamagePhoto(id)]).then(() => {
       reload();
       toast.message('Removed');
     });
@@ -133,9 +152,23 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
                     <Trash2 size={16} />
                   </button>
                 </div>
-                <span className="mt-1 inline-block rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-800">
-                  AI ready
-                </span>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                  <span className="inline-block rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-800">
+                    AI ready
+                  </span>
+                  <VoiceNoteRecorder
+                    existingUrl={voiceNotes.get(p.id)?.url ?? null}
+                    durationSec={voiceNotes.get(p.id)?.durationSec}
+                    onSave={async (blob, durationSec) => {
+                      await persistDamageVoiceNote(jobId, p.id, blob, durationSec);
+                      reloadVoiceNotes();
+                    }}
+                    onDelete={async () => {
+                      await deleteVoiceNoteForDamagePhoto(p.id);
+                      reloadVoiceNotes();
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ))}

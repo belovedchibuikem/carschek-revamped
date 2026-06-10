@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { CameraCaptureModal } from '@/components/inspection/CameraCaptureModal';
 import { PhotoLightbox, type LightboxSlide } from '@/components/inspection/PhotoLightbox';
 import { loadDexieVehiclePhotoObjectUrls, persistVehiclePhotoBlob } from '@/lib/inspection/dexieVehiclePhotos';
+import { compressImage } from '@/lib/imageCompressor';
 import {
   REQUIRED_VEHICLE_PHOTOS,
   VEHICLE_PHOTO_GRID_ORDER,
@@ -136,7 +137,9 @@ export function VehiclePhotos({
     e.target.value = '';
     try {
       setLoadingAngle(pendingDeviceAngle);
-      await applyBlob(pendingDeviceAngle, file);
+      // Gallery photos can be 5–12MB; compress like the camera path before Dexie
+      const { blob } = await compressImage(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.85 });
+      await applyBlob(pendingDeviceAngle, blob);
     } finally {
       setLoadingAngle(null);
       setPendingDeviceAngle(null);

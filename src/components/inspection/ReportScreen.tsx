@@ -13,9 +13,8 @@ import {
   Printer,
   Share2,
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import { toast } from 'sonner';
+import { captureElementToPdf } from '@/lib/reportPdf';
 import { useInspectorHref } from '@/contexts/InspectorRouteContext';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
 import { buildReportData } from '@/lib/inspection/buildReportData';
@@ -33,32 +32,6 @@ export type ReportScreenProps = {
   inspectionId: string;
   layout: InspectionLayoutMode;
 };
-
-function cropCanvas(source: HTMLCanvasElement, sx: number, sy: number, sw: number, sh: number): HTMLCanvasElement {
-  const c = document.createElement('canvas');
-  c.width = sw;
-  c.height = sh;
-  const ctx = c.getContext('2d');
-  if (!ctx) return c;
-  ctx.drawImage(source, sx, sy, sw, sh, 0, 0, sw, sh);
-  return c;
-}
-
-async function waitForReportImages(root: HTMLElement): Promise<void> {
-  const imgs = Array.from(root.querySelectorAll('img'));
-  await Promise.all(
-    imgs.map(
-      img =>
-        new Promise<void>(resolve => {
-          if (img.complete) resolve();
-          else {
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-          }
-        })
-    )
-  );
-}
 
 export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
   const href = useInspectorHref();
@@ -146,46 +119,25 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
       return;
     }
     setDownloading(true);
+    const progressToastId = 'report-pdf-progress';
     try {
-      await waitForReportImages(el);
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        scrollY: -window.scrollY,
-        windowWidth: 794,
-        backgroundColor: '#ffffff',
-      });
-
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const pageHeightPx = imgWidth * (pdfHeight / pdfWidth);
-
-      const pdf = new jsPDF({ format: 'a4', unit: 'mm', orientation: 'portrait' });
-      let currentY = 0;
-      let page = 0;
-
-      while (currentY < imgHeight) {
-        const sliceH = Math.min(pageHeightPx, imgHeight - currentY);
-        const cropped = cropCanvas(canvas, 0, currentY, imgWidth, sliceH);
-        const imgData = cropped.toDataURL('image/jpeg', 0.92);
-        if (page > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-        currentY += sliceH;
-        page++;
-      }
-
       const num = reportData?.inspection.reportNumber.replace(/[^A-Z0-9-]/gi, '') ?? inspectionId.replace(/\D/g, '').slice(-4);
       const fname = `Carschek-Report-${num}-${variant}.pdf`;
-      pdf.save(fname);
-      toast.success(`Report downloaded: ${fname}`);
+      await captureElementToPdf(el, fname, {
+        marginMm: 6,
+        scale: 2,
+        windowWidth: 794,
+        onProgress: (phase, page, total) => {
+          toast.loading(phase === 'capture' ? 'Capturing report…' : `Rendering page ${page} of ${total}…`, {
+            id: progressToastId,
+          });
+        },
+      });
+      toast.success(`Report downloaded: ${fname}`, { id: progressToastId });
       setDexieEpoch(e => e + 1);
     } catch (e) {
       console.error(e);
-      toast.error('Could not generate PDF');
+      toast.error('Could not generate PDF', { id: progressToastId });
     } finally {
       setDownloading(false);
     }
