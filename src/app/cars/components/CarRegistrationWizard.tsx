@@ -2,18 +2,11 @@
 import React, { useState } from 'react';
 import { Car, User, Receipt, FileText, Check, AlertTriangle, Upload, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { SearchableSelect } from '@/components/shared/SearchableSelect';
-
-const REG_BRAND_OPTIONS = ['Toyota', 'Honda', 'Mercedes-Benz', 'Ford', 'Lexus', 'Hyundai', 'Kia', 'BMW', 'Audi', 'Nissan'].map(
-  b => ({ value: b, label: b })
-);
-const REG_MODEL_OPTIONS = ['Camry', 'Corolla', 'Accord', 'Civic', 'C300', 'Explorer', 'RX350', 'Tucson'].map(m => ({
-  value: m,
-  label: m,
-}));
-const REG_YEAR_OPTIONS = Array.from({ length: 35 }, (_, i) => {
-  const y = 2024 - i;
-  return { value: String(y), label: String(y) };
-});
+import {
+  brandOptionsByName,
+  modelOptionsByName,
+  yearOptionsForModelName,
+} from '@/lib/reference/carCascade';
 
 const STEPS = [
   { label: 'Vehicle Details', icon: Car },
@@ -133,8 +126,8 @@ export default function CarRegistrationWizard() {
                   <label className="block text-xs font-semibold text-gray-600 mb-1">Brand *</label>
                   <SearchableSelect
                     value={form.brand}
-                    onChange={v => setForm(f => ({ ...f, brand: v }))}
-                    options={REG_BRAND_OPTIONS}
+                    onChange={v => setForm(f => ({ ...f, brand: v, model: '', year: '' }))}
+                    options={brandOptionsByName()}
                     placeholder="Search or select brand…"
                     searchPlaceholder="Search brands…"
                     buttonClassName="border-gray-200 focus:ring-2 focus:ring-[#ff5722]/20"
@@ -144,9 +137,10 @@ export default function CarRegistrationWizard() {
                   <label className="block text-xs font-semibold text-gray-600 mb-1">Car Model *</label>
                   <SearchableSelect
                     value={form.model}
-                    onChange={v => setForm(f => ({ ...f, model: v }))}
-                    options={REG_MODEL_OPTIONS}
-                    placeholder="Search or select model…"
+                    onChange={v => setForm(f => ({ ...f, model: v, year: '' }))}
+                    options={modelOptionsByName(form.brand)}
+                    disabled={!form.brand}
+                    placeholder={form.brand ? 'Search or select model…' : 'Select brand first'}
                     searchPlaceholder="Search models…"
                     buttonClassName="border-gray-200 focus:ring-2 focus:ring-[#ff5722]/20"
                   />
@@ -156,8 +150,9 @@ export default function CarRegistrationWizard() {
                   <SearchableSelect
                     value={form.year}
                     onChange={v => setForm(f => ({ ...f, year: v }))}
-                    options={REG_YEAR_OPTIONS}
-                    placeholder="Search or select year…"
+                    options={yearOptionsForModelName(form.brand, form.model)}
+                    disabled={!form.model}
+                    placeholder={form.model ? 'Search or select year…' : 'Select model first'}
                     searchPlaceholder="Search years…"
                     buttonClassName="border-gray-200 focus:ring-2 focus:ring-[#ff5722]/20"
                   />

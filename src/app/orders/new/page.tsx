@@ -1,26 +1,32 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import AppLayout from '@/components/AppLayout';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 import { toast } from 'sonner';
+import { SearchableSelect } from '@/components/shared/SearchableSelect';
+import {
+  brandOptionsByName,
+  modelOptionsByName,
+  yearOptionsForModelName,
+} from '@/lib/reference/carCascade';
 
 export default function NewOrderPage() {
   const pathname = usePathname();
+  const router = useRouter();
   const [form, setForm] = React.useState({
-    customerName: '', customerPhone: '', vehicle: '', plate: '',
+    customerName: '', customerPhone: '', brand: '', model: '', year: '', plate: '',
     zone: '', scheduledDate: '', scheduledTime: '', notes: '',
   });
   const [saving, setSaving] = React.useState(false);
-  const router = require('next/navigation').useRouter();
 
   const set = (key: string, val: string) => setForm(prev => ({ ...prev, [key]: val }));
 
   const handleSubmit = async () => {
-    if (!form.customerName || !form.vehicle || !form.scheduledDate) {
-      toast.error('Customer name, vehicle, and date are required');
+    if (!form.customerName || !form.brand || !form.model || !form.year || !form.scheduledDate) {
+      toast.error('Customer name, vehicle (brand/model/year), and date are required');
       return;
     }
     setSaving(true);
@@ -43,20 +49,61 @@ export default function NewOrderPage() {
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 space-y-4">
           <h2 className="text-sm font-heading font-semibold text-[#1F2937]">Customer & Vehicle</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              { label: 'Customer Name *', key: 'customerName', type: 'text' },
-              { label: 'Customer Phone', key: 'customerPhone', type: 'tel' },
-              { label: 'Vehicle *', key: 'vehicle', type: 'text', placeholder: 'e.g. Toyota Camry 2015' },
-              { label: 'Plate Number', key: 'plate', type: 'text' },
-              { label: 'Zone / Location', key: 'zone', type: 'text' },
-            ].map(f => (
-              <div key={f.key}>
-                <label className="block text-xs font-semibold text-[#374151] mb-1.5">{f.label}</label>
-                <input type={f.type} value={form[f.key as keyof typeof form]} onChange={e => set(f.key, e.target.value)}
-                  placeholder={f.placeholder}
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
-              </div>
-            ))}
+            <div>
+              <label className="block text-xs font-semibold text-[#374151] mb-1.5">Customer Name *</label>
+              <input type="text" value={form.customerName} onChange={e => set('customerName', e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#374151] mb-1.5">Customer Phone</label>
+              <input type="tel" value={form.customerPhone} onChange={e => set('customerPhone', e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#374151] mb-1.5">Brand *</label>
+              <SearchableSelect
+                value={form.brand}
+                onChange={v => setForm(prev => ({ ...prev, brand: v, model: '', year: '' }))}
+                options={brandOptionsByName()}
+                placeholder="Search or select brand…"
+                searchPlaceholder="Search brands…"
+                aria-label="Brand"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#374151] mb-1.5">Model *</label>
+              <SearchableSelect
+                value={form.model}
+                onChange={v => setForm(prev => ({ ...prev, model: v, year: '' }))}
+                options={modelOptionsByName(form.brand)}
+                disabled={!form.brand}
+                placeholder={form.brand ? 'Search or select model…' : 'Select brand first'}
+                searchPlaceholder="Search models…"
+                aria-label="Model"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#374151] mb-1.5">Year *</label>
+              <SearchableSelect
+                value={form.year}
+                onChange={v => set('year', v)}
+                options={yearOptionsForModelName(form.brand, form.model)}
+                disabled={!form.model}
+                placeholder={form.model ? 'Search or select year…' : 'Select model first'}
+                searchPlaceholder="Search years…"
+                aria-label="Year"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#374151] mb-1.5">Plate Number</label>
+              <input type="text" value={form.plate} onChange={e => set('plate', e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#374151] mb-1.5">Zone / Location</label>
+              <input type="text" value={form.zone} onChange={e => set('zone', e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
+            </div>
           </div>
 
           <h2 className="text-sm font-heading font-semibold text-[#1F2937] pt-2">Schedule</h2>

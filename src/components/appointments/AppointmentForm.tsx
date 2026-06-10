@@ -2,8 +2,9 @@
 
 import React, { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { BRANDS, MODELS, YEARS } from '@/lib/mockData';
+import { BRANDS, MODELS } from '@/lib/mockData';
 import { CARS } from '@/lib/mockData';
+import { yearOptionsForModelName } from '@/lib/reference/carCascade';
 import {
   BOOKING_SOURCES,
   CALL_STATUSES,
@@ -140,6 +141,7 @@ export function AppointmentForm({
   });
 
   const make = watch('make');
+  const model = watch('model');
   const brand = useMemo(() => BRANDS.find(b => b.name === make), [make]);
   const modelOptions = useMemo(
     () => MODELS.filter(m => m.brandId === brand?.id),
@@ -298,7 +300,13 @@ export function AppointmentForm({
               render={({ field }) => (
                 <SearchableSelect
                   value={field.value}
-                  onChange={field.onChange}
+                  onChange={v => {
+                    field.onChange(v);
+                    // Re-validate year against the new model's production range
+                    const allowed = yearOptionsForModelName(make, v).map(o => o.value);
+                    const cur = String(watch('year') ?? '');
+                    if (cur && !allowed.includes(cur)) setValue('year', '' as unknown as number);
+                  }}
                   options={modelOptions.map(m => ({ value: m.name, label: m.name }))}
                   disabled={!brand}
                   placeholder={brand ? 'Search or select model…' : 'Select make first'}
@@ -314,10 +322,11 @@ export function AppointmentForm({
               control={control}
               render={({ field }) => (
                 <SearchableSelect
-                  value={String(field.value)}
+                  value={field.value ? String(field.value) : ''}
                   onChange={v => field.onChange(Number(v))}
-                  options={YEARS.slice(0, 25).map(y => ({ value: String(y.year), label: String(y.year) }))}
-                  placeholder="Search or select year…"
+                  options={yearOptionsForModelName(make, model)}
+                  disabled={!model}
+                  placeholder={model ? 'Search or select year…' : 'Select model first'}
                   searchPlaceholder="Search years…"
                 />
               )}

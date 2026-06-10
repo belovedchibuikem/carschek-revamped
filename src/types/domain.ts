@@ -180,6 +180,9 @@ export interface CarModel {
   active: boolean;
   carsInSystem: number;
   createdAt: string;
+  /** Production year range — drives the Model → Year cascade. */
+  yearFrom?: number;
+  yearTo?: number;
 }
 
 export interface CarYear {

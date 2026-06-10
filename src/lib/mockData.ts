@@ -24,22 +24,22 @@ export const BRANDS = [
 ];
 
 export const MODELS = [
-  { id: 'm1', brandId: 'b1', brandName: 'Toyota', name: 'Camry', bodyTypes: ['Sedan'], cars: 12, active: true },
-  { id: 'm2', brandId: 'b1', brandName: 'Toyota', name: 'Corolla', bodyTypes: ['Sedan', 'Hatchback'], cars: 8, active: true },
-  { id: 'm3', brandId: 'b1', brandName: 'Toyota', name: 'RAV4', bodyTypes: ['SUV'], cars: 6, active: true },
-  { id: 'm4', brandId: 'b1', brandName: 'Toyota', name: 'Highlander', bodyTypes: ['SUV'], cars: 4, active: true },
-  { id: 'm5', brandId: 'b1', brandName: 'Toyota', name: 'Land Cruiser', bodyTypes: ['SUV'], cars: 4, active: true },
-  { id: 'm6', brandId: 'b2', brandName: 'Honda', name: 'Accord', bodyTypes: ['Sedan'], cars: 9, active: true },
-  { id: 'm7', brandId: 'b2', brandName: 'Honda', name: 'Civic', bodyTypes: ['Sedan', 'Hatchback'], cars: 7, active: true },
-  { id: 'm8', brandId: 'b2', brandName: 'Honda', name: 'CR-V', bodyTypes: ['SUV'], cars: 5, active: true },
-  { id: 'm9', brandId: 'b3', brandName: 'Mercedes-Benz', name: 'C-Class', bodyTypes: ['Sedan'], cars: 5, active: true },
-  { id: 'm10', brandId: 'b3', brandName: 'Mercedes-Benz', name: 'E-Class', bodyTypes: ['Sedan'], cars: 4, active: true },
-  { id: 'm11', brandId: 'b4', brandName: 'BMW', name: '3 Series', bodyTypes: ['Sedan'], cars: 4, active: true },
-  { id: 'm12', brandId: 'b4', brandName: 'BMW', name: '5 Series', bodyTypes: ['Sedan'], cars: 3, active: true },
-  { id: 'm13', brandId: 'b5', brandName: 'Lexus', name: 'RX', bodyTypes: ['SUV'], cars: 6, active: true },
-  { id: 'm14', brandId: 'b5', brandName: 'Lexus', name: 'ES', bodyTypes: ['Sedan'], cars: 5, active: true },
-  { id: 'm15', brandId: 'b7', brandName: 'Hyundai', name: 'Elantra', bodyTypes: ['Sedan'], cars: 4, active: true },
-  { id: 'm16', brandId: 'b7', brandName: 'Hyundai', name: 'Tucson', bodyTypes: ['SUV'], cars: 3, active: true },
+  { id: 'm1', brandId: 'b1', brandName: 'Toyota', name: 'Camry', bodyTypes: ['Sedan'], cars: 12, active: true, yearFrom: 1998, yearTo: 2025 },
+  { id: 'm2', brandId: 'b1', brandName: 'Toyota', name: 'Corolla', bodyTypes: ['Sedan', 'Hatchback'], cars: 8, active: true, yearFrom: 1995, yearTo: 2025 },
+  { id: 'm3', brandId: 'b1', brandName: 'Toyota', name: 'RAV4', bodyTypes: ['SUV'], cars: 6, active: true, yearFrom: 2001, yearTo: 2025 },
+  { id: 'm4', brandId: 'b1', brandName: 'Toyota', name: 'Highlander', bodyTypes: ['SUV'], cars: 4, active: true, yearFrom: 2003, yearTo: 2025 },
+  { id: 'm5', brandId: 'b1', brandName: 'Toyota', name: 'Land Cruiser', bodyTypes: ['SUV'], cars: 4, active: true, yearFrom: 1995, yearTo: 2025 },
+  { id: 'm6', brandId: 'b2', brandName: 'Honda', name: 'Accord', bodyTypes: ['Sedan'], cars: 9, active: true, yearFrom: 1998, yearTo: 2025 },
+  { id: 'm7', brandId: 'b2', brandName: 'Honda', name: 'Civic', bodyTypes: ['Sedan', 'Hatchback'], cars: 7, active: true, yearFrom: 1996, yearTo: 2025 },
+  { id: 'm8', brandId: 'b2', brandName: 'Honda', name: 'CR-V', bodyTypes: ['SUV'], cars: 5, active: true, yearFrom: 2002, yearTo: 2025 },
+  { id: 'm9', brandId: 'b3', brandName: 'Mercedes-Benz', name: 'C-Class', bodyTypes: ['Sedan'], cars: 5, active: true, yearFrom: 2000, yearTo: 2025 },
+  { id: 'm10', brandId: 'b3', brandName: 'Mercedes-Benz', name: 'E-Class', bodyTypes: ['Sedan'], cars: 4, active: true, yearFrom: 2002, yearTo: 2025 },
+  { id: 'm11', brandId: 'b4', brandName: 'BMW', name: '3 Series', bodyTypes: ['Sedan'], cars: 4, active: true, yearFrom: 1999, yearTo: 2025 },
+  { id: 'm12', brandId: 'b4', brandName: 'BMW', name: '5 Series', bodyTypes: ['Sedan'], cars: 3, active: true, yearFrom: 2003, yearTo: 2025 },
+  { id: 'm13', brandId: 'b5', brandName: 'Lexus', name: 'RX', bodyTypes: ['SUV'], cars: 6, active: true, yearFrom: 2004, yearTo: 2025 },
+  { id: 'm14', brandId: 'b5', brandName: 'Lexus', name: 'ES', bodyTypes: ['Sedan'], cars: 5, active: true, yearFrom: 2006, yearTo: 2025 },
+  { id: 'm15', brandId: 'b7', brandName: 'Hyundai', name: 'Elantra', bodyTypes: ['Sedan'], cars: 4, active: true, yearFrom: 2007, yearTo: 2025 },
+  { id: 'm16', brandId: 'b7', brandName: 'Hyundai', name: 'Tucson', bodyTypes: ['SUV'], cars: 3, active: true, yearFrom: 2010, yearTo: 2025 },
 ];
 
 export const YEARS = Array.from({ length: 36 }, (_, i) => ({

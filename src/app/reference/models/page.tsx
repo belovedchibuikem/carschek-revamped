@@ -27,7 +27,7 @@ export default function ModelsPage() {
   const handleAdd = () => {
     if (!newModel.brandId || !newModel.name) { toast.error('Brand and model name are required'); return; }
     const brand = BRANDS.find(b => b.id === newModel.brandId);
-    const model = { id: `m${Date.now()}`, brandId: newModel.brandId, brandName: brand?.name || '', name: newModel.name, bodyTypes: newModel.bodyTypes, cars: 0, active: newModel.active };
+    const model = { id: `m${Date.now()}`, brandId: newModel.brandId, brandName: brand?.name || '', name: newModel.name, bodyTypes: newModel.bodyTypes, cars: 0, active: newModel.active, yearFrom: 1990, yearTo: new Date().getFullYear() };
     setModels(prev => [...prev, model]);
     setShowAddModal(false);
     setNewModel({ brandId: '', name: '', bodyTypes: [], active: true });

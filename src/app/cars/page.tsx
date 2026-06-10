@@ -109,7 +109,13 @@ function CarsPageInner() {
     const list = brandFilter ? cars.filter(c => c.brand === brandFilter) : cars;
     return [...new Set(list.map(c => c.model))].sort();
   }, [cars, brandFilter]);
-  const yearOptions = useMemo(() => [...new Set(cars.map(c => String(c.year)))].sort((a, b) => Number(b) - Number(a)), [cars]);
+  // Year options cascade off brand/model: only years of matching inventory
+  const yearOptions = useMemo(() => {
+    let list = cars;
+    if (brandFilter) list = list.filter(c => c.brand === brandFilter);
+    if (modelFilter) list = list.filter(c => c.model === modelFilter);
+    return [...new Set(list.map(c => String(c.year)))].sort((a, b) => Number(b) - Number(a));
+  }, [cars, brandFilter, modelFilter]);
 
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
@@ -590,6 +596,7 @@ function CarsPageInner() {
               onChange={e => {
                 setBrandFilter(e.target.value);
                 setModelFilter('');
+                setYearFilter('');
                 setPage(1);
               }}
               className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
@@ -601,7 +608,7 @@ function CarsPageInner() {
                 </option>
               ))}
             </select>
-            <select value={modelFilter} onChange={e => { setModelFilter(e.target.value); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
+            <select value={modelFilter} onChange={e => { setModelFilter(e.target.value); setYearFilter(''); setPage(1); }} className="px-3 py-2.5 text-sm bg-[#F4F6F8] border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
               <option value="">All Models</option>
               {modelOptions.map(m => (
                 <option key={m} value={m}>

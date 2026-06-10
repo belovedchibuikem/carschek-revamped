@@ -1,6 +1,11 @@
 'use client';
 import React, { useState } from 'react';
 import { ArrowLeft, TrendingUp, TrendingDown, ChevronDown, Calculator, Info } from 'lucide-react';
+import {
+  brandOptionsByName,
+  modelOptionsByName,
+  yearOptionsForModelName,
+} from '@/lib/reference/carCascade';
 
 interface Props { onBack: () => void; }
 
@@ -59,8 +64,13 @@ export default function PricingGuidanceTool({ onBack }: Props) {
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Make</label>
                 <div className="relative">
-                  <select value={make} onChange={e => setMake(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all">
-                    {['Toyota', 'Honda', 'Mercedes-Benz', 'Ford', 'Lexus', 'Hyundai', 'Nissan', 'Kia'].map(m => <option key={m}>{m}</option>)}
+                  <select
+                    value={make}
+                    onChange={e => { setMake(e.target.value); setModel(''); setYear(''); }}
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all"
+                  >
+                    <option value="">Select make…</option>
+                    {brandOptionsByName().map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
                 </div>
@@ -68,8 +78,14 @@ export default function PricingGuidanceTool({ onBack }: Props) {
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Model</label>
                 <div className="relative">
-                  <select value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all">
-                    {['Camry', 'Corolla', 'Highlander', 'RAV4', 'Accord', 'CR-V', 'C300', 'Escape'].map(m => <option key={m}>{m}</option>)}
+                  <select
+                    value={model}
+                    onChange={e => { setModel(e.target.value); setYear(''); }}
+                    disabled={!make}
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all disabled:opacity-50 disabled:bg-[#F9FAFB]"
+                  >
+                    <option value="">{make ? 'Select model…' : 'Select make first'}</option>
+                    {modelOptionsByName(make).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
                 </div>
@@ -79,8 +95,14 @@ export default function PricingGuidanceTool({ onBack }: Props) {
               <div>
                 <label className="block text-xs font-semibold text-[#1F2937] mb-1.5">Year</label>
                 <div className="relative">
-                  <select value={year} onChange={e => setYear(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all">
-                    {['2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015'].map(y => <option key={y}>{y}</option>)}
+                  <select
+                    value={year}
+                    onChange={e => setYear(e.target.value)}
+                    disabled={!model}
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#ff5722]/20 focus:border-[#ff5722] appearance-none bg-white transition-all disabled:opacity-50 disabled:bg-[#F9FAFB]"
+                  >
+                    <option value="">{model ? 'Select year…' : 'Select model first'}</option>
+                    {yearOptionsForModelName(make, model).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
                 </div>

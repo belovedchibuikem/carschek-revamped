@@ -130,7 +130,8 @@ export const SECTION_DEFS: SectionDef[] = [
     layout: 'form',
     fields: [
       { id: 's03_brand', label: 'Brand', type: 'dropdown', options: ['Toyota', 'Honda', 'Lexus', 'Mercedes-Benz', 'BMW', 'Audi', 'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'Nissan', 'Mazda', 'Volkswagen', 'Peugeot', 'Mitsubishi', 'Subaru', 'Jeep', 'Land Rover', 'Range Rover', 'Porsche', 'Volvo', 'Infiniti', 'Acura', 'Cadillac', 'Buick', 'GMC', 'Dodge', 'Chrysler', 'Lincoln', 'Tesla', 'Other'], required: true, clearable: true },
-      { id: 's03_model', label: 'Model', type: 'text', required: true },
+      // Options are resolved dynamically from reference data (cascade off s03_brand)
+      { id: 's03_model', label: 'Model', type: 'dropdown', options: [], required: true, clearable: true },
       { id: 's03_year', label: 'Year', type: 'dropdown', options: Array.from({ length: 36 }, (_, i) => String(2025 - i)), required: true, clearable: true },
       { id: 's03_transmission', label: 'Transmission', type: 'dropdown', options: ['Automatic', 'Manual', 'CVT', 'Semi-Automatic'], required: true, clearable: true },
       { id: 's03_chasis_number', label: 'Chasis Number', type: 'text', required: false },

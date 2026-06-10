@@ -184,7 +184,16 @@ export default function YearsPage() {
                     <p className="text-xs text-[#9CA3AF] text-center mt-4">Select model first</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-1">
-                      {years.filter(y => y.active).slice(0, 20).map(y => (
+                      {years
+                        .filter(y => y.active)
+                        .filter(y =>
+                          !selectedModelData?.yearFrom
+                            ? true
+                            : y.year >= selectedModelData.yearFrom &&
+                              y.year <= (selectedModelData.yearTo ?? y.year)
+                        )
+                        .slice(0, 20)
+                        .map(y => (
                         <button key={y.id} onClick={() => handleYearSelect(y.year)}
                           className="relative py-1.5 text-xs font-semibold bg-[#F4F6F8] hover:bg-[#ff5722] hover:text-white rounded-lg transition-all text-[#1F2937]">
                           {y.year}

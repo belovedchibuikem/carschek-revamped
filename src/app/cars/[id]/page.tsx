@@ -22,6 +22,12 @@ import DuplicateResolutionModal, { carToDuplicateSnapshot } from '@/components/c
 import { StatusStepper } from '@/components/cars/StatusStepper';
 import DocumentCompliancePanel from '@/app/cars/components/DocumentCompliancePanel';
 import AuctionSetupModal from '@/app/cars/components/AuctionSetupModal';
+import { SearchableSelect } from '@/components/shared/SearchableSelect';
+import {
+  brandOptionsByName,
+  modelOptionsByName,
+  yearOptionsForModelName,
+} from '@/lib/reference/carCascade';
 
 const PIPELINE_STAGES = ['Acquired', 'Inspection Linked', 'At Buyer', 'Listed', 'Sold'] as const;
 const TABS = ['Main Data', 'Purchase', 'Sales', 'Channel'];
@@ -334,23 +340,71 @@ function CarDetailPageContent() {
                   { label: 'Mileage', key: 'mileage' as const, value: String(car.mileage) },
                   { label: 'VIN', key: 'vin' as const, value: car.vin, mono: true },
                   { label: 'Plate', key: 'plate' as const, value: car.plate, mono: true },
-                ].map(field => (
-                  <div key={field.key} className="flex items-center justify-between py-2 border-b border-[#F4F6F8] last:border-0 gap-2">
-                    <span className="text-xs text-[#6B7280] w-24 flex-shrink-0">{field.label}</span>
-                    {editMain ? (
-                      <input
-                        value={String((editData as Record<string, unknown>)[field.key] ?? field.value)}
-                        onChange={e => {
-                          setEditData(prev => ({ ...prev, [field.key]: e.target.value }));
+                ].map(field => {
+                  const editValue = String((editData as Record<string, unknown>)[field.key] ?? field.value);
+                  // Brand → Model → Year are reference-driven cascading selects, not free text.
+                  const cascadeSelect =
+                    field.key === 'brand' ? (
+                      <SearchableSelect
+                        value={editValue}
+                        onChange={v => {
+                          setEditData(prev => ({ ...prev, brand: v, model: '' }));
                           markDirty(0);
                         }}
-                        className={`flex-1 text-sm px-2 py-1 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 text-right ${field.mono ? 'font-mono text-xs' : ''}`}
+                        options={brandOptionsByName()}
+                        placeholder="Select brand…"
+                        className="flex-1"
+                        aria-label="Brand"
                       />
-                    ) : (
-                      <span className={`text-sm font-medium text-[#1F2937] text-right ${field.mono ? 'font-mono text-xs' : ''}`}>{field.value}</span>
-                    )}
-                  </div>
-                ))}
+                    ) : field.key === 'model' ? (
+                      <SearchableSelect
+                        value={editValue}
+                        onChange={v => {
+                          setEditData(prev => ({ ...prev, model: v }));
+                          markDirty(0);
+                        }}
+                        options={modelOptionsByName(String((editData as Record<string, unknown>).brand ?? car.brand))}
+                        disabled={!(editData as Record<string, unknown>).brand && !car.brand}
+                        placeholder="Select model…"
+                        className="flex-1"
+                        aria-label="Model"
+                      />
+                    ) : field.key === 'year' ? (
+                      <SearchableSelect
+                        value={editValue}
+                        onChange={v => {
+                          setEditData(prev => ({ ...prev, year: Number(v) }));
+                          markDirty(0);
+                        }}
+                        options={yearOptionsForModelName(
+                          String((editData as Record<string, unknown>).brand ?? car.brand),
+                          String((editData as Record<string, unknown>).model ?? car.model)
+                        )}
+                        placeholder="Select year…"
+                        className="flex-1"
+                        aria-label="Year"
+                      />
+                    ) : null;
+                  return (
+                    <div key={field.key} className="flex items-center justify-between py-2 border-b border-[#F4F6F8] last:border-0 gap-2">
+                      <span className="text-xs text-[#6B7280] w-24 flex-shrink-0">{field.label}</span>
+                      {editMain ? (
+                        cascadeSelect ?? (
+                          <input
+                            value={editValue}
+                            onChange={e => {
+                              setEditData(prev => ({ ...prev, [field.key]: e.target.value }));
+                              markDirty(0);
+                            }}
+                            className={`flex-1 text-sm px-2 py-1 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 text-right ${field.mono ? 'font-mono text-xs' : ''}`}
+                          />
+                        )
+                      ) : (
+                        <span className={`text-sm font-medium text-[#1F2937] text-right ${field.mono ? 'font-mono text-xs' : ''}`}>{field.value}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               {editMain && (
                 <button

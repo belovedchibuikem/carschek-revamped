@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, CloudOff, ThumbsUp, ThumbsDown, Ban, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { SearchableSelect } from '@/components/shared/SearchableSelect';
+import { modelOptionsByName, yearOptionsForModelName } from '@/lib/reference/carCascade';
 import { useInspectorHref } from '@/contexts/InspectorRouteContext';
 import {
   loadChecklistState,
@@ -150,11 +151,33 @@ function FormSection({
   const fields = def.fields ?? [];
 
   const handleChange = (id: string, val: string) => {
-    setFormValues(prev => ({ ...prev, [id]: val }));
+    setFormValues(prev => {
+      const next = { ...prev, [id]: val };
+      // Brand → Model → Year cascade for S03 Car Details
+      if (id === 's03_brand' && prev['s03_model']) next['s03_model'] = '';
+      if (id === 's03_model' && prev['s03_year']) {
+        const allowed = yearOptionsForModelName(next['s03_brand'], val).map(o => o.value);
+        if (!allowed.includes(prev['s03_year'])) next['s03_year'] = '';
+      }
+      return next;
+    });
   };
 
   const clearField = (id: string) => {
     setFormValues(prev => ({ ...prev, [id]: '' }));
+  };
+
+  /** Reference-driven options for the S03 cascade; schema options otherwise. */
+  const resolveDropdown = (field: { id: string; options: string[] }) => {
+    if (field.id === 's03_model') {
+      const models = modelOptionsByName(formValues['s03_brand']);
+      // Always keep the field completable for brands outside reference data
+      return [...models, { value: 'Other', label: 'Other' }];
+    }
+    if (field.id === 's03_year') {
+      return yearOptionsForModelName(formValues['s03_brand'], formValues['s03_model']);
+    }
+    return field.options.map(opt => ({ value: opt, label: opt }));
   };
 
   return (
@@ -164,7 +187,10 @@ function FormSection({
         const hasError = showErrors && field.required && !val;
 
         if (field.type === 'dropdown') {
-          const options = field.options.map(opt => ({ value: opt, label: opt }));
+          const options = resolveDropdown(field);
+          const cascadeDisabled =
+            (field.id === 's03_model' && !formValues['s03_brand']) ||
+            (field.id === 's03_year' && !formValues['s03_model']);
           return (
             <div key={field.id}>
               <label htmlFor={`checklist-dd-${field.id}`} className="mb-1 block text-xs font-semibold text-[#374151]">
@@ -178,7 +204,14 @@ function FormSection({
                   value={val}
                   onChange={next => handleChange(field.id, next)}
                   options={options}
-                  placeholder={`Select ${field.label}`}
+                  disabled={cascadeDisabled}
+                  placeholder={
+                    field.id === 's03_model' && !formValues['s03_brand']
+                      ? 'Select Brand first'
+                      : field.id === 's03_year' && !formValues['s03_model']
+                        ? 'Select Model first'
+                        : `Select ${field.label}`
+                  }
                   searchPlaceholder={`Search ${field.label}…`}
                   emptyText="No matches"
                   invalid={hasError}

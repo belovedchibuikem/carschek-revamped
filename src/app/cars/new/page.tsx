@@ -12,6 +12,7 @@ import { findSimilarVins, platesPossiblyEqual } from '@/lib/duplicates';
 import { clearDraft, getGuestUserId, loadDraft, saveDraft } from '@/lib/drafts';
 import { validateCarStep0, validateCarStep1, validateCarStep2 } from '@/lib/validation/carNewSteps';
 import { SearchableSelect } from '@/components/shared/SearchableSelect';
+import { findModelById, yearOptionsForModelId } from '@/lib/reference/carCascade';
 
 const STEPS = ['Vehicle Identity', 'Seller Contact', 'Purchase', 'Documents'];
 const COLOUR_SWATCHES: { name: string; hex: string }[] = [
@@ -86,6 +87,23 @@ function NewCarPageInner() {
     const d = loadDraft<CarDraftPayload>(DRAFT_FORM, uid);
     if (d?.form && d.savedAt) setDraftBanner('prompt');
   }, [uid]);
+
+  // Prefill from the reference quick-registration cascade (?brand=b1&model=m1&year=2018)
+  useEffect(() => {
+    const qBrand = searchParams.get('brand');
+    const qModel = searchParams.get('model');
+    const qYear = searchParams.get('year');
+    if (!qBrand && !qModel && !qYear) return;
+    const brand = BRANDS.find(b => b.id === qBrand);
+    const model = MODELS.find(m => m.id === qModel && (!brand || m.brandId === brand.id));
+    setForm(prev => ({
+      ...prev,
+      brandId: brand?.id ?? prev.brandId,
+      modelId: model?.id ?? prev.modelId,
+      year: qYear && /^\d{4}$/.test(qYear) ? qYear : prev.year,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!appointmentId || !fromAppointment) return;
@@ -484,7 +502,13 @@ function NewCarPageInner() {
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Model *</label>
                   <SearchableSelect
                     value={form.modelId}
-                    onChange={v => set('modelId', v)}
+                    onChange={v => {
+                      set('modelId', v);
+                      // Re-validate year against the new model's production range
+                      const allowed = yearOptionsForModelId(v).map(o => o.value);
+                      if (form.year && !allowed.includes(form.year)) set('year', '');
+                      if (form.yearEnd && !allowed.includes(form.yearEnd)) set('yearEnd', '');
+                    }}
                     options={filteredModels.map(m => ({ value: m.id, label: m.name }))}
                     disabled={!form.brandId}
                     placeholder={form.brandId ? 'Search or select model…' : 'Select brand first'}
@@ -498,12 +522,18 @@ function NewCarPageInner() {
                   <SearchableSelect
                     value={form.year}
                     onChange={v => set('year', v)}
-                    options={YEARS.map(y => ({ value: String(y.year), label: String(y.year) }))}
-                    placeholder="Search or select year…"
+                    options={yearOptionsForModelId(form.modelId)}
+                    disabled={!form.modelId}
+                    placeholder={form.modelId ? 'Search or select year…' : 'Select model first'}
                     searchPlaceholder="Search years…"
                     invalid={!!errors.year}
                   />
                   {errors.year && <p className="text-xs text-[#C0392B] mt-1">{errors.year}</p>}
+                  {form.modelId && findModelById(form.modelId)?.yearFrom ? (
+                    <p className="text-[10px] text-[#9CA3AF] mt-1">
+                      {findModelById(form.modelId)?.name}: {findModelById(form.modelId)?.yearFrom}–{findModelById(form.modelId)?.yearTo}
+                    </p>
+                  ) : null}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#374151] mb-1.5">Year range (optional)</label>
@@ -512,8 +542,9 @@ function NewCarPageInner() {
                     onChange={v => set('yearEnd', v === '__same_year__' ? '' : v)}
                     options={[
                       { value: '__same_year__', label: 'Same as year (single model year)' },
-                      ...YEARS.map(y => ({ value: String(y.year), label: String(y.year) })),
+                      ...yearOptionsForModelId(form.modelId),
                     ]}
+                    disabled={!form.modelId}
                     placeholder="Optional end year…"
                     searchPlaceholder="Search years…"
                   />
