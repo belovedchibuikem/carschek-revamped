@@ -30,7 +30,7 @@ export async function persistDamagePhotoBlob(
   sectionId: string,
   itemKey: string,
   blob: ArrayBuffer,
-  meta?: { mimeType?: string; sizeKb?: number }
+  meta?: { mimeType?: string; sizeKb?: number; comment?: string }
 ): Promise<void> {
   if (!db) return;
   let row = await db.inspections.where('orderId').equals(orderId).first();
@@ -48,6 +48,7 @@ export async function persistDamagePhotoBlob(
     blob,
     mimeType: meta?.mimeType ?? 'image/jpeg',
     sizeKb: meta?.sizeKb,
+    comment: meta?.comment,
     synced: false,
     capturedAt: Date.now(),
   });
@@ -124,7 +125,7 @@ export async function loadDamagePhotoObjectUrlsForItem(
   return photos.map(p => p.url);
 }
 
-export type OrderDamagePhotoRow = DamagePhotoWithUrl & { label: string };
+export type OrderDamagePhotoRow = DamagePhotoWithUrl & { label: string; comment?: string };
 
 export async function loadDamagePhotosForOrder(orderId: string): Promise<{
   photos: OrderDamagePhotoRow[];
@@ -163,6 +164,7 @@ export async function loadDamagePhotosForOrder(orderId: string): Promise<{
         url,
         capturedAt: r.capturedAt,
         label: parseOrderDamageName(r.itemKey),
+        comment: r.comment,
       });
     } catch {
       /* skip */
@@ -182,7 +184,7 @@ export async function persistOrderHubDamagePhoto(
   orderId: string,
   damageName: string,
   blob: ArrayBuffer,
-  meta?: { mimeType?: string; sizeKb?: number }
+  meta?: { mimeType?: string; sizeKb?: number; comment?: string }
 ): Promise<void> {
   const itemKey = buildOrderDamageItemKey(damageName);
   return persistDamagePhotoBlob(orderId, DAMAGE_PHOTOS_ORDER_SECTION, itemKey, blob, meta);

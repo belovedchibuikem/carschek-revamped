@@ -275,6 +275,9 @@ function mountPrintClone(element: HTMLElement, widthPx: number): { clone: HTMLEl
     dst.getContext('2d')?.drawImage(src, 0, 0);
   });
 
+  // Strip elements marked pdf-exclude (duration, photo capture line, etc.) — on-screen only.
+  clone.querySelectorAll('.pdf-exclude').forEach(el => el.remove());
+
   host.appendChild(clone);
   document.body.appendChild(host);
   return { clone, cleanup: () => host.remove() };
@@ -328,7 +331,10 @@ export async function captureElementToPdf(
         if (!h) return;
         h.style.visibility = 'visible';
         const target = h.firstElementChild as HTMLElement | null;
-        if (target) bands = collectNoCutBands(target, scale, expectedPageHeightPx);
+        if (target) {
+          target.querySelectorAll('.pdf-exclude').forEach(el => el.remove());
+          bands = collectNoCutBands(target, scale, expectedPageHeightPx);
+        }
       },
     });
 

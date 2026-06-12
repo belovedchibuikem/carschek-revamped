@@ -112,6 +112,24 @@
   font-family: 'Inter', system-ui, sans-serif;
   background: #ffffff;
   position: relative;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+#report-content.report-modern .text-xs {
+  font-size: 0.8125rem;
+}
+
+#report-content.report-modern .text-sm {
+  font-size: 0.9375rem;
+}
+
+#report-content.report-modern .text-base {
+  font-size: 1.0625rem;
+}
+
+#report-content.report-modern .text-xl {
+  font-size: 1.3125rem;
 }
 
 .report-modern .section-card {
@@ -134,6 +152,16 @@
   background: #ffffff;
   position: relative;
   max-width: 794px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+#report-content.report-classic .text-xs {
+  font-size: 0.75rem;
+}
+
+#report-content.report-classic .text-sm {
+  font-size: 0.8125rem;
 }
 
 .report-classic .section-card {

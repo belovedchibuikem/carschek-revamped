@@ -57,6 +57,54 @@ function findDefectForLine(defects: DefectSummary[], sectionId: string, line: Se
   return defects.find(d => d.sectionId === sectionId && d.itemLabel === line.label);
 }
 
+function vehicleDetailGridItems(data: InspectionReportData): { label: string; value: string }[] {
+  if (data.carDetailFields.length > 0) {
+    return data.carDetailFields.map(f => ({
+      label: f.label,
+      value: f.value.trim() || '—',
+    }));
+  }
+  const v = data.vehicle;
+  return [
+    { label: 'Brand', value: v.make || '—' },
+    { label: 'Model', value: v.model || '—' },
+    { label: 'Year', value: String(v.year) },
+    { label: 'Colour', value: v.colour || '—' },
+    { label: 'Transmission', value: v.transmission || '—' },
+    { label: 'Mileage', value: v.mileage || '—' },
+    { label: 'Plate', value: v.plate || '—' },
+    { label: 'City', value: v.city || '—' },
+    { label: 'Chasis Number', value: v.vin || '—' },
+    { label: 'Engine Capacity', value: v.engineNumber || '—' },
+  ];
+}
+
+function VehicleDetailsGrid({ data, classic }: { data: InspectionReportData; classic: boolean }) {
+  const items = vehicleDetailGridItems(data);
+  if (classic) {
+    return (
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] text-[#374151]">
+        {items.map(item => (
+          <React.Fragment key={item.label}>
+            <span className="font-bold uppercase">{item.label}:</span>
+            <span>{item.value}</span>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4 sm:grid-cols-3">
+      {items.map(item => (
+        <div key={item.label}>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF]">{item.label}</p>
+          <p className="text-sm font-bold text-[#1F2937]">{item.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function CategoryMiniBar({ label, pct }: { label: string; pct: number }) {
   return (
     <div className="flex items-center gap-2 text-xs text-[#374151]">
@@ -112,7 +160,7 @@ function VehiclePhotoGallery({ data, variant }: { data: InspectionReportData; va
           <h2 className={h2}>S04 — Vehicle Photo Documentation</h2>
           <span className="rounded-full bg-[#ff5722] px-2 py-0.5 text-[9px] font-bold text-white">{capturedCount}/11</span>
         </div>
-        <p className="mb-3 text-[9px] leading-snug text-[#6B7280]">{data.inspection.photoDocSubheading}</p>
+        <p className="pdf-exclude mb-3 text-[9px] leading-snug text-[#6B7280]">{data.inspection.photoDocSubheading}</p>
         <div className="grid grid-cols-3 gap-2">
           {slots.map(s => (
             <PhotoTile key={s.id} label={s.label} url={s.url} classic />
@@ -132,7 +180,7 @@ function VehiclePhotoGallery({ data, variant }: { data: InspectionReportData; va
       <div className="mb-2 flex items-center justify-between">
         <div>
           <h2 className={h2}>S04 — Vehicle Photo Documentation</h2>
-          <p className="mt-1 text-xs text-[#6B7280]">{data.inspection.photoDocSubheading}</p>
+          <p className="pdf-exclude mt-1 text-xs text-[#6B7280]">{data.inspection.photoDocSubheading}</p>
         </div>
         <div className="flex items-center gap-1 rounded-xl bg-[#FFF3EE] px-3 py-1.5">
           <span className="text-xs font-bold text-[#ff5722]">{capturedCount}/11 photos</span>
@@ -347,13 +395,11 @@ function AllSectionsBreakdown({ data, variant }: { data: InspectionReportData; v
 
   // Group sections by category for better readability
   const sectionGroups = [
-    { label: 'Vehicle Information', ids: ['S01', 'S02', 'S03'] },
+    { label: 'Customer Information', ids: ['S01', 'S02'] },
     { label: 'Exterior & Body', ids: ['S05', 'S06', 'S07', 'S08'] },
     { label: 'Mechanical Systems', ids: ['S09', 'S10', 'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17'] },
     { label: 'Interior & Comfort', ids: ['S18', 'S19', 'S20', 'S21', 'S22'] },
     { label: 'Electronics & Diagnostics', ids: ['S23', 'S24'] },
-    { label: 'Damage Assessment', ids: ['S25'] },
-    { label: 'Inspector Notes', ids: ['S26'] },
   ];
 
   return (
@@ -427,83 +473,77 @@ function AllSectionsBreakdown({ data, variant }: { data: InspectionReportData; v
   );
 }
 
-// ─── Damage Gallery ──────────────────────────────────────────────────────────
+// ─── Inspector Comments (S26) ────────────────────────────────────────────────
 
-function DamageGallery({ data, variant }: { data: InspectionReportData; variant: ReportVariant }) {
-  const withPhotos = data.defects.filter(d => d.damagePhotoUrls.length > 0);
-  const allDefects = data.defects;
-  if (!allDefects.length) return null;
+function InspectorCommentsSection({ data, variant }: { data: InspectionReportData; variant: ReportVariant }) {
+  const comments = data.inspectorComments;
+  if (!comments.length) return null;
 
   const classic = variant === 'classic';
   const h2 = classic ? 'text-sm font-black uppercase tracking-wide text-[#1F2937]' : 'text-base font-bold text-[#1F2937]';
 
   return (
     <section className="section-card">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className={h2}>S25 — Damage Assessment & Photo Evidence</h2>
-        <div className="flex gap-2">
-          <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-[#C0392B]">
-            {allDefects.filter(d => d.severity === 'Critical').length} Critical
-          </span>
-          <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-[#D35400]">
-            {allDefects.filter(d => d.severity === 'Major').length} Major
-          </span>
-        </div>
-      </div>
-
-      {/* Defects list */}
-      <div className={`space-y-4`}>
-        {allDefects.map((d, di) => (
+      <h2 className={h2}>S26 — Inspector Comments</h2>
+      <div className={`mt-4 space-y-3 ${classic ? '' : ''}`}>
+        {comments.map(c => (
           <div
-            key={`${d.sectionId}-${d.itemLabel}-${di}`}
-            className={`overflow-hidden ${classic ? 'border border-[#D1D5DB]' : 'rounded-xl border border-[#E5E7EB]'}`}
+            key={c.label}
+            className={`${classic ? 'border border-[#D1D5DB] px-3 py-2' : 'rounded-xl border border-[#E5E7EB] bg-white px-4 py-3'}`}
             style={{ pageBreakInside: 'avoid' }}
           >
-            {/* Defect header */}
-            <div className={`flex flex-wrap items-center justify-between gap-2 px-3 py-2 ${classic ? 'bg-[#F4F6F8]' : 'bg-[#F9FAFB]'}`}>
-              <div>
-                <p className={`font-bold text-[#1F2937] ${classic ? 'text-[10px] uppercase' : 'text-sm'}`}>
-                  {d.sectionName}
-                </p>
-                <p className={`text-[#374151] ${classic ? 'text-[9px]' : 'text-xs'}`}>{d.itemLabel}</p>
-              </div>
-              <span className={`rounded-full px-2 py-0.5 font-bold ${classic ? 'text-[9px]' : 'text-[11px]'} ${severityBg(d.severity)} ${severityStyle(d.severity)}`}>
-                {d.severity}
-              </span>
-            </div>
+            <p className={`font-bold text-[#1F2937] ${classic ? 'text-[10px] uppercase' : 'text-sm'}`}>{c.label}</p>
+            <p className={`mt-1 text-[#374151] ${classic ? 'text-[10px]' : 'text-sm'} ${!c.value ? 'text-[#9CA3AF]' : ''}`}>
+              {c.value || '—'}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
-            <div className="px-3 py-3">
-              {d.note && (
-                <p className={`mb-2 text-[#374151] ${classic ? 'text-[9px]' : 'text-xs'}`}>
-                  <span className="font-semibold">Inspector Note:</span> {d.note}
-                </p>
-              )}
-              {d.aiAnalysis && (
-                <p className={`mb-2 rounded-lg bg-blue-50 px-2 py-1.5 text-[#374151] ${classic ? 'text-[9px]' : 'text-xs'}`}>
-                  <span className="font-semibold">🤖 AI Analysis:</span> {d.aiAnalysis}
-                </p>
-              )}
-              {d.damagePhotoUrls.length > 0 && (
-                <div className={`flex flex-wrap gap-2 ${classic ? 'gap-1.5' : 'gap-3'}`}>
-                  {d.damagePhotoUrls.map((u, pi) => (
-                    <div key={pi} className="flex flex-col gap-1">
-                      <div
-                        className={`overflow-hidden bg-[#F9FAFB] ${classic ? 'border border-black' : 'rounded-lg border border-[#E5E7EB]'}`}
-                        style={{ width: classic ? 100 : 130, aspectRatio: '4 / 3' }}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={u} alt="" className="h-full w-full object-cover" crossOrigin="anonymous" />
-                      </div>
-                      <p className={`text-[#6B7280] ${classic ? 'text-[8px]' : 'text-[10px]'}`}>
-                        Photo {pi + 1}/{d.damagePhotoUrls.length}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {d.damagePhotoUrls.length === 0 && (
-                <p className={`text-[#9CA3AF] ${classic ? 'text-[9px]' : 'text-xs'}`}>No photos attached for this defect</p>
-              )}
+// ─── Hub Damage Photos (S25) ─────────────────────────────────────────────────
+
+function HubDamageGallery({ data, variant }: { data: InspectionReportData; variant: ReportVariant }) {
+  const entries = data.hubDamages;
+  if (!entries.length) return null;
+
+  const classic = variant === 'classic';
+  const h2 = classic ? 'text-sm font-black uppercase tracking-wide text-[#1F2937]' : 'text-base font-bold text-[#1F2937]';
+
+  return (
+    <section className="section-card">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 className={h2}>S25 — Damage Pictures</h2>
+        <span className={`rounded-full bg-[#FFF3EE] px-2 py-0.5 font-bold text-[#ff5722] ${classic ? 'text-[9px]' : 'text-xs'}`}>
+          {entries.length} photo{entries.length === 1 ? '' : 's'}
+        </span>
+      </div>
+      <div className="space-y-4">
+        {entries.map(entry => (
+          <div
+            key={entry.id}
+            className={`flex flex-col gap-3 sm:flex-row sm:items-start ${classic ? 'border border-[#D1D5DB] p-3' : 'rounded-xl border border-[#E5E7EB] bg-white p-4'}`}
+            style={{ pageBreakInside: 'avoid' }}
+          >
+            <div
+              className={`shrink-0 overflow-hidden bg-[#F9FAFB] ${classic ? 'border border-black' : 'rounded-lg border border-[#E5E7EB]'}`}
+              style={{ width: classic ? 140 : 180, aspectRatio: '4 / 3' }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={entry.photoUrl} alt={entry.label} className="h-full w-full object-cover" crossOrigin="anonymous" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className={`font-bold text-[#1F2937] ${classic ? 'text-[11px] uppercase' : 'text-sm'}`}>
+                Damage: {entry.label}
+              </p>
+              <p className={`mt-2 text-[#6B7280] ${classic ? 'text-[9px] font-bold uppercase' : 'text-xs font-semibold uppercase tracking-wide'}`}>
+                Comment
+              </p>
+              <p className={`mt-0.5 text-[#374151] ${classic ? 'text-[10px]' : 'text-sm'} ${!entry.comment ? 'text-[#9CA3AF]' : ''}`}>
+                {entry.comment || '—'}
+              </p>
             </div>
           </div>
         ))}
@@ -605,19 +645,13 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
                 <span className="font-bold uppercase">Inspector:</span> {data.inspector.name} · Cert #{data.inspector.certNumber}
               </p>
               <p className="mt-1 text-[10px] text-[#6B7280]">
-                Date: {data.inspection.inspectionDateLong} · Duration: {data.inspection.durationHuman}
+                Date: {data.inspection.inspectionDateLong}
+                <span className="pdf-exclude"> · Duration: {data.inspection.durationHuman}</span>
               </p>
               <p className="mt-1 text-[10px] text-[#6B7280]">
                 Zone: {data.inspection.zone} · Report Version: v{data.inspection.version}
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-[9px] text-[#374151]">
-                <span className="font-bold uppercase">Make:</span><span>{v.make}</span>
-                <span className="font-bold uppercase">Model:</span><span>{v.model}</span>
-                <span className="font-bold uppercase">Year:</span><span>{v.year}</span>
-                <span className="font-bold uppercase">Colour:</span><span>{v.colour}</span>
-                <span className="font-bold uppercase">Plate:</span><span>{v.plate}</span>
-                <span className="font-bold uppercase">Mileage:</span><span>{v.mileage}</span>
-              </div>
+              <VehicleDetailsGrid data={data} classic />
             </div>
           </div>
         ) : (
@@ -634,25 +668,7 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
             <p className="mt-2 text-sm text-[#374151]">{subtitleParts.join('  •  ')}</p>
             <p className="mt-1 font-mono text-xs text-[#6B7280]">{metaLine}</p>
 
-            {/* Vehicle details grid */}
-            <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4 sm:grid-cols-3">
-              {[
-                { label: 'Make', value: v.make },
-                { label: 'Model', value: v.model },
-                { label: 'Year', value: String(v.year) },
-                { label: 'Colour', value: v.colour },
-                { label: 'Transmission', value: v.transmission },
-                { label: 'Mileage', value: v.mileage },
-                { label: 'Plate', value: v.plate },
-                { label: 'City', value: v.city },
-                { label: 'Engine No.', value: v.engineNumber },
-              ].map(item => (
-                <div key={item.label}>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">{item.label}</p>
-                  <p className="text-xs font-bold text-[#1F2937]">{item.value || '—'}</p>
-                </div>
-              ))}
-            </div>
+            <VehicleDetailsGrid data={data} classic={false} />
 
             <div className="mt-6 flex flex-wrap items-start justify-center gap-6 md:justify-start">
               <CarschekScore score={data.score.total} size={96} animated={false} showLabel />
@@ -670,7 +686,10 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
                 { label: 'Date', value: data.inspection.inspectionDateLong },
                 { label: 'Duration', value: data.inspection.durationHuman },
               ].map(item => (
-                <div key={item.label} className="rounded-lg border border-[#E5E7EB] bg-white px-3 py-2">
+                <div
+                  key={item.label}
+                  className={`rounded-lg border border-[#E5E7EB] bg-white px-3 py-2${item.label === 'Duration' ? ' pdf-exclude' : ''}`}
+                >
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-[#9CA3AF]">{item.label}</p>
                   <p className="text-xs font-bold text-[#1F2937]">{item.value}</p>
                 </div>
@@ -704,8 +723,11 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
       {/* ── All 26 Sections Detailed Breakdown ── */}
       <AllSectionsBreakdown data={data} variant={variant} />
 
-      {/* ── S25: Damage Gallery ── */}
-      <DamageGallery data={data} variant={variant} />
+      {/* ── S26: Inspector Comments ── */}
+      <InspectorCommentsSection data={data} variant={variant} />
+
+      {/* ── S25: Damage Pictures ── */}
+      <HubDamageGallery data={data} variant={variant} />
 
       {/* ── Repair Costs ── */}
       <RepairCostsSection data={data} variant={variant} />
@@ -759,7 +781,7 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
             <p className="font-semibold text-[#1F2937]">Scan to verify this report at</p>
             <p className="break-all font-mono text-[11px] text-[#ff8a65]">{data.inspection.qrVerifyUrl.replace(/^https:\/\//, '')}</p>
             <p className="mt-3 text-[#6B7280]">
-              This report is valid for 90 days from the inspection date. Re-inspection recommended after this period.
+              This report is valid for 48 hrs from the inspection date. Re-inspection recommended after this period.
             </p>
             <p className="mt-4 font-bold text-[#1F2937]">Carschek Automotive Platform</p>
             <p>info@carschek.com · +234 817 362 4953</p>

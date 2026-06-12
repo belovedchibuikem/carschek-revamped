@@ -344,6 +344,7 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
           await persistOrderHubDamagePhoto(jobId, label, buf, {
             mimeType: blob.type || 'image/jpeg',
             sizeKb: Math.round(blob.size / 1024),
+            comment: comment.trim() || undefined,
           });
           reload();
           setCameraOpen(false);

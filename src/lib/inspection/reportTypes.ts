@@ -116,9 +116,27 @@ export type RepairCostRow = {
   openEnded?: boolean;
 };
 
+export type ReportLabelValue = {
+  label: string;
+  value: string;
+};
+
+export type HubDamageEntry = {
+  id: number;
+  label: string;
+  comment?: string;
+  photoUrl: string;
+};
+
 export type InspectionReportData = {
   inspection: ReportInspectionMeta;
   vehicle: ReportVehicle;
+  /** All S03 car-detail fields for the cover vehicle grid (label → value). */
+  carDetailFields: ReportLabelValue[];
+  /** All S26 inspector comment fields (always includes every defined field). */
+  inspectorComments: ReportLabelValue[];
+  /** Order-level damage hub photos (S25) with inspector-entered names and comments. */
+  hubDamages: HubDamageEntry[];
   inspector: ReportInspector;
   vehiclePhotos: VehiclePhotoSlot[];
   sections: InspectionSectionSummary[];

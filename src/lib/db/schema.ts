@@ -69,6 +69,8 @@ export interface DamagePhotoRow {
   sizeKb?: number;
   synced?: boolean;
   capturedAt?: number;
+  /** Inspector comment entered when capturing hub damage photos. */
+  comment?: string;
   /** Set after successful upload (sync v5 index). */
   uploadedUrl?: string;
 }

@@ -18,7 +18,10 @@ import type {
   SectionLineResult,
 } from '@/lib/inspection/reportTypes';
 import { makeDamagePlaceholderDataUrl } from '@/lib/inspection/reportPlaceholders';
-import { loadDamagePhotoObjectUrlsForItem } from '@/lib/inspection/dexieDamagePhotos';
+import {
+  loadDamagePhotoObjectUrlsForItem,
+  loadDamagePhotosForOrder,
+} from '@/lib/inspection/dexieDamagePhotos';
 
 const REPORT_INSPECTOR_NAME = 'Emeka Adeyemi';
 const REPORT_CERT = 'CA-0041';
@@ -310,6 +313,49 @@ export async function buildReportData(
   const repairCosts = repairRowsFromDefects(defects);
   const scoreCategories = scoreCategoriesFromTotal(scoreNum);
 
+  const s03Def = getSectionDef('S03');
+  const s03State = await loadChecklistState(inspectionId, 'S03');
+  const s03Stored = (s03State?.defects ?? {}) as Record<string, { severity: string; note: string }>;
+  const carDetailFields = (s03Def?.fields ?? []).map(f => ({
+    label: f.label,
+    value: s03Stored[`form_${f.id}`]?.note?.trim() ?? '',
+  }));
+
+  const s03 = (id: string) => s03Stored[`form_${id}`]?.note?.trim() ?? '';
+  if (s03('s03_brand')) vehicle = { ...vehicle, make: s03('s03_brand') };
+  if (s03('s03_model')) vehicle = { ...vehicle, model: s03('s03_model') };
+  if (s03('s03_year')) {
+    const y = parseInt(s03('s03_year'), 10);
+    if (y) vehicle = { ...vehicle, year: y };
+  }
+  if (s03('s03_transmission')) vehicle = { ...vehicle, transmission: s03('s03_transmission') };
+  if (s03('s03_exterior_colour')) vehicle = { ...vehicle, colour: s03('s03_exterior_colour') };
+  if (s03('s03_licence_plate')) vehicle = { ...vehicle, plate: s03('s03_licence_plate') };
+  if (s03('s03_city_location')) vehicle = { ...vehicle, city: s03('s03_city_location') };
+  if (s03('s03_chasis_number')) vehicle = { ...vehicle, vin: s03('s03_chasis_number') };
+  if (s03('s03_engine_capacity')) vehicle = { ...vehicle, engineNumber: s03('s03_engine_capacity') };
+  if (s03('s03_mileage')) {
+    const unit = s03('s03_mileage_unit');
+    const unitLabel = unit === 'MILES' ? 'mi' : unit === 'KILOMETERS' ? 'km' : unit.toLowerCase();
+    vehicle = { ...vehicle, mileage: unitLabel ? `${s03('s03_mileage')} ${unitLabel}` : s03('s03_mileage') };
+  }
+
+  const s26Def = getSectionDef('S26');
+  const s26State = await loadChecklistState(inspectionId, 'S26');
+  const s26Stored = (s26State?.defects ?? {}) as Record<string, { severity: string; note: string }>;
+  const inspectorComments = (s26Def?.commentFields ?? []).map(f => ({
+    label: f.label,
+    value: s26Stored[`comment_${f.id}`]?.note?.trim() ?? '',
+  }));
+
+  const { photos: hubPhotoRows } = await loadDamagePhotosForOrder(inspectionId);
+  const hubDamages = hubPhotoRows.map(p => ({
+    id: p.id,
+    label: p.label,
+    comment: p.comment,
+    photoUrl: p.url,
+  }));
+
   return {
     inspection: {
       id: inspectionId,
@@ -326,6 +372,9 @@ export async function buildReportData(
       qrVerifyUrl,
     },
     vehicle,
+    carDetailFields,
+    inspectorComments,
+    hubDamages,
     inspector: {
       name: inspectorName,
       certNumber: REPORT_CERT,

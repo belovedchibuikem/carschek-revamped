@@ -423,8 +423,7 @@ export const SECTION_DEFS: SectionDef[] = [
       { left: yna('s24_srs', 'SRS'), right: yna('s24_bcm', 'BCM') },
       { left: yna('s24_pcm', 'PCM'), right: yna('s24_detonation_sensor', 'Detonation Sensor') },
       { left: yna('s24_egr_sensor', 'EGR Sensor'), right: yna('s24_vehicle_speed', 'Vehicle Speed') },
-      { left: yna('s24_gear_shaft_solenoid', 'Gear Shaft/Solenoid'), right: yna('s24_catalyst_sensor_right', 'Catalyst Sensor') },
-      { left: yna('s24_catalyst_sensor_left', 'Catalyst Sensor'), right: null },
+      { left: yna('s24_gear_shaft_solenoid', 'Gear Shaft/Solenoid'), right: yna('s24_catalyst_sensor', 'Catalyst Sensor') },
     ],
   },
 
