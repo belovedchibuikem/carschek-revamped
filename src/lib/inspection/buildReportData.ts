@@ -1,8 +1,13 @@
 'use client';
 
 import { db } from '@/lib/db/schema';
-import { INSPECTION_SECTIONS, ORDERS, getGaugeConditionLabel, getGaugeStrokeColor } from '@/lib/mockData';
-import { loadChecklistState } from '@/lib/inspectionChecklistPersistence';
+import { CARS, INSPECTION_SECTIONS, ORDERS, REPORTS, getGaugeConditionLabel, getGaugeStrokeColor } from '@/lib/mockData';
+import {
+  defectEntryNote,
+  loadChecklistState,
+  readChecklistFormValue,
+  type ChecklistPersistPayload,
+} from '@/lib/inspectionChecklistPersistence';
 import { getSectionDef, type ToggleItem } from '@/lib/inspection/inspectionSections';
 import { findMockJob } from '@/lib/inspection/mockInspectorJobs';
 import { loadSignatureBase64, loadSessionTimerSeconds } from '@/lib/inspection/sessionDexie';
@@ -36,6 +41,66 @@ function formatDurationHuman(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m} min ${s} sec`;
+}
+
+type CarRegisterRow = {
+  brand: string;
+  model: string;
+  year: number;
+  plate: string;
+  mileage: number;
+  colour: string;
+  vin: string;
+  city: string;
+};
+
+function carRegisterToS03Fields(car: CarRegisterRow): Record<string, string> {
+  return {
+    s03_brand: car.brand,
+    s03_model: car.model,
+    s03_year: String(car.year),
+    s03_exterior_colour: car.colour,
+    s03_mileage: String(car.mileage),
+    s03_mileage_unit: 'KILOMETERS',
+    s03_licence_plate: car.plate,
+    s03_city_location: car.city,
+    s03_chasis_number: car.vin,
+  };
+}
+
+async function loadLatestS03SyncPayload(orderId: string): Promise<ChecklistPersistPayload | null> {
+  if (!db) return null;
+  const rows = await db.syncQueue.filter(q => q.type === 'inspection-section-complete').toArray();
+  const matches = rows
+    .filter(r => {
+      try {
+        const p = JSON.parse(r.payload ?? '{}') as { orderId?: string; sectionId?: string };
+        return p.orderId === orderId && p.sectionId === 'S03';
+      } catch {
+        return false;
+      }
+    })
+    .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+  const latest = matches[0];
+  if (!latest?.payload) return null;
+  try {
+    return JSON.parse(latest.payload) as ChecklistPersistPayload;
+  } catch {
+    return null;
+  }
+}
+
+function resolveS03FieldValue(
+  fieldId: string,
+  checklist: ChecklistPersistPayload | null,
+  syncPayload: ChecklistPersistPayload | null,
+  carFields: Record<string, string>
+): string {
+  const fromChecklist = readChecklistFormValue(checklist, fieldId);
+  if (fromChecklist) return fromChecklist;
+  const fromSync = readChecklistFormValue(syncPayload, fieldId);
+  if (fromSync) return fromSync;
+  return carFields[fieldId]?.trim() ?? '';
 }
 
 function reportNumberFromId(inspectionId: string): string {
@@ -213,7 +278,9 @@ export async function buildReportData(
       const fields = def.fields ?? [];
       totalItems = fields.length;
       for (const field of fields) {
-        const value = storedDefects[`form_${field.id}`]?.note ?? '';
+        const value =
+          defectEntryNote(storedDefects[`form_${field.id}`]).trim() ||
+          (typeof results[field.id] === 'string' ? results[field.id]!.trim() : '');
         items.push({ sectionId: sec.id, itemKey: field.id, label: field.label, result: value || null });
         if (!value) continue;
         passN++;
@@ -223,7 +290,7 @@ export async function buildReportData(
       const fields = def.commentFields ?? [];
       totalItems = fields.length;
       for (const field of fields) {
-        const value = storedDefects[`comment_${field.id}`]?.note ?? '';
+        const value = defectEntryNote(storedDefects[`comment_${field.id}`]).trim();
         items.push({ sectionId: sec.id, itemKey: field.id, label: field.label, result: value || null });
         if (!value) continue;
         passN++;
@@ -315,13 +382,17 @@ export async function buildReportData(
 
   const s03Def = getSectionDef('S03');
   const s03State = await loadChecklistState(inspectionId, 'S03');
-  const s03Stored = (s03State?.defects ?? {}) as Record<string, { severity: string; note: string }>;
+  const s03SyncPayload = await loadLatestS03SyncPayload(inspectionId);
+  const linkedReport = REPORTS.find(r => r.orderId === inspectionId);
+  const linkedCar = linkedReport?.carId ? CARS.find(c => c.id === linkedReport.carId) : undefined;
+  const carS03Fields = linkedCar ? carRegisterToS03Fields(linkedCar as CarRegisterRow) : {};
+
   const carDetailFields = (s03Def?.fields ?? []).map(f => ({
     label: f.label,
-    value: s03Stored[`form_${f.id}`]?.note?.trim() ?? '',
+    value: resolveS03FieldValue(f.id, s03State, s03SyncPayload, carS03Fields),
   }));
 
-  const s03 = (id: string) => s03Stored[`form_${id}`]?.note?.trim() ?? '';
+  const s03 = (id: string) => resolveS03FieldValue(id, s03State, s03SyncPayload, carS03Fields);
   if (s03('s03_brand')) vehicle = { ...vehicle, make: s03('s03_brand') };
   if (s03('s03_model')) vehicle = { ...vehicle, model: s03('s03_model') };
   if (s03('s03_year')) {
@@ -342,10 +413,9 @@ export async function buildReportData(
 
   const s26Def = getSectionDef('S26');
   const s26State = await loadChecklistState(inspectionId, 'S26');
-  const s26Stored = (s26State?.defects ?? {}) as Record<string, { severity: string; note: string }>;
   const inspectorComments = (s26Def?.commentFields ?? []).map(f => ({
     label: f.label,
-    value: s26Stored[`comment_${f.id}`]?.note?.trim() ?? '',
+    value: defectEntryNote(s26State?.defects?.[`comment_${f.id}`]).trim(),
   }));
 
   const { photos: hubPhotoRows } = await loadDamagePhotosForOrder(inspectionId);

@@ -9,9 +9,11 @@ import { SearchableSelect } from '@/components/shared/SearchableSelect';
 import { modelOptionsByName, yearOptionsForModelName } from '@/lib/reference/carCascade';
 import { useInspectorHref } from '@/contexts/InspectorRouteContext';
 import {
+  defectEntryNote,
   loadChecklistState,
   useInspectionChecklistPersistence,
   enqueueInspectionSectionSync,
+  type ChecklistDefectEntry,
   type ChecklistPersistPayload,
 } from '@/lib/inspectionChecklistPersistence';
 import { INSPECTION_SECTIONS } from '@/lib/mockData';
@@ -472,6 +474,7 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
   const [damagesCount, setDamagesCount] = useState(0);
 
   const hydrating = useRef(true);
+  const storedDefectsRef = useRef<Record<string, ChecklistDefectEntry>>({});
   const touchStartX = useRef<number | null>(null);
   const { saveStatus, scheduleSave, flush, lastSavedAt } = useInspectionChecklistPersistence(jobId, sectionId);
   const [online, setOnline] = useState(true);
@@ -512,19 +515,25 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
           setToggleValues(tv);
         }
         if (data?.defects) {
-          // Restore form/comment values stored in defects.notes
+          storedDefectsRef.current = { ...data.defects };
           const fv: Record<string, string> = {};
           const cv: Record<string, string> = {};
-          for (const [k, v] of Object.entries(data.defects as Record<string, { severity: string; note: string }>)) {
-            if (k.startsWith('form_')) fv[k.replace('form_', '')] = v.note;
-            else if (k.startsWith('comment_')) cv[k.replace('comment_', '')] = v.note;
+          for (const [k, v] of Object.entries(data.defects)) {
+            const note = defectEntryNote(v);
+            if (k.startsWith('form_')) fv[k.replace('form_', '')] = note;
+            else if (k.startsWith('comment_')) cv[k.replace('comment_', '')] = note;
           }
-          if (Object.keys(fv).length) setFormValues(fv);
-          if (Object.keys(cv).length) setCommentValues(cv);
+          if (Object.keys(fv).length) setFormValues(prev => ({ ...fv, ...prev }));
+          if (Object.keys(cv).length) setCommentValues(prev => ({ ...cv, ...prev }));
+        } else {
+          storedDefectsRef.current = {};
         }
       })
       .finally(() => {
-        hydrating.current = false;
+        // Defer until after React applies restored form state — avoids flushing an empty payload.
+        window.setTimeout(() => {
+          hydrating.current = false;
+        }, 0);
       });
   }, [jobId, sectionId]);
 
@@ -570,9 +579,16 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
   const buildPayload = useCallback((): ChecklistPersistPayload => {
     const results: Record<string, string | null> = {};
     for (const [k, v] of Object.entries(toggleValues)) results[k] = v;
-    const defects: Record<string, { severity: string; note: string }> = {};
-    for (const [k, v] of Object.entries(formValues)) defects[`form_${k}`] = { severity: 'Minor', note: v };
-    for (const [k, v] of Object.entries(commentValues)) defects[`comment_${k}`] = { severity: 'Minor', note: v };
+    const defects: Record<string, ChecklistDefectEntry> = { ...storedDefectsRef.current };
+    for (const [k, v] of Object.entries(formValues)) {
+      if (v) defects[`form_${k}`] = { severity: 'Minor', note: v };
+      else delete defects[`form_${k}`];
+    }
+    for (const [k, v] of Object.entries(commentValues)) {
+      if (v) defects[`comment_${k}`] = { severity: 'Minor', note: v };
+      else delete defects[`comment_${k}`];
+    }
+    storedDefectsRef.current = defects;
     return { results, defects, expandedDefect: null };
   }, [toggleValues, formValues, commentValues]);
 

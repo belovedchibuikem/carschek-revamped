@@ -3,11 +3,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/db/schema';
 
+export type ChecklistDefectEntry = { severity: string; note: string };
+
 export type ChecklistPersistPayload = {
   results: Record<string, string | null>;
-  defects: Record<string, { severity: string; note: string }>;
+  defects: Record<string, ChecklistDefectEntry>;
   expandedDefect: string | null;
 };
+
+/** Read a stored defect note whether the payload used `{ note }` objects or legacy plain strings. */
+export function defectEntryNote(v: unknown): string {
+  if (typeof v === 'string') return v;
+  if (v && typeof v === 'object' && 'note' in v) {
+    const n = (v as { note?: string }).note;
+    return typeof n === 'string' ? n : '';
+  }
+  return '';
+}
 
 const DEBOUNCE_MS = 500;
 
@@ -74,6 +86,19 @@ export function useInspectionChecklistPersistence(orderId: string, sectionId: st
   }, []);
 
   return { saveStatus, scheduleSave, flush, lastSavedAt };
+}
+
+/** Resolve a form field value from checklist payload (`defects.form_*` or legacy `results`). */
+export function readChecklistFormValue(
+  payload: ChecklistPersistPayload | null | undefined,
+  fieldId: string
+): string {
+  if (!payload) return '';
+  const fromDefect = defectEntryNote(payload.defects?.[`form_${fieldId}`]).trim();
+  if (fromDefect) return fromDefect;
+  const fromResults = payload.results?.[fieldId];
+  if (typeof fromResults === 'string' && fromResults.trim()) return fromResults.trim();
+  return '';
 }
 
 export async function enqueueInspectionSectionSync(orderId: string, sectionId: string, payload: ChecklistPersistPayload): Promise<void> {
