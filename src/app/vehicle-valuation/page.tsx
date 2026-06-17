@@ -55,6 +55,14 @@ function generateId(): string {
   return `VAL-${Date.now().toString().slice(-6)}`;
 }
 
+/** FSV is 70% of the stated market value. */
+const FSV_MARKET_RATIO = 0.7;
+
+function calculateFsv(marketValue: number): number {
+  if (!marketValue || marketValue <= 0) return 0;
+  return Math.round(marketValue * FSV_MARKET_RATIO);
+}
+
 // ─── Mock saved valuations ────────────────────────────────────────────────────
 
 const MOCK_VALUATIONS: ValuationData[] = [
@@ -181,20 +189,35 @@ function ValuationFormModal({
   onSave: (data: ValuationData) => void;
   initial?: Partial<ValuationData>;
 }) {
-  const [form, setForm] = useState<Partial<ValuationData>>({
-    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-    clientName: '',
-    vehicleDescription: '',
-    marketValue: 0,
-    fsv: 0,
-    conditionValue: 0,
-    notes: '',
-    status: 'draft',
-    ...initial,
+  const [form, setForm] = useState<Partial<ValuationData>>(() => {
+    const base: Partial<ValuationData> = {
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      clientName: '',
+      vehicleDescription: '',
+      marketValue: 0,
+      fsv: 0,
+      conditionValue: 0,
+      notes: '',
+      status: 'draft',
+      ...initial,
+    };
+    const marketValue = Number(base.marketValue) || 0;
+    if (marketValue > 0) {
+      base.fsv = calculateFsv(marketValue);
+    }
+    return base;
   });
 
   const set = (key: keyof ValuationData, value: string | number) => {
     setForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  const setMarketValue = (value: number) => {
+    setForm(prev => ({
+      ...prev,
+      marketValue: value,
+      fsv: calculateFsv(value),
+    }));
   };
 
   const handleSave = () => {
@@ -202,13 +225,14 @@ function ValuationFormModal({
       alert('Please fill in Client Name, Vehicle Description, and Market Value');
       return;
     }
+    const marketValue = Number(form.marketValue) || 0;
     onSave({
       id: initial?.id ?? generateId(),
       date: form.date ?? '',
       clientName: form.clientName ?? '',
       vehicleDescription: form.vehicleDescription ?? '',
-      marketValue: Number(form.marketValue) || 0,
-      fsv: Number(form.fsv) || 0,
+      marketValue,
+      fsv: calculateFsv(marketValue),
       conditionValue: Number(form.conditionValue) || 0,
       notes: form.notes ?? '',
       status: 'final',
@@ -275,7 +299,7 @@ function ValuationFormModal({
                 <input
                   type="number"
                   value={form.marketValue ?? 0}
-                  onChange={e => set('marketValue', Number(e.target.value))}
+                  onChange={e => setMarketValue(Number(e.target.value))}
                   className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                 />
                 {(form.marketValue ?? 0) > 0 && (
@@ -286,13 +310,15 @@ function ValuationFormModal({
                 <label className="mb-1 block text-xs font-semibold text-[#374151]">FSV (₦)</label>
                 <input
                   type="number"
+                  readOnly
                   value={form.fsv ?? 0}
-                  onChange={e => set('fsv', Number(e.target.value))}
-                  className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none"
+                  aria-describedby="fsv-hint"
                 />
-                {(form.fsv ?? 0) > 0 && (
-                  <p className="mt-0.5 text-[10px] text-[#6B7280]">{formatNaira(Number(form.fsv))}</p>
-                )}
+                <p id="fsv-hint" className="mt-0.5 text-[10px] text-[#6B7280]">
+                  Auto-calculated at 70% of market value
+                  {(form.fsv ?? 0) > 0 ? ` · ${formatNaira(Number(form.fsv))}` : ''}
+                </p>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#374151]">Condition Value (₦)</label>

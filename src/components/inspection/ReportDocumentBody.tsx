@@ -444,6 +444,9 @@ function AllSectionsBreakdown({ data, variant }: { data: InspectionReportData; v
         </table>
       </div>
 
+      {/* S26 — immediately after summary table */}
+      <InspectorCommentsSection data={data} variant={variant} embedded />
+
       {/* Detailed section cards */}
       {sectionGroups.map(group => {
         const groupSections = data.sectionBreakdowns.filter(s => group.ids.includes(s.sectionId));
@@ -475,17 +478,26 @@ function AllSectionsBreakdown({ data, variant }: { data: InspectionReportData; v
 
 // ─── Inspector Comments (S26) ────────────────────────────────────────────────
 
-function InspectorCommentsSection({ data, variant }: { data: InspectionReportData; variant: ReportVariant }) {
+function InspectorCommentsSection({
+  data,
+  variant,
+  embedded,
+}: {
+  data: InspectionReportData;
+  variant: ReportVariant;
+  /** When true, render inside the inspection-results block (no outer section card). */
+  embedded?: boolean;
+}) {
   const comments = data.inspectorComments;
   if (!comments.length) return null;
 
   const classic = variant === 'classic';
   const h2 = classic ? 'text-sm font-black uppercase tracking-wide text-[#1F2937]' : 'text-base font-bold text-[#1F2937]';
 
-  return (
-    <section className="section-card">
-      <h2 className={h2}>S26 — Inspector Comments</h2>
-      <div className={`mt-4 space-y-3 ${classic ? '' : ''}`}>
+  const body = (
+    <>
+      <h2 className={embedded ? `${h2} mb-4` : h2}>S26 — Inspector Comments</h2>
+      <div className={`space-y-3 ${embedded ? '' : 'mt-4'}`}>
         {comments.map(c => (
           <div
             key={c.label}
@@ -499,8 +511,14 @@ function InspectorCommentsSection({ data, variant }: { data: InspectionReportDat
           </div>
         ))}
       </div>
-    </section>
+    </>
   );
+
+  if (embedded) {
+    return <div className="mb-6">{body}</div>;
+  }
+
+  return <section className="section-card">{body}</section>;
 }
 
 // ─── Hub Damage Photos (S25) ─────────────────────────────────────────────────
@@ -722,9 +740,6 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
 
       {/* ── All 26 Sections Detailed Breakdown ── */}
       <AllSectionsBreakdown data={data} variant={variant} />
-
-      {/* ── S26: Inspector Comments ── */}
-      <InspectorCommentsSection data={data} variant={variant} />
 
       {/* ── S25: Damage Pictures ── */}
       <HubDamageGallery data={data} variant={variant} />
