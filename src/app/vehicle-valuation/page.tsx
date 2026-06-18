@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { Car, DollarSign, FileText, Printer, Plus, Trash2, X, CheckCircle } from 'lucide-react';
-import AppLogo from '@/components/ui/AppLogo';
+import React, { useRef, useState } from 'react';
+import { Car, DollarSign, FileText, Printer, Plus, Trash2, X, CheckCircle, Loader2, Download } from 'lucide-react';
+import { toast } from 'sonner';
+import { captureElementToPdf } from '@/lib/reportPdf';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -63,6 +64,23 @@ function calculateFsv(marketValue: number): number {
   return Math.round(marketValue * FSV_MARKET_RATIO);
 }
 
+/** Valuation PDF palette — inline styles so html2canvas / print keep color. */
+const VAL_ORANGE = '#ff5722';
+const VAL_STRIPE = '#FEF3E8';
+const VAL_BORDER = '#D1D5DB';
+const VAL_INK = '#1F2937';
+const VAL_INK_MUTED = '#374151';
+
+const tdStyle = (stripe: boolean): React.CSSProperties => ({
+  border: `1px solid ${VAL_BORDER}`,
+  padding: '10px 12px',
+  fontSize: 14,
+  color: VAL_INK_MUTED,
+  backgroundColor: stripe ? VAL_STRIPE : '#ffffff',
+  verticalAlign: 'middle',
+  minHeight: 40,
+});
+
 // ─── Mock saved valuations ────────────────────────────────────────────────────
 
 const MOCK_VALUATIONS: ValuationData[] = [
@@ -95,14 +113,16 @@ const MOCK_VALUATIONS: ValuationData[] = [
 // ─── Valuation Print Report ───────────────────────────────────────────────────
 
 function ValuationPrintReport({ data }: { data: ValuationData }) {
-  const rows: Array<{ no: string; qty: string; description: string; unitPrice: string; total: string }> = [
-    { no: '', qty: '1', description: data.vehicleDescription, unitPrice: '', total: '' },
+  const fsv = data.fsv > 0 ? data.fsv : calculateFsv(data.marketValue);
+
+  const rows: Array<{ no: string; qty: string; description: string; unitPrice: string; total: string; bold?: boolean }> = [
+    { no: '', qty: '1', description: data.vehicleDescription, unitPrice: '', total: '', bold: true },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
-    { no: '', qty: '', description: 'MARKET VALUE', unitPrice: formatNaira(data.marketValue), total: formatNaira(data.marketValue) },
+    { no: '', qty: '', description: 'MARKET VALUE', unitPrice: formatNaira(data.marketValue), total: formatNaira(data.marketValue), bold: true },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
-    { no: '', qty: '', description: 'FSV', unitPrice: formatNaira(data.fsv), total: '' },
+    { no: '', qty: '', description: 'FSV', unitPrice: formatNaira(fsv), total: '', bold: true },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
-    { no: '', qty: '', description: 'CONDITION VALUE', unitPrice: formatNaira(data.conditionValue), total: '' },
+    { no: '', qty: '', description: 'CONDITION VALUE', unitPrice: formatNaira(data.conditionValue), total: '', bold: true },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
@@ -110,68 +130,132 @@ function ValuationPrintReport({ data }: { data: ValuationData }) {
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
   ];
 
+  const thStyle: React.CSSProperties = {
+    border: `1px solid ${VAL_BORDER}`,
+    padding: '10px 12px',
+    fontSize: 14,
+    fontWeight: 700,
+    backgroundColor: VAL_ORANGE,
+    color: '#ffffff',
+    textAlign: 'left',
+  };
+
   return (
-    <div className="valuation-print-report bg-white p-8" style={{ fontFamily: 'Arial, sans-serif', minWidth: 700 }}>
-      {/* Header */}
-      <div className="mb-8 flex items-start justify-between">
-        <div />
-        <div className="text-right">
-          <AppLogo size={80} />
+    <div
+      id="valuation-print-report"
+      className="valuation-print-report"
+      style={{
+        fontFamily: 'Arial, Helvetica, sans-serif',
+        backgroundColor: '#ffffff',
+        color: VAL_INK,
+        width: '100%',
+        maxWidth: 794,
+        margin: '0 auto',
+        padding: 32,
+        WebkitPrintColorAdjust: 'exact',
+        printColorAdjust: 'exact',
+      }}
+    >
+      <h1
+        style={{
+          margin: '0 0 32px',
+          fontSize: 28,
+          fontWeight: 900,
+          letterSpacing: '0.02em',
+          color: VAL_INK,
+          textTransform: 'uppercase',
+        }}
+      >
+        VALUATION PRICE
+      </h1>
+
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+          <span style={{ width: 64, fontSize: 14, fontWeight: 600, color: VAL_INK_MUTED }}>DATE</span>
+          <div
+            style={{
+              flex: 1,
+              border: `1px solid ${VAL_BORDER}`,
+              padding: '8px 12px',
+              fontSize: 14,
+              color: VAL_INK,
+              backgroundColor: '#ffffff',
+            }}
+          >
+            {data.date}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ width: 64, fontSize: 14, fontWeight: 600, color: VAL_INK_MUTED }}>NAME</span>
+          <div
+            style={{
+              flex: 1,
+              border: `1px solid ${VAL_BORDER}`,
+              padding: '8px 12px',
+              fontSize: 14,
+              fontWeight: 700,
+              color: VAL_INK,
+              backgroundColor: '#ffffff',
+              textTransform: 'uppercase',
+            }}
+          >
+            {data.clientName}
+          </div>
         </div>
       </div>
 
-      {/* Title */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-[#1F2937]">VALUATION PRICE</h1>
-      </div>
-
-      {/* Date & Name */}
-      <div className="mb-8 space-y-1">
-        <div className="flex items-center gap-4">
-          <span className="w-16 text-sm font-semibold text-[#374151]">DATE</span>
-          <div className="flex-1 border border-[#D1D5DB] px-3 py-1.5 text-sm text-[#1F2937]">{data.date}</div>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="w-16 text-sm font-semibold text-[#374151]">NAME</span>
-          <div className="flex-1 border border-[#D1D5DB] px-3 py-1.5 text-sm font-semibold text-[#1F2937]">{data.clientName}</div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <table className="w-full border-collapse border border-[#D1D5DB] text-sm">
+      <table
+        style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          border: `1px solid ${VAL_BORDER}`,
+          tableLayout: 'fixed',
+        }}
+      >
         <thead>
-          <tr className="bg-[#ff5722] text-white">
-            <th className="border border-[#D1D5DB] px-3 py-2 text-left font-bold" style={{ width: 60 }}>No.</th>
-            <th className="border border-[#D1D5DB] px-3 py-2 text-right font-bold" style={{ width: 80 }}>Quantity</th>
-            <th className="border border-[#D1D5DB] px-3 py-2 text-left font-bold">Description</th>
-            <th className="border border-[#D1D5DB] px-3 py-2 text-right font-bold" style={{ width: 140 }}>Unit Price</th>
-            <th className="border border-[#D1D5DB] px-3 py-2 text-right font-bold" style={{ width: 140 }}>Total</th>
+          <tr>
+            <th style={{ ...thStyle, width: 56 }}>No.</th>
+            <th style={{ ...thStyle, width: 88, textAlign: 'right' }}>Quantity</th>
+            <th style={thStyle}>Description</th>
+            <th style={{ ...thStyle, width: 140, textAlign: 'right' }}>Unit Price</th>
+            <th style={{ ...thStyle, width: 140, textAlign: 'right' }}>Total</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className={i % 2 === 0 ? 'bg-[#FEF3E8]' : 'bg-white'}>
-              <td className="border border-[#D1D5DB] px-3 py-2 text-[#374151]">{row.no}</td>
-              <td className="border border-[#D1D5DB] px-3 py-2 text-right text-[#374151]">{row.qty}</td>
-              <td className="border border-[#D1D5DB] px-3 py-2 font-medium text-[#1F2937]">{row.description}</td>
-              <td className="border border-[#D1D5DB] px-3 py-2 text-right font-semibold text-[#1F2937]">{row.unitPrice}</td>
-              <td className="border border-[#D1D5DB] px-3 py-2 text-right font-semibold text-[#1F2937]">{row.total}</td>
-            </tr>
-          ))}
+          {rows.map((row, i) => {
+            const stripe = i % 2 === 0;
+            const cell = tdStyle(stripe);
+            const descWeight = row.bold ? 700 : 400;
+            const moneyWeight = row.unitPrice ? 600 : 400;
+            return (
+              <tr key={i}>
+                <td style={cell}>{row.no}</td>
+                <td style={{ ...cell, textAlign: 'right' }}>{row.qty}</td>
+                <td style={{ ...cell, fontWeight: descWeight, color: VAL_INK }}>{row.description}</td>
+                <td style={{ ...cell, textAlign: 'right', fontWeight: moneyWeight, color: VAL_INK }}>{row.unitPrice}</td>
+                <td style={{ ...cell, textAlign: 'right', fontWeight: row.total ? 600 : 400, color: VAL_INK }}>{row.total}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
-      {/* Footer */}
-      <div className="mt-6 flex items-end justify-between">
-        <div>
-          <p className="text-sm text-[#374151]">
-            <span className="font-bold">Amount in words:</span>{' '}
-            <span>{numberToWords(data.marketValue)}</span>
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-sm font-bold text-[#1F2937]">Total</p>
-          <p className="text-lg font-black text-[#1F2937]">{formatNaira(data.marketValue)}</p>
+      <div
+        style={{
+          marginTop: 24,
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: 24,
+        }}
+      >
+        <p style={{ margin: 0, fontSize: 14, color: VAL_INK_MUTED, maxWidth: '60%' }}>
+          <span style={{ fontWeight: 700 }}>Amount in words:</span>{' '}
+          {numberToWords(data.marketValue)}
+        </p>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: VAL_INK }}>Total</p>
+          <p style={{ margin: '4px 0 0', fontSize: 22, fontWeight: 900, color: VAL_INK }}>{formatNaira(data.marketValue)}</p>
         </div>
       </div>
     </div>
@@ -364,12 +448,35 @@ function ValuationFormModal({
 // ─── Print Preview Modal ──────────────────────────────────────────────────────
 
 function PrintPreviewModal({ data, onClose }: { data: ValuationData; onClose: () => void }) {
-  const handlePrint = () => {
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    const el = reportRef.current;
+    if (!el) {
+      toast.error('Report not ready');
+      return;
+    }
+    setDownloading(true);
+    try {
+      await captureElementToPdf(el, `valuation-${data.id}.pdf`, { marginMm: 10, windowWidth: 794 });
+      toast.success('PDF downloaded');
+    } catch {
+      toast.error('Could not generate PDF');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleBrowserPrint = () => {
+    document.documentElement.classList.add('ck-valuation-print');
+    const off = () => document.documentElement.classList.remove('ck-valuation-print');
+    window.addEventListener('afterprint', off, { once: true });
     window.print();
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col bg-white">
+    <div className="valuation-print-modal fixed inset-0 z-[200] flex flex-col bg-white">
       {/* Toolbar */}
       <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-white px-6 py-3 print:hidden">
         <div className="flex items-center gap-2">
@@ -379,10 +486,19 @@ function PrintPreviewModal({ data, onClose }: { data: ValuationData; onClose: ()
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={handlePrint}
-            className="flex items-center gap-2 rounded-xl bg-[#ff5722] px-4 py-2 text-sm font-bold text-white hover:bg-[#e64a19]"
+            onClick={() => void handleDownloadPdf()}
+            disabled={downloading}
+            className="flex items-center gap-2 rounded-xl bg-[#ff5722] px-4 py-2 text-sm font-bold text-white hover:bg-[#e64a19] disabled:opacity-60"
           >
-            <Printer size={15} /> Print / Save PDF
+            {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+            {downloading ? 'Generating…' : 'Download PDF'}
+          </button>
+          <button
+            type="button"
+            onClick={handleBrowserPrint}
+            className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] px-4 py-2 text-sm font-semibold text-[#374151] hover:bg-[#F4F6F8]"
+          >
+            <Printer size={15} /> Print
           </button>
           <button type="button" onClick={onClose} className="rounded-xl border border-[#E5E7EB] px-4 py-2 text-sm font-semibold text-[#374151] hover:bg-[#F4F6F8]">
             Close
@@ -391,7 +507,7 @@ function PrintPreviewModal({ data, onClose }: { data: ValuationData; onClose: ()
       </div>
       {/* Report */}
       <div className="flex-1 overflow-auto bg-[#F4F6F8] p-6 print:bg-white print:p-0">
-        <div className="mx-auto max-w-3xl shadow-lg print:shadow-none">
+        <div ref={reportRef} className="mx-auto max-w-[794px] shadow-lg print:shadow-none">
           <ValuationPrintReport data={data} />
         </div>
       </div>

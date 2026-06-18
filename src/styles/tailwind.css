@@ -239,3 +239,38 @@
     margin: 12mm;
   }
 }
+
+/* Vehicle valuation print / PDF */
+@media print {
+  html.ck-valuation-print,
+  html.ck-valuation-print body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html.ck-valuation-print body * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    visibility: hidden;
+  }
+
+  html.ck-valuation-print #valuation-print-report,
+  html.ck-valuation-print #valuation-print-report * {
+    visibility: visible !important;
+  }
+
+  html.ck-valuation-print #valuation-print-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none !important;
+    max-width: 100% !important;
+  }
+
+  html.ck-valuation-print .print\\:hidden {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
