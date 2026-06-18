@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Download, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import AppLogo from '@/components/ui/AppLogo';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -64,7 +65,7 @@ export default function PwaInstallBanner() {
     return (
       <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#ff5722]/30 bg-[#EEF2FF] px-4 py-3 text-sm text-[#1F2937] dark:bg-[#ff5722]/20 dark:text-[#E5E7EB]">
         <div className="flex items-center gap-2 min-w-0">
-          <Download size={18} className="shrink-0 text-[#ff5722]" />
+          <AppLogo size={28} className="shrink-0" />
           <span className="font-medium">Install Carschek Inspector for offline access</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">

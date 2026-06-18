@@ -39,7 +39,7 @@ export function InvoicePrintTemplate({ invoice }: { invoice: PrintableInvoice })
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="brightness-0 invert">
-              <AppLogo size={48} src="/assets/images/app_logo.png" />
+              <AppLogo size={48} />
             </div>
             <div>
               <p className="text-lg font-bold tracking-wide">INVOICE</p>

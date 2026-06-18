@@ -12,7 +12,14 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'Carschek — Nigeria\'s Trusted Vehicle Inspection Platform',
   description: 'Carschek helps Nigerians buy and sell vehicles with confidence through professional inspections, verified listings, and transparent deal management.',
-  icons: { icon: [{ url: '/favicon.ico', type: 'image/x-icon' }] },
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.ico', type: 'image/x-icon' },
+    ],
+    apple: [{ url: '/favicon.png', type: 'image/png' }],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

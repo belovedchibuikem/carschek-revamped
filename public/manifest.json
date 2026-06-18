@@ -1,0 +1,22 @@
+{
+  "name": "Carschek Inspector",
+  "short_name": "Carschek",
+  "description": "Nigeria's trusted vehicle inspection platform — field inspector app",
+  "start_url": "/inspector/jobs",
+  "display": "standalone",
+  "background_color": "#ff5722",
+  "theme_color": "#ff5722",
+  "icons": [
+    {
+      "src": "/assets/images/carschek-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

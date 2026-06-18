@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import { Car, DollarSign, FileText, Printer, Plus, Trash2, X, CheckCircle, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { captureElementToPdf } from '@/lib/reportPdf';
+import { CARSCHEK_LOGO_PATH } from '@/lib/branding';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -156,18 +157,26 @@ function ValuationPrintReport({ data }: { data: ValuationData }) {
         printColorAdjust: 'exact',
       }}
     >
-      <h1
-        style={{
-          margin: '0 0 32px',
-          fontSize: 28,
-          fontWeight: 900,
-          letterSpacing: '0.02em',
-          color: VAL_INK,
-          textTransform: 'uppercase',
-        }}
-      >
-        VALUATION PRICE
-      </h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={CARSCHEK_LOGO_PATH}
+          alt="Carschek"
+          style={{ height: 72, width: 'auto', objectFit: 'contain' }}
+        />
+        <h1
+          style={{
+            margin: 0,
+            fontSize: 28,
+            fontWeight: 900,
+            letterSpacing: '0.02em',
+            color: VAL_INK,
+            textTransform: 'uppercase',
+          }}
+        >
+          VALUATION PRICE
+        </h1>
+      </div>
 
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>

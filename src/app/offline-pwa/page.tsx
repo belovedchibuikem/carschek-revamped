@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
+import AppLogo from '@/components/ui/AppLogo';
 import { playReconnectSyncSequenceDemo } from '@/components/providers/NetworkProvider';
 import { toast as sonnerToast } from 'sonner';
 import { Wifi, WifiOff, RefreshCw, X, ChevronDown, ChevronUp, HardDrive, Info, AlertTriangle, Download, Smartphone, ClipboardList, Camera, Zap, Shield } from 'lucide-react';
@@ -360,10 +361,8 @@ export default function OfflinePWAPage() {
 
         <div className="bg-[#F4F6F8] rounded-xl p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#ff5722] rounded-lg flex items-center justify-center">
-              <Smartphone size={16} className="text-white" />
-            </div>
-            <span className="text-sm font-semibold text-[#1F2937]">Carschek Header</span>
+            <AppLogo size={36} />
+            <span className="text-sm font-semibold text-[#1F2937]">Inspector header</span>
           </div>
           <NetworkStatusIndicator networkState={networkState} onToggle={() => setShowSyncPanel(true)} />
         </div>

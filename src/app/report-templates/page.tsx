@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
+import AppLogo from '@/components/ui/AppLogo';
 import { CheckCircle, XCircle, AlertTriangle, Download, Share2, Link, Printer, Mail, MessageSquare } from 'lucide-react';
 
 // ─── Types & Data ─────────────────────────────────────────────────────────────
@@ -78,7 +79,7 @@ function ModernReport() {
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-5 border-b border-[#E5E7EB]">
         <div>
-          <span className="font-black text-xl text-[#ff5722] tracking-tight">CARSCHEK</span>
+          <AppLogo size={52} />
           <p className="text-xs text-[#6B7280] mt-0.5">Vehicle Inspection Report</p>
         </div>
         <div className="text-right">
@@ -248,7 +249,7 @@ function ClassicReport() {
         <div className="border-b-4 border-[#ff5722] px-8 py-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-black text-2xl text-[#ff5722] tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>CARSCHEK</p>
+              <AppLogo size={56} />
               <p className="text-xs text-[#6B7280] mt-0.5" style={{ fontFamily: 'Arial, sans-serif' }}>VEHICLE INSPECTION REPORT</p>
             </div>
             <div className="text-right" style={{ fontFamily: 'Arial, sans-serif' }}>

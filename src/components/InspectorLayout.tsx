@@ -5,6 +5,7 @@ import { Home, Bell, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useInspectorBasePath } from '@/contexts/InspectorRouteContext';
 import { SyncStatusPill } from '@/components/inspection/SyncStatusPill';
+import AppLogo from '@/components/ui/AppLogo';
 
 interface InspectorLayoutProps {
   children: React.ReactNode;
@@ -22,6 +23,12 @@ export default function InspectorLayout({ children }: InspectorLayoutProps) {
 
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex flex-col max-w-md mx-auto relative">
+      <header className="sticky top-0 z-40 flex items-center border-b border-[#E5E7EB] bg-[#ff5722] px-4 py-3">
+        <Link href={`${base}/jobs`} aria-label="Carschek — jobs home">
+          <AppLogo size={40} />
+        </Link>
+      </header>
+
       {/* Content */}
       <div className="flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
         {children}

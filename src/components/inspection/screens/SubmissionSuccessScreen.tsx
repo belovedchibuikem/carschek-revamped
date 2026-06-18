@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 import { useInspectorHref } from '@/contexts/InspectorRouteContext';
+import AppLogo from '@/components/ui/AppLogo';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
 
 type Props = {
@@ -22,6 +23,7 @@ export function SubmissionSuccessScreen({ layout, jobId }: Props) {
       role="status"
       aria-live="polite"
     >
+      <AppLogo size={64} className="mb-4" />
       <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#1A7A4A] shadow-lg">
         <CheckCircle size={48} className="text-white" aria-hidden />
       </div>

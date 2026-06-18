@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import AppLogo from '@/components/ui/AppLogo';
 import { Plus, MoreHorizontal, X, Check, AlertTriangle, Upload, FileText } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -217,8 +218,8 @@ export default function OffersModule() {
             <div className="border border-gray-200 rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div>
-                  <p className="font-bold text-[#ff5722] text-lg">CARSCHEK</p>
-                  <p className="text-xs text-gray-400">Vehicle Purchase Offer</p>
+                  <AppLogo size={44} />
+                  <p className="text-xs text-gray-400 mt-1">Vehicle Purchase Offer</p>
                 </div>
                 <p className="text-xs text-gray-400">{new Date().toLocaleDateString()}</p>
               </div>

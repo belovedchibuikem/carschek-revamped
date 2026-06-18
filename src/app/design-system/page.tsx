@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
+import AppLogo from '@/components/ui/AppLogo';
 import { LayoutDashboard, ClipboardList, Users, FileText, UserCircle, Car, Handshake, DollarSign, Bell, Settings, Search, ChevronDown, MoreHorizontal, TrendingUp, TrendingDown, AlertCircle, Info, CheckCircle, XCircle, X, Loader2, Inbox, Plus } from 'lucide-react';
 
 /* ─── Sparkline ─── */
@@ -147,9 +148,8 @@ export default function DesignSystemPage() {
           <div className="flex gap-4">
             {/* Expanded */}
             <div className="w-56 bg-[#ff5722] rounded-xl overflow-hidden shadow-lg flex-shrink-0">
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-                <div className="w-7 h-7 bg-[#ff8a65] rounded-lg flex items-center justify-center"><Car size={14} className="text-white" /></div>
-                <span className="font-heading font-bold text-white text-sm tracking-tight">CARSCHEK</span>
+              <div className="flex items-center px-4 py-3 border-b border-white/10">
+                <AppLogo size={36} />
               </div>
               <div className="py-3 px-2">
                 <p className="px-2 mb-1.5 text-[9px] font-semibold uppercase tracking-widest text-white/40">Operations</p>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { CARS, formatNaira } from '@/lib/mockData';
 import AppLayout from '@/components/AppLayout';
+import AppLogo from '@/components/ui/AppLogo';
 
 export default function ProofOfSalePage() {
   const params = useParams();
@@ -42,7 +43,8 @@ export default function ProofOfSalePage() {
 
         <article className="bg-white rounded-xl border border-[#E5E7EB] p-8 shadow-sm print:shadow-none print:border-0 print:rounded-none">
           <header className="border-b border-[#E5E7EB] pb-6 mb-6">
-            <p className="text-xs font-semibold text-[#ff8a65] uppercase tracking-wider">Carschek — Proof of Sale</p>
+            <AppLogo size={56} className="mb-3" />
+            <p className="text-xs font-semibold text-[#ff8a65] uppercase tracking-wider">Proof of Sale</p>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937] mt-2">Vehicle sale confirmation</h1>
             <p className="text-sm text-[#6B7280] mt-1">Reference {car.id} · Generated {new Date().toLocaleDateString('en-NG')}</p>
           </header>

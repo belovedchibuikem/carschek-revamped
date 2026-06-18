@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
+import AppLogo from '@/components/ui/AppLogo';
 import Link from 'next/link';
 import { LayoutDashboard, ClipboardList, Users, FileText, UserCircle, Car, Handshake, DollarSign, Bell, Settings, ChevronLeft, ChevronRight, Menu, X, Sun, Moon, Home, Briefcase, User, Plus, ArrowLeft, Search, RefreshCw, Smartphone, Monitor, Tablet, Zap, Play } from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
@@ -308,11 +309,8 @@ function AdminNavDemo() {
             {/* Sidebar — Desktop */}
             {breakpoint === 'desktop' && (
               <aside className={`${sidebarBg} text-white flex flex-col transition-all duration-300 flex-shrink-0 ${sidebarCollapsed ? 'w-14' : 'w-48'}`}>
-                <div className={`flex items-center h-12 px-3 border-b border-white/10 ${sidebarCollapsed ? 'justify-center' : 'gap-2'}`}>
-                  <div className="w-7 h-7 bg-[#ff8a65] rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Car size={14} className="text-white" />
-                  </div>
-                  {!sidebarCollapsed && <span className="font-bold text-sm tracking-tight">CARSCHEK</span>}
+                <div className={`flex items-center h-12 px-3 border-b border-white/10 ${sidebarCollapsed ? 'justify-center' : ''}`}>
+                  <AppLogo size={sidebarCollapsed ? 28 : 36} />
                 </div>
                 <nav className="flex-1 overflow-y-auto py-2">
                   {ADMIN_NAV.map(group => (
@@ -404,7 +402,7 @@ function AdminNavDemo() {
                 <div className="absolute inset-0 z-50 flex">
                   <div className={`${sidebarBg} w-48 h-full flex flex-col shadow-2xl`}>
                     <div className="flex items-center justify-between px-4 h-12 border-b border-white/10">
-                      <span className="text-white font-bold text-sm">CARSCHEK</span>
+                      <AppLogo size={32} />
                       <button onClick={() => setMobileMenuOpen(false)} className="text-white/60 hover:text-white">
                         <X size={16} />
                       </button>

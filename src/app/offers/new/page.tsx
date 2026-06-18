@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
+import AppLogo from '@/components/ui/AppLogo';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Send } from 'lucide-react';
@@ -117,11 +118,8 @@ export default function NewOfferPage() {
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
             <h2 className="text-sm font-heading font-semibold text-[#1F2937] mb-4">Live Preview</h2>
             <div className="border border-[#E5E7EB] rounded-xl p-5 space-y-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-[#E5E7EB]">
-                <div className="w-8 h-8 bg-[#ff5722] rounded-lg flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">CK</span>
-                </div>
-                <span className="font-heading font-bold text-[#ff5722]">CARSCHEK</span>
+              <div className="flex items-center pb-3 border-b border-[#E5E7EB]">
+                <AppLogo size={44} />
               </div>
               <div>
                 <p className="text-xs text-[#6B7280]">Dear {selectedContact?.name || '[Contact Name]'},</p>

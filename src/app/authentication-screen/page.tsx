@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { setCarschekSessionCookies } from '@/lib/auth/session';
-import { Eye, EyeOff, Shield, ArrowLeft, Car, CheckCircle, Mail, Lock, RefreshCw, ChevronRight, AlertTriangle } from 'lucide-react';
+import AppLogo from '@/components/ui/AppLogo';
+import { Eye, EyeOff, Shield, ArrowLeft, CheckCircle, Mail, Lock, RefreshCw, ChevronRight, AlertTriangle } from 'lucide-react';
 
 type AuthStep = 'login' | '2fa' | 'welcome' | 'forgot-1' | 'forgot-2' | 'forgot-3';
 
@@ -214,11 +215,8 @@ export default function AuthenticationScreen() {
           <div className="absolute bottom-20 right-10 w-48 h-48 bg-[#ff8a65] rounded-full blur-2xl" />
         </div>
         <div className="relative z-10 flex flex-col h-full p-10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#ff8a65] rounded-xl flex items-center justify-center">
-              <Car size={20} className="text-white" />
-            </div>
-            <span className="text-white font-heading text-xl font-bold tracking-tight">CARSCHEK</span>
+          <div className="flex items-center">
+            <AppLogo size={56} />
           </div>
           <div className="flex-1 flex flex-col justify-center">
             <div className="mb-8">
@@ -259,11 +257,8 @@ export default function AuthenticationScreen() {
           {/* LOGIN */}
           {step === 'login' && (
             <div className="animate-fade-in">
-              <div className="lg:hidden flex items-center gap-2 mb-8">
-                <div className="w-8 h-8 bg-[#ff5722] rounded-lg flex items-center justify-center">
-                  <Car size={16} className="text-white" />
-                </div>
-                <span className="font-heading font-bold text-[#ff5722] text-lg">CARSCHEK</span>
+              <div className="lg:hidden mb-8">
+                <AppLogo size={48} />
               </div>
               <h2 className="text-2xl font-heading font-bold text-[#1F2937] mb-1">Welcome back</h2>
               <p className="text-[#6B7280] text-sm mb-8">Sign in to your Carschek admin account</p>
@@ -415,8 +410,8 @@ export default function AuthenticationScreen() {
           {/* WELCOME */}
           {step === 'welcome' && (
             <div className="animate-fade-in text-center">
-              <div className="w-16 h-16 bg-[#ff5722] rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Car size={32} className="text-white" />
+              <div className="mx-auto mb-6 flex justify-center">
+                <AppLogo size={64} />
               </div>
               <p className="text-[#6B7280] text-sm mb-1">Welcome back</p>
               <h2 className="text-2xl font-heading font-bold text-[#1F2937] mb-3">{welcomeName}</h2>

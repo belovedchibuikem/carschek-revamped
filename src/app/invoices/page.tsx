@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useRef } from 'react';
 import AppLayout from '@/components/AppLayout';
+import AppLogo from '@/components/ui/AppLogo';
 import { Plus, Search, Send, Eye, Edit2, Trash2, CheckCircle, Clock, AlertCircle, XCircle, FileText, Printer, Copy, MoreVertical, X, Check, ArrowLeft, Building2, RefreshCw, Package } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -294,12 +295,7 @@ function InvoicePreview({ invoice, onClose }: { invoice: Invoice; onClose: () =>
           {/* Header */}
           <div className="flex justify-between items-start mb-8 pb-6 border-b-4 border-[#ff5722]">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-9 h-9 bg-[#ff5722] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-black text-sm">C</span>
-                </div>
-                <span className="font-black text-2xl text-[#ff5722] tracking-tight">CARSCHEK</span>
-              </div>
+              <AppLogo size={56} className="mb-1" />
               <p className="text-xs text-[#9CA3AF] mt-1">Vehicle Inspection & Certification Services</p>
               <p className="text-xs text-[#9CA3AF]">info@carschek.com · +234 817 362 4953</p>
               <p className="text-xs text-[#9CA3AF]">14 Admiralty Way, Lekki Phase 1, Lagos</p>

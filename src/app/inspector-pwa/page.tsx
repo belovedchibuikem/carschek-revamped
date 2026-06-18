@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
+import AppLogo from '@/components/ui/AppLogo';
 import { MapPin, Phone, Navigation, Play, Eye, ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, AlertTriangle, Mic, Camera, Pen, Share2, Flag, Home, Briefcase, Bell, User, Send } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -104,7 +105,7 @@ function InspectorHome({ onJobSelect }: { onJobSelect: (job: Job) => void }) {
       {/* Header */}
       <div className="bg-[#ff5722] px-4 pt-10 pb-4">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-white font-bold text-lg tracking-tight">CARSCHEK</span>
+          <AppLogo size={40} />
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full">
               <span className="w-2 h-2 bg-green-400 rounded-full" />
@@ -707,7 +708,7 @@ function ReportPreview({ onBack }: { onBack: () => void }) {
           {/* Header */}
           <div className="bg-[#ff5722] p-4">
             <div className="flex items-center justify-between">
-              <span className="text-white font-black text-lg tracking-tight">CARSCHEK</span>
+              <AppLogo size={40} />
               <div className="text-right">
                 <p className="text-white/70 text-xs">Report #CS-2026-4521</p>
                 <p className="text-white/70 text-xs">Apr 10, 2026</p>

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { isAppointmentUnconfirmed } from '@/lib/appointments/logic';
 import type { Appointment } from '@/lib/appointments/types';
+import AppLogo from '@/components/ui/AppLogo';
 import {
   LayoutDashboard, ClipboardList, Users, FileText, Car, Gavel, UserCircle,
   MessageSquare, Tag, ShoppingBag, Handshake, DollarSign, Bell, Settings,
@@ -151,14 +152,9 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
         <Link
           href="/dashboard"
           onClick={onMobileClose}
-          className={`flex items-center gap-3 min-w-0 rounded-lg flex-1 focus-visible:ring-offset-[#ff5722] ${collapsed ? 'justify-center flex-none' : ''}`}
+          className={`flex items-center min-w-0 rounded-lg flex-1 focus-visible:ring-offset-[#ff5722] ${collapsed ? 'justify-center flex-none' : ''}`}
         >
-          <div className="w-8 h-8 bg-[#ff8a65] rounded-lg flex items-center justify-center flex-shrink-0">
-            <Car size={16} className="text-white" />
-          </div>
-          {!collapsed && (
-            <span className="font-heading font-bold text-lg tracking-tight text-white flex-1 truncate">CARSCHEK</span>
-          )}
+          <AppLogo size={collapsed ? 36 : 52} />
         </Link>
         {!collapsed && onMobileClose && (
           <button

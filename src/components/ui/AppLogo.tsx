@@ -3,42 +3,45 @@
 import React, { memo, useMemo } from 'react';
 import AppIcon from './AppIcon';
 import AppImage from './AppImage';
+import { CARSCHEK_LOGO_ALT, CARSCHEK_LOGO_PATH } from '@/lib/branding';
 
 interface AppLogoProps {
-  src?: string; // Image source (optional)
-  iconName?: string; // Icon name when no image
-  size?: number; // Size for icon/image
-  className?: string; // Additional classes
-  onClick?: () => void; // Click handler
+  src?: string;
+  iconName?: string;
+  /** Display height in px; width scales with logo aspect ratio (~1.05:1). */
+  size?: number;
+  className?: string;
+  onClick?: () => void;
 }
 
 const AppLogo = memo(function AppLogo({
-  src = '/assets/images/app_logo.png',
+  src = CARSCHEK_LOGO_PATH,
   iconName = 'SparklesIcon',
   size = 64,
   className = '',
   onClick,
 }: AppLogoProps) {
-  // Memoize className calculation
   const containerClassName = useMemo(() => {
-    const classes = ['flex items-center'];
+    const classes = ['inline-flex items-center'];
     if (onClick) classes.push('cursor-pointer hover:opacity-80 transition-opacity');
     if (className) classes.push(className);
     return classes.join(' ');
   }, [onClick, className]);
 
+  const width = Math.round(size * 1.05);
+
   return (
-    <div className={containerClassName} onClick={onClick}>
-      {/* Show image if src provided, otherwise show icon */}
+    <div className={containerClassName} onClick={onClick} role={onClick ? 'button' : undefined}>
       {src ? (
         <AppImage
           src={src}
-          alt="Logo" 
-          width={size}
+          alt={CARSCHEK_LOGO_ALT}
+          width={width}
           height={size}
-          className="flex-shrink-0"
-          priority={true}
-          unoptimized={src.endsWith('.svg')}
+          className="flex-shrink-0 object-contain"
+          style={{ height: size, width: 'auto', maxWidth: width }}
+          priority
+          unoptimized
         />
       ) : (
         <AppIcon name={iconName} size={size} className="flex-shrink-0" />
