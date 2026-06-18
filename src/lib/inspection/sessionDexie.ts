@@ -5,6 +5,7 @@ import { db } from '@/lib/db/schema';
 const TIMER_FORM = 'inspection_session_timer';
 const SIG_FORM = 'inspection_signature';
 const OVERVIEW_FORM = 'inspection_overview_sections';
+const SUBMIT_FORM = 'inspection_submitted';
 
 async function upsertDraft(formName: string, userId: string, data: string): Promise<void> {
   if (!db) return;
@@ -85,4 +86,20 @@ export async function loadOverviewSectionStatus(orderId: string): Promise<Overvi
   } catch {
     return null;
   }
+}
+
+export async function markInspectionSubmitted(orderId: string): Promise<void> {
+  await upsertDraft(SUBMIT_FORM, orderId, JSON.stringify({ submittedAt: Date.now() }));
+  if (db) {
+    const row = await db.inspections.where('orderId').equals(orderId).first();
+    if (row?.id) {
+      await db.inspections.update(row.id, { status: 'submitted', completedAt: Date.now() });
+    }
+  }
+}
+
+export async function isInspectionSubmitted(orderId: string): Promise<boolean> {
+  if (!db) return false;
+  const row = await db.drafts.where('formName').equals(SUBMIT_FORM).filter(d => d.userId === orderId).first();
+  return Boolean(row?.data);
 }

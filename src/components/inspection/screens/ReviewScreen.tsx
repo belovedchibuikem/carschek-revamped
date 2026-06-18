@@ -9,9 +9,8 @@ import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { useInspectorHref } from '@/contexts/InspectorRouteContext';
 import { getScoreLabel } from '@/lib/mockData';
-import { persistSignatureBase64, loadSignatureBase64 } from '@/lib/inspection/sessionDexie';
-import { loadDamagePhotosForOrder } from '@/lib/inspection/dexieDamagePhotos';
-import { loadDexieVehiclePhotoObjectUrls } from '@/lib/inspection/dexieVehiclePhotos';
+import { loadInspectionChecklistMetrics, type ChecklistDefectRow } from '@/lib/inspection/checklistMetrics';
+import { persistSignatureBase64, loadSignatureBase64, markInspectionSubmitted } from '@/lib/inspection/sessionDexie';
 import { useInspectionSignOffStore } from '@/stores/inspectionSignOffStore';
 import { EMPTY_VEHICLE_PHOTO_MAP, useVehiclePhotoStore } from '@/stores/vehiclePhotoStore';
 import { VEHICLE_PHOTO_SLOTS } from '@/lib/inspection/vehiclePhotoAngles';
@@ -23,66 +22,36 @@ type Props = {
   jobId: string;
 };
 
-const MOCK_DEFECTS: {
-  sectionId: string;
-  section: string;
-  item: string;
-  severity: 'Minor' | 'Major' | 'Critical';
-  note: string;
-}[] = [
-  {
-    sectionId: 'S02',
-    section: 'Body Frame',
-    item: 'Front Rail (Right)',
-    severity: 'Major',
-    note: 'Visible dent on right front rail, approximately 15cm.',
-  },
-  {
-    sectionId: 'S02',
-    section: 'Body Frame',
-    item: 'Door Sill (Left)',
-    severity: 'Minor',
-    note: 'Surface rust on left door sill.',
-  },
-  {
-    sectionId: 'S01',
-    section: 'Engine Bay',
-    item: 'Valve Cover Seal',
-    severity: 'Critical',
-    note: 'Oil leak from valve cover gasket — requires immediate attention.',
-  },
-  {
-    sectionId: 'S04',
-    section: 'Transmission',
-    item: 'Fluid Level',
-    severity: 'Major',
-    note: 'Transmission fluid below minimum level.',
-  },
-];
-
 export function ReviewScreen({ layout, jobId }: Props) {
   const href = useInspectorHref();
   const router = useRouter();
   const sigRef = useRef<SignatureCanvas>(null);
   const [sigMounted, setSigMounted] = useState(false);
   const [displayScore, setDisplayScore] = useState(0);
-  const targetScore = 73;
+  const [targetScore, setTargetScore] = useState(0);
+  const [passCount, setPassCount] = useState(0);
+  const [failCount, setFailCount] = useState(0);
+  const [naCount, setNaCount] = useState(0);
+  const [totalAnswered, setTotalAnswered] = useState(0);
+  const [defects, setDefects] = useState<ChecklistDefectRow[]>([]);
+  const [vehicleCaptured, setVehicleCaptured] = useState(0);
+  const [damageCount, setDamageCount] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+
   const photoUrls = useVehiclePhotoStore(s => s.urlsByOrder[jobId] ?? EMPTY_VEHICLE_PHOTO_MAP);
   const signature = useInspectionSignOffStore(s => s.signatureByOrder[jobId]);
   const setSignature = useInspectionSignOffStore(s => s.setSignature);
-  const [vehicleCaptured, setVehicleCaptured] = useState(0);
-  const [damageCount, setDamageCount] = useState(0);
 
-  const refreshPhotoCounts = useCallback(() => {
-    void loadDexieVehiclePhotoObjectUrls(jobId).then(({ map, revoke }) => {
-      const store = useVehiclePhotoStore.getState().urlsByOrder[jobId] ?? {};
-      const merged: Record<string, string | undefined> = { ...map, ...store };
-      setVehicleCaptured(VEHICLE_PHOTO_SLOTS.filter(s => Boolean(merged[s.id])).length);
-      revoke();
-    });
-    void loadDamagePhotosForOrder(jobId).then(({ photos, revoke }) => {
-      setDamageCount(photos.length);
-      revoke();
+  const refreshMetrics = useCallback(() => {
+    void loadInspectionChecklistMetrics(jobId).then(m => {
+      setTargetScore(m.score || 73);
+      setPassCount(m.passCount);
+      setFailCount(m.failCount);
+      setNaCount(m.naCount);
+      setTotalAnswered(m.passCount + m.failCount + m.naCount);
+      setDefects(m.defects);
+      setVehicleCaptured(m.vehiclePhotosCaptured);
+      setDamageCount(m.damagePhotoCount);
     });
   }, [jobId]);
 
@@ -91,11 +60,8 @@ export function ReviewScreen({ layout, jobId }: Props) {
     void loadSignatureBase64(jobId).then(url => {
       if (url) setSignature(jobId, url);
     });
-  }, [jobId, setSignature]);
-
-  useEffect(() => {
-    refreshPhotoCounts();
-  }, [refreshPhotoCounts]);
+    refreshMetrics();
+  }, [jobId, setSignature, refreshMetrics]);
 
   useEffect(() => {
     const start = performance.now();
@@ -132,11 +98,13 @@ export function ReviewScreen({ layout, jobId }: Props) {
     if (!sig && sigRef.current && !sigRef.current.isEmpty()) {
       sig = sigRef.current.toDataURL('image/png');
       setSignature(jobId, sig);
+      await persistSignatureBase64(jobId, sig);
     }
     if (!sig) {
       toast.error('Please add your signature');
       return;
     }
+    setSubmitting(true);
     if (!navigator.onLine) {
       if (db) {
         await db.syncQueue.add({
@@ -148,19 +116,25 @@ export function ReviewScreen({ layout, jobId }: Props) {
           createdAt: Date.now(),
         });
       }
+      await markInspectionSubmitted(jobId);
       toast.message('Queued for QA when online', { description: 'Saved locally in Dexie sync queue' });
+      router.push(href(`inspect/${jobId}/success`));
+      setSubmitting(false);
       return;
     }
-    await new Promise(r => setTimeout(r, 900));
+    await new Promise(r => setTimeout(r, 600));
+    await markInspectionSubmitted(jobId);
     confetti({ particleCount: 120, spread: 70, origin: { y: 0.65 } });
     toast.success('Submitted to QA');
-    window.setTimeout(() => router.push(href(`inspect/${jobId}/report`)), 1200);
+    router.push(href(`inspect/${jobId}/success`));
+    setSubmitting(false);
   };
 
   const healthLabel = getScoreLabel(displayScore);
   const ringR = 40;
   const ringC = 2 * Math.PI * ringR;
   const strokePct = displayScore;
+  const totalStat = totalAnswered || passCount + failCount + naCount;
 
   return (
     <div
@@ -168,16 +142,19 @@ export function ReviewScreen({ layout, jobId }: Props) {
       className={`space-y-5 ${layout === 'mobile-app' ? 'mx-auto max-w-lg' : ''}`}
     >
       <div className="flex items-center gap-3 px-1">
-        <Link href={href(`inspect/${jobId}/overview`)} className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
+        <Link
+          href={href(`inspect/${jobId}/overview`)}
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white shadow-sm"
+          aria-label="Back to overview"
+        >
           <ArrowLeft size={18} className="text-[#6B7280]" />
         </Link>
-        <span className="sr-only">Back to overview</span>
       </div>
 
       <div className="overflow-hidden rounded-b-3xl bg-[#ff5722] px-5 pb-6 pt-2 text-white shadow-lg">
         <h1 className="mb-4 font-heading text-lg font-bold">Review &amp; Submit</h1>
         <div className="flex flex-col items-center">
-          <div className="relative h-36 w-36">
+          <div className="relative h-36 w-36" role="img" aria-label={`Carschek score ${displayScore} out of 100`}>
             <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden>
               <circle cx="50" cy="50" r={ringR} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="8" />
               <circle
@@ -203,10 +180,10 @@ export function ReviewScreen({ layout, jobId }: Props) {
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          { k: 'Total', v: 210, c: '#1F2937' },
-          { k: 'Pass', v: 198, c: '#1A7A4A' },
-          { k: 'Fail', v: 8, c: '#C0392B' },
-          { k: 'N/A', v: 4, c: '#6B7280' },
+          { k: 'Total', v: totalStat, c: '#1F2937' },
+          { k: 'Pass', v: passCount, c: '#1A7A4A' },
+          { k: 'Fail', v: failCount, c: '#C0392B' },
+          { k: 'N/A', v: naCount, c: '#6B7280' },
         ].map(row => (
           <div key={row.k} className="rounded-xl border border-[#E5E7EB] bg-white p-3 text-center shadow-sm">
             <p className="text-lg font-bold tabular-nums" style={{ color: row.c }}>
@@ -244,16 +221,23 @@ export function ReviewScreen({ layout, jobId }: Props) {
 
       <div>
         <h2 className="mb-2 px-1 text-sm font-semibold text-[#1F2937]">Vehicle photos</h2>
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2" role="list" aria-label="Vehicle photo thumbnails">
           {VEHICLE_PHOTO_SLOTS.map(slot => {
             const src = photoUrls[slot.id];
             return (
-              <div key={slot.id} className="h-20 w-28 flex-shrink-0 overflow-hidden rounded-xl border border-[#E5E7EB] bg-[#F4F6F8]">
+              <div
+                key={slot.id}
+                role="listitem"
+                aria-label={`${slot.label}${src ? ', captured' : ', not captured'}`}
+                className="h-20 w-28 flex-shrink-0 overflow-hidden rounded-xl border border-[#E5E7EB] bg-[#F4F6F8]"
+              >
                 {src ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img src={src} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center px-1 text-center text-[9px] text-[#9CA3AF]">Not captured</div>
+                  <div className="flex h-full w-full flex-col items-center justify-center px-1 text-center text-[9px] text-[#9CA3AF]">
+                    Not captured
+                  </div>
                 )}
               </div>
             );
@@ -262,42 +246,59 @@ export function ReviewScreen({ layout, jobId }: Props) {
       </div>
 
       <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-[#1F2937]">Defects Found ({MOCK_DEFECTS.length})</h2>
-        <div className="space-y-3">
-          {MOCK_DEFECTS.map(d => (
-            <div key={d.item} className="rounded-xl border border-[#F4F6F8] bg-[#F9FAFB] p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-xs font-semibold text-[#1F2937]">
-                    {d.section} → {d.item}
-                  </p>
-                  <span
-                    className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                      d.severity === 'Critical' ?'bg-red-100 text-red-700'
-                        : d.severity === 'Major' ?'bg-orange-100 text-orange-700' :'bg-amber-100 text-amber-800'
-                    }`}
+        <h2 className="mb-3 text-sm font-semibold text-[#1F2937]">
+          Defects Found ({defects.length})
+        </h2>
+        {defects.length === 0 ? (
+          <p className="text-sm text-[#9CA3AF]">No failed checklist items recorded.</p>
+        ) : (
+          <div className="space-y-3">
+            {defects.map(d => (
+              <div key={`${d.sectionId}-${d.item}`} className="rounded-xl border border-[#F4F6F8] bg-[#F9FAFB] p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold text-[#1F2937]">
+                      {d.sectionName} → {d.item}
+                    </p>
+                    <span
+                      className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        d.severity === 'Critical'
+                          ? 'bg-red-100 text-red-700'
+                          : d.severity === 'Major'
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {d.severity}
+                    </span>
+                    {d.note ? <p className="mt-1 text-xs text-[#6B7280]">{d.note}</p> : null}
+                  </div>
+                  <Link
+                    href={href(`inspect/${jobId}/section/${d.sectionId}`)}
+                    className="shrink-0 text-xs font-semibold text-[#ff8a65] hover:underline"
                   >
-                    {d.severity}
-                  </span>
-                  <p className="mt-1 text-xs text-[#6B7280]">{d.note}</p>
+                    ✏ Edit
+                  </Link>
                 </div>
-                <Link href={href(`inspect/${jobId}/section/${d.sectionId}`)} className="shrink-0 text-xs font-semibold text-[#ff8a65] hover:underline">
-                  ✏ Edit
-                </Link>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
         <h2 className="mb-2 text-sm font-semibold text-[#1F2937]">Inspector Sign-Off</h2>
-        <p className="mb-3 text-xs text-[#6B7280]">Tap to sign</p>
+        <p className="mb-3 text-xs text-[#6B7280]">Sign in the box below</p>
         <div className="mx-auto max-w-[520px] overflow-hidden rounded-xl border-2 border-dashed border-[#E5E7EB] bg-[#FAFAFA]">
           {sigMounted && (
             <SignatureCanvas
               ref={sigRef}
-              canvasProps={{ className: 'w-full h-[120px] touch-none', width: 280, height: 120 }}
+              canvasProps={{
+                className: 'w-full h-[120px] touch-none',
+                width: 280,
+                height: 120,
+                'aria-label': 'Inspector signature',
+              }}
               backgroundColor="rgba(0,0,0,0)"
             />
           )}
@@ -315,11 +316,12 @@ export function ReviewScreen({ layout, jobId }: Props) {
       <div className="flex flex-col gap-3 pb-6">
         <button
           type="button"
+          disabled={submitting}
           onClick={() => void submitQa()}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1B7143] py-4 text-sm font-bold text-white shadow-lg shadow-green-900/15"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1B7143] py-4 text-sm font-bold text-white shadow-lg shadow-green-900/15 disabled:opacity-60"
         >
           <Send size={18} aria-hidden />
-          Submit Report
+          {submitting ? 'Submitting…' : 'Submit Report'}
         </button>
         <Link
           href={href(`inspect/${jobId}/report`)}

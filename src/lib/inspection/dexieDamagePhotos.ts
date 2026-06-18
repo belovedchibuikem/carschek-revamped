@@ -30,7 +30,7 @@ export async function persistDamagePhotoBlob(
   sectionId: string,
   itemKey: string,
   blob: ArrayBuffer,
-  meta?: { mimeType?: string; sizeKb?: number; comment?: string }
+  meta?: { mimeType?: string; sizeKb?: number; comment?: string; damageLabel?: string; aiSeverity?: string }
 ): Promise<void> {
   if (!db) return;
   let row = await db.inspections.where('orderId').equals(orderId).first();
@@ -49,6 +49,8 @@ export async function persistDamagePhotoBlob(
     mimeType: meta?.mimeType ?? 'image/jpeg',
     sizeKb: meta?.sizeKb,
     comment: meta?.comment,
+    damageLabel: meta?.damageLabel,
+    aiSeverity: meta?.aiSeverity,
     synced: false,
     capturedAt: Date.now(),
   });
@@ -125,7 +127,7 @@ export async function loadDamagePhotoObjectUrlsForItem(
   return photos.map(p => p.url);
 }
 
-export type OrderDamagePhotoRow = DamagePhotoWithUrl & { label: string; comment?: string };
+export type OrderDamagePhotoRow = DamagePhotoWithUrl & { label: string; comment?: string; aiSeverity?: string };
 
 export async function loadDamagePhotosForOrder(orderId: string): Promise<{
   photos: OrderDamagePhotoRow[];
@@ -163,8 +165,9 @@ export async function loadDamagePhotosForOrder(orderId: string): Promise<{
         id: r.id,
         url,
         capturedAt: r.capturedAt,
-        label: parseOrderDamageName(r.itemKey),
+        label: r.damageLabel?.trim() || parseOrderDamageName(r.itemKey),
         comment: r.comment,
+        aiSeverity: r.aiSeverity,
       });
     } catch {
       /* skip */
@@ -184,8 +187,11 @@ export async function persistOrderHubDamagePhoto(
   orderId: string,
   damageName: string,
   blob: ArrayBuffer,
-  meta?: { mimeType?: string; sizeKb?: number; comment?: string }
+  meta?: { mimeType?: string; sizeKb?: number; comment?: string; aiSeverity?: string }
 ): Promise<void> {
   const itemKey = buildOrderDamageItemKey(damageName);
-  return persistDamagePhotoBlob(orderId, DAMAGE_PHOTOS_ORDER_SECTION, itemKey, blob, meta);
+  return persistDamagePhotoBlob(orderId, DAMAGE_PHOTOS_ORDER_SECTION, itemKey, blob, {
+    ...meta,
+    damageLabel: damageName.trim() || 'Damage',
+  });
 }

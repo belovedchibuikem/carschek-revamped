@@ -6,29 +6,16 @@ import { AlertTriangle, ArrowLeft, Camera, Check, Clock, Sparkles, X } from 'luc
 import { toast } from 'sonner';
 import { useInspectorHref } from '@/contexts/InspectorRouteContext';
 import { INSPECTION_SECTIONS } from '@/lib/mockData';
-import {
-  loadOverviewSectionStatus,
-  saveOverviewSectionStatus,
-  type OverviewSectionsPayload,
-  type SectionDotStatus,
-} from '@/lib/inspection/sessionDexie';
-import { loadDexieVehiclePhotoObjectUrls } from '@/lib/inspection/dexieVehiclePhotos';
-import { loadDamagePhotosForOrder } from '@/lib/inspection/dexieDamagePhotos';
-import { VEHICLE_PHOTO_SLOTS } from '@/lib/inspection/vehiclePhotoAngles';
+import { loadInspectionChecklistMetrics } from '@/lib/inspection/checklistMetrics';
+import { saveOverviewSectionStatus, type OverviewSectionsPayload, type SectionDotStatus } from '@/lib/inspection/sessionDexie';
 import { useInspectionSessionTimer } from '@/lib/inspection/useInspectionSessionTimer';
 import { findMockJob } from '@/lib/inspection/mockInspectorJobs';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
-import { useVehiclePhotoStore } from '@/stores/vehiclePhotoStore';
 
 type Props = {
   layout: InspectionLayoutMode;
   jobId: string;
 };
-
-function minutesFromEstimate(label: string): number {
-  const m = /(\d+)\s*min/i.exec(label);
-  return m ? parseInt(m[1], 10) : 5;
-}
 
 function SectionStatusIcon({ status }: { status: SectionDotStatus }) {
   switch (status) {
@@ -49,6 +36,10 @@ export function OverviewScreen({ layout, jobId }: Props) {
   const [sectionMap, setSectionMap] = useState<OverviewSectionsPayload>({});
   const [vehicleCaptured, setVehicleCaptured] = useState(0);
   const [damageCount, setDamageCount] = useState(0);
+  const [itemsDone, setItemsDone] = useState(0);
+  const [minutesLeft, setMinutesLeft] = useState(0);
+  const [completed, setCompleted] = useState(0);
+  const [failed, setFailed] = useState(0);
 
   const vehicleTitle = findMockJob(jobId)?.vehicleLabel ?? `Inspection ${jobId}`;
 
@@ -60,16 +51,16 @@ export function OverviewScreen({ layout, jobId }: Props) {
     [jobId]
   );
 
-  const refreshCounts = useCallback(() => {
-    void loadDexieVehiclePhotoObjectUrls(jobId).then(({ map, revoke }) => {
-      const store = useVehiclePhotoStore.getState().urlsByOrder[jobId] ?? {};
-      const merged: Record<string, string | undefined> = { ...map, ...store };
-      setVehicleCaptured(VEHICLE_PHOTO_SLOTS.filter(s => Boolean(merged[s.id])).length);
-      revoke();
-    });
-    void loadDamagePhotosForOrder(jobId).then(({ photos, revoke }) => {
-      setDamageCount(photos.length);
-      revoke();
+  const refreshMetrics = useCallback(() => {
+    void loadInspectionChecklistMetrics(jobId).then(m => {
+      setSectionMap(m.sectionStatus);
+      void saveOverviewSectionStatus(jobId, m.sectionStatus);
+      setVehicleCaptured(m.vehiclePhotosCaptured);
+      setDamageCount(m.damagePhotoCount);
+      setItemsDone(m.itemsDone);
+      setMinutesLeft(m.minutesRemaining);
+      setCompleted(m.sectionsComplete);
+      setFailed(m.sectionsFailed);
     });
   }, [jobId]);
 
@@ -86,19 +77,13 @@ export function OverviewScreen({ layout, jobId }: Props) {
   }, [sectionMap]);
 
   useEffect(() => {
-    void loadOverviewSectionStatus(jobId).then(m => {
-      if (m && Object.keys(m).length) setSectionMap(m);
-    });
-  }, [jobId]);
+    refreshMetrics();
+  }, [refreshMetrics]);
 
   useEffect(() => {
-    refreshCounts();
-  }, [refreshCounts]);
-
-  useEffect(() => {
-    const onFocus = () => refreshCounts();
+    const onFocus = () => refreshMetrics();
     const onVis = () => {
-      if (document.visibilityState === 'visible') refreshCounts();
+      if (document.visibilityState === 'visible') refreshMetrics();
     };
     window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', onVis);
@@ -106,32 +91,12 @@ export function OverviewScreen({ layout, jobId }: Props) {
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVis);
     };
-  }, [refreshCounts]);
+  }, [refreshMetrics]);
 
-  const completed = sectionDots.filter(d => d.status === 'complete-pass' || d.status === 'complete-fail').length;
-  const failed = sectionDots.filter(d => d.status === 'complete-fail').length;
   const totalSections = INSPECTION_SECTIONS.length;
   const progressPct = totalSections ? (completed / totalSections) * 100 : 0;
 
-  const itemsDone = useMemo(
-    () =>
-      sectionDots.reduce((acc, { section, status }) => {
-        if (status === 'complete-pass' || status === 'complete-fail') return acc + section.items;
-        return acc;
-      }, 0),
-    [sectionDots]
-  );
-
-  const minutesLeft = useMemo(
-    () =>
-      sectionDots.reduce((acc, { section, status }) => {
-        if (status === 'complete-pass' || status === 'complete-fail') return acc;
-        return acc + minutesFromEstimate(section.timeEstimate);
-      }, 0),
-    [sectionDots]
-  );
-
-  const allDone = completed === totalSections;
+  const allDone = completed >= totalSections - 1;
 
   const handleAllPass = () => {
     if (!confirm('Mark all remaining sections as pass?')) return;

@@ -25,6 +25,8 @@ import { EMPTY_VEHICLE_PHOTO_MAP, useVehiclePhotoStore } from '@/stores/vehicleP
 import { useReportFormatStore } from '@/stores/reportFormatStore';
 import { loadReportFormatChoice } from '@/lib/inspection/reportFormatPersistence';
 import { ReportDocumentBody } from '@/components/inspection/ReportDocumentBody';
+import { ReportFormatPicker } from '@/components/inspection/ReportFormatPicker';
+import { ReportPreviewSummary } from '@/components/inspection/ReportPreviewSummary';
 
 const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => m.QRCodeSVG), { ssr: false });
 
@@ -199,54 +201,12 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
           <h1 className="font-heading text-lg font-bold text-[#1F2937]">Inspection Report</h1>
         </div>
 
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
-          <h2 className="mb-6 text-center font-heading text-xl font-bold text-[#1F2937]">Choose Your Report Format</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => {
-                setReportFormat(inspectionId, 'modern');
-                setVariant('modern');
-              }}
-              className="rounded-2xl border-2 border-[#E5E7EB] bg-[#FAFBFC] p-6 text-left transition hover:border-[#ff5722] hover:shadow-md"
-            >
-              <p className="text-3xl">📊</p>
-              <p className="mt-3 font-heading text-lg font-bold text-[#1F2937]">Modern Report</p>
-              <ul className="mt-3 space-y-1.5 text-sm text-[#6B7280]">
-                <li>• Visual-first layout</li>
-                <li>• Large Carschek Score</li>
-                <li>• Photo gallery grid</li>
-                <li>• Mobile-friendly</li>
-                <li>• Shareable online</li>
-              </ul>
-              <p className="mt-5 rounded-xl bg-[#ff5722] py-2.5 text-center text-sm font-bold text-white">Select Modern</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setReportFormat(inspectionId, 'classic');
-                setVariant('classic');
-              }}
-              className="rounded-2xl border-2 border-[#E5E7EB] bg-[#FAFBFC] p-6 text-left transition hover:border-[#ff5722] hover:shadow-md"
-            >
-              <p className="text-3xl">📄</p>
-              <p className="mt-3 font-heading text-lg font-bold text-[#1F2937]">Classic Report</p>
-              <ul className="mt-3 space-y-1.5 text-sm text-[#6B7280]">
-                <li>• Formal A4 layout</li>
-                <li>• Dense table structure</li>
-                <li>• Print-optimised</li>
-                <li>• Black & white</li>
-                <li>• Professional PDF</li>
-              </ul>
-              <p className="mt-5 rounded-xl bg-[#ff5722] py-2.5 text-center text-sm font-bold text-white">Select Classic</p>
-            </button>
-          </div>
-          <p className="mt-6 text-center text-sm text-[#6B7280]">
-            Both formats contain identical inspection data.
-            <br />
-            You can switch between them after selecting.
-          </p>
-        </div>
+        <ReportFormatPicker
+          onSelect={v => {
+            setReportFormat(inspectionId, v);
+            setVariant(v);
+          }}
+        />
       </div>
     );
   }
@@ -369,6 +329,14 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
           </button>
         </div>
       </header>
+
+      <ReportPreviewSummary
+        data={reportData}
+        onShare={() => setShareOpen(true)}
+        onFlagQa={() => setFlagOpen(true)}
+      />
+
+      <div className="mb-4" />
 
       <div
         id="report-content"

@@ -71,6 +71,10 @@ export interface DamagePhotoRow {
   capturedAt?: number;
   /** Inspector comment entered when capturing hub damage photos. */
   comment?: string;
+  /** Human-readable damage name (v7 — preferred over parsing itemKey). */
+  damageLabel?: string;
+  /** AI-suggested severity when captured. */
+  aiSeverity?: string;
   /** Set after successful upload (sync v5 index). */
   uploadedUrl?: string;
 }
@@ -174,6 +178,9 @@ export class CarschekDB extends Dexie {
     });
     this.version(6).stores({
       voiceNotes: '++id, orderId, damagePhotoId, createdAt, synced',
+    });
+    this.version(7).stores({
+      damagePhotos: '++id, inspectionId, orderId, sectionId, itemKey, capturedAt, synced, uploadedUrl, damageLabel',
     });
   }
 }
