@@ -20,12 +20,14 @@ export default function InvoiceDetailPage() {
   const seedInv = getInvoiceDetailPagePayload(id);
   const inv = apiInvoice
     ? {
-        ...seedInv,
+        customer: (apiInvoice.clientName as string) || seedInv?.customer || '—',
+        amount: Number(apiInvoice.total ?? seedInv?.amount ?? 0),
+        status: (apiInvoice.status as string) || seedInv?.status || 'Draft',
+        date: seedInv?.date ?? '',
+        dueDate: seedInv?.dueDate ?? '',
+        lines: seedInv?.lines ?? [],
         id: apiInvoice.id,
         invoiceNumber: (apiInvoice.invoiceNumber as string) || apiInvoice.id,
-        status: (apiInvoice.status as string) || seedInv?.status || 'Draft',
-        amount: Number(apiInvoice.total ?? seedInv?.amount ?? 0),
-        clientName: (apiInvoice.clientName as string) || seedInv?.clientName || '—',
       }
     : seedInv;
 

@@ -32,7 +32,7 @@ function entryFromPath(
   const customer = pathname.match(/^\/customers\/([A-Za-z0-9-]+)$/)?.[1];
   if (customer) {
     const c = customers.find(x => x.id === customer);
-    return { type: 'customer', id: customer, label: c ? c.name : customer, href: pathname };
+    return { type: 'customer', id: customer, label: c?.name ?? customer, href: pathname };
   }
   const car = pathname.match(/^\/cars\/([A-Za-z0-9-]+)$/)?.[1];
   if (car && car !== 'new') {

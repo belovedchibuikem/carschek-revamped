@@ -377,7 +377,7 @@ function CarDetailPageContent() {
                       <SearchableSelect
                         value={editValue}
                         onChange={v => {
-                          setEditData(prev => ({ ...prev, brand: v, model: '' }));
+                          setEditData(prev => (prev ? { ...prev, brand: v, model: '' } : prev));
                           markDirty(0);
                         }}
                         options={brandOptionsByName()}
@@ -389,7 +389,7 @@ function CarDetailPageContent() {
                       <SearchableSelect
                         value={editValue}
                         onChange={v => {
-                          setEditData(prev => ({ ...prev, model: v }));
+                          setEditData(prev => (prev ? { ...prev, model: v } : prev));
                           markDirty(0);
                         }}
                         options={modelOptionsByName(String((editData as Record<string, unknown>).brand ?? car.brand))}
@@ -402,7 +402,7 @@ function CarDetailPageContent() {
                       <SearchableSelect
                         value={editValue}
                         onChange={v => {
-                          setEditData(prev => ({ ...prev, year: Number(v) }));
+                          setEditData(prev => (prev ? { ...prev, year: Number(v) } : prev));
                           markDirty(0);
                         }}
                         options={yearOptionsForModelName(
@@ -422,7 +422,7 @@ function CarDetailPageContent() {
                           <input
                             value={editValue}
                             onChange={e => {
-                              setEditData(prev => ({ ...prev, [field.key]: e.target.value }));
+                              setEditData(prev => (prev ? { ...prev, [field.key]: e.target.value } : prev));
                               markDirty(0);
                             }}
                             className={`flex-1 text-sm px-2 py-1 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 text-right ${field.mono ? 'font-mono text-xs' : ''}`}

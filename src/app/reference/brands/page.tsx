@@ -26,7 +26,17 @@ export default function BrandsPage() {
     if (!newBrand.name) { toast.error('Brand name is required'); return; }
     try {
       const created = await referenceApi.storeBrand(newBrand) as (typeof brands)[number];
-      setBrands(prev => [...prev, { id: (created as { id?: string }).id || `b${Date.now()}`, name: newBrand.name, country: newBrand.country, flag: '🌍', models: 0, cars: 0, active: newBrand.active, logo: newBrand.name[0].toUpperCase(), ...created }]);
+      setBrands(prev => [...prev, {
+        ...created,
+        id: (created as { id?: string }).id || `b${Date.now()}`,
+        name: newBrand.name,
+        country: newBrand.country,
+        flag: (created as { flag?: string }).flag || '🌍',
+        models: (created as { models?: number }).models ?? 0,
+        cars: (created as { cars?: number }).cars ?? 0,
+        active: newBrand.active,
+        logo: (created as { logo?: string }).logo || newBrand.name[0].toUpperCase(),
+      }]);
       setShowAddModal(false);
       setNewBrand({ name: '', country: '', active: true });
       toast.success(`Brand "${newBrand.name}" added successfully`);

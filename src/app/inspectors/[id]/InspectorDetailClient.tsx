@@ -138,7 +138,7 @@ export default function InspectorDetailClient() {
                         <p className="text-sm font-medium text-[#1F2937]">{order.vehicle}</p>
                         <p className="text-xs text-[#6B7280]">{order.zone}</p>
                       </div>
-                      <span className="text-xs text-[#6B7280]">{new Date(order.scheduledAt).toLocaleDateString('en-NG')}</span>
+                      <span className="text-xs text-[#6B7280]">{order.scheduledAt ? new Date(order.scheduledAt).toLocaleDateString('en-NG') : '—'}</span>
                     </Link>
                   ))}
                 </div>

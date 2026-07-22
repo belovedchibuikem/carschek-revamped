@@ -250,12 +250,12 @@ export default function FinancePage() {
           <div className="space-y-5">
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {[
-                { label: 'Revenue MTD', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).revenueMTD), icon: TrendingUp, color: '#1A7A4A' },
-                { label: 'Revenue YTD', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).revenueYTD), icon: DollarSign, color: '#ff5722' },
-                { label: 'Monthly Target', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).revenueTarget), icon: TrendingUp, color: '#ff8a65' },
-                { label: 'Pending Payments', value: String((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).pendingPayments), icon: CreditCard, color: '#D35400' },
-                { label: 'Pending Amount', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).pendingAmount), icon: DollarSign, color: '#D35400' },
-                { label: 'Inspector Payouts', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).inspectorPayouts), icon: Users, color: '#ff8a65' },
+                { label: 'Revenue MTD', value: formatNaira(financeSummary?.revenueMTD ?? 0), icon: TrendingUp, color: '#1A7A4A' },
+                { label: 'Revenue YTD', value: formatNaira(financeSummary?.revenueYTD ?? 0), icon: DollarSign, color: '#ff5722' },
+                { label: 'Monthly Target', value: formatNaira(financeSummary?.revenueTarget ?? 0), icon: TrendingUp, color: '#ff8a65' },
+                { label: 'Pending Payments', value: String(financeSummary?.pendingPayments ?? 0), icon: CreditCard, color: '#D35400' },
+                { label: 'Pending Amount', value: formatNaira(financeSummary?.pendingAmount ?? 0), icon: DollarSign, color: '#D35400' },
+                { label: 'Inspector Payouts', value: formatNaira(financeSummary?.inspectorPayouts ?? 0), icon: Users, color: '#ff8a65' },
               ].map(kpi => (
                 <div key={kpi.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4">
                   <kpi.icon size={18} style={{ color: kpi.color }} className="mb-2" />

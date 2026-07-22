@@ -74,10 +74,10 @@ export default function ListingDetailPage() {
               {row.carName}
             </h1>
             <p className="text-sm text-[#6B7280] mt-1">
-              {row.views} views · {row.enquiries} enquiries
+              {row.views} views · {row.inquiries} enquiries
             </p>
           </div>
-          <CarschekScore score={row.score} size="sm" />
+          <CarschekScore score={row.score} size={48} />
         </div>
 
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4">
