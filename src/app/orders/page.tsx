@@ -4,17 +4,19 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Search, Eye, ChevronLeft, ChevronRight, Download, CheckSquare, Square } from 'lucide-react';
-import { ORDERS as ORDERS_SEED, INSPECTORS, STATUS_COLORS } from '@/lib/mockData';
+import { STATUS_COLORS } from '@/lib/mockData';
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useTableHotkeys } from '@/hooks/useTableHotkeys';
 import { FilterPresetBar } from '@/components/shared/FilterPresetBar';
 import { InlineSelectCell } from '@/components/shared/InlineEdit';
+import { ordersApi, inspectorsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 const TABS = ['All', 'New', 'Assigned', 'In Progress', 'Reported', 'QA Review', 'Closed'] as const;
 type Tab = (typeof TABS)[number];
 
-type OrderRow = (typeof ORDERS_SEED)[number];
+type OrderRow = Awaited<ReturnType<typeof ordersApi.list>>[number];
 
 const KANBAN_COLS = ['New', 'Assigned', 'In Progress', 'Reported', 'QA Review', 'Closed'] as const;
 
@@ -26,7 +28,8 @@ function OrdersPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [orders, setOrders] = useState<OrderRow[]>(ORDERS_SEED);
+  const { data: orders, setData: setOrders, loading, error, refresh } = useApiList(() => ordersApi.list());
+  const { data: inspectors } = useApiList(() => inspectorsApi.list());
   const [activeTab, setActiveTab] = useState<Tab>('All');
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebouncedValue(searchInput, 300);
@@ -159,6 +162,7 @@ function OrdersPageInner() {
   };
 
   const moveOrderStatus = (orderId: string, newStatus: string) => {
+    void ordersApi.updateStatus(orderId, newStatus).catch(() => toast.error('Could not update status'));
     setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: newStatus as OrderRow['status'] } : o)));
     toast.success(`Order ${orderId} → ${newStatus}`);
   };
@@ -188,8 +192,9 @@ function OrdersPageInner() {
       updateOrderInline(orderId, 'Inspector unassigned', o => ({ ...o, inspectorId: '', inspectorName: '' }));
       return;
     }
-    const inspector = INSPECTORS.find(i => i.id === inspectorId);
+    const inspector = inspectors.find(i => i.id === inspectorId);
     if (!inspector) return;
+    void ordersApi.assign(orderId, inspector.id).catch(() => toast.error('Could not assign inspector'));
     updateOrderInline(orderId, `Assigned to ${inspector.name}`, o => ({
       ...o,
       inspectorId: inspector.id,
@@ -234,7 +239,7 @@ function OrdersPageInner() {
   );
 
   const bulkAssignInspector = (inspectorId: string) => {
-    const inspector = INSPECTORS.find(i => i.id === inspectorId);
+    const inspector = inspectors.find(i => i.id === inspectorId);
     if (!inspector) return;
     applyBulkWithUndo(`Assigned to ${inspector.name}`, o => ({
       ...o,
@@ -370,7 +375,7 @@ function OrdersPageInner() {
                 className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-medium text-white border-0 focus:outline-none focus:ring-2 focus:ring-white/40 [&>option]:text-[#1F2937]"
               >
                 <option value="">Assign inspector…</option>
-                {INSPECTORS.map(i => (
+                {inspectors.map(i => (
                   <option key={i.id} value={i.id}>
                     {i.name}
                   </option>
@@ -460,7 +465,7 @@ function OrdersPageInner() {
                       <td className="px-4 py-3">
                         <InlineSelectCell
                           value={order.inspectorId || ''}
-                          options={[{ value: '', label: 'Unassigned' }, ...INSPECTORS.map(i => ({ value: i.id, label: i.name }))]}
+                          options={[{ value: '', label: 'Unassigned' }, ...inspectors.map(i => ({ value: i.id, label: i.name }))]}
                           onCommit={v => inlineAssignInspector(order.id, v)}
                           ariaLabel={`inspector for ${order.id}`}
                         >

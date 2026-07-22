@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { isAppointmentUnconfirmed } from '@/lib/appointments/logic';
-import type { Appointment } from '@/lib/appointments/types';
+import { appointmentsApi } from '@/lib/api/services';
 import AppLogo from '@/components/ui/AppLogo';
 import {
   LayoutDashboard, ClipboardList, Users, FileText, Car, Gavel, UserCircle,
@@ -116,11 +116,11 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/appointments', { cache: 'no-store' })
-      .then(r => (r.ok ? r.json() : null))
-      .then((j: { appointments?: Appointment[] } | null) => {
-        if (cancelled || !j?.appointments) return;
-        setUnconfirmedApt(j.appointments.filter(isAppointmentUnconfirmed).length);
+    appointmentsApi
+      .list()
+      .then(appointments => {
+        if (cancelled) return;
+        setUnconfirmedApt(appointments.filter(isAppointmentUnconfirmed).length);
       })
       .catch(() => {});
     return () => {

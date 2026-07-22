@@ -10,7 +10,9 @@ import { InvoicePrintTemplate } from '@/components/finance/InvoicePrintTemplate'
 import type { FinanceInvoiceListRow } from '@/lib/finance/invoiceTypes';
 import { getAllFinanceInvoiceRows, upsertFinanceInvoiceRow } from '@/lib/finance/seedFinanceInvoices';
 import { generateInvoicePDF } from '@/lib/pdf/generateInvoice';
-import { FINANCE_SUMMARY, formatNaira } from '@/lib/mockData';
+import { formatNaira } from '@/lib/mockData';
+import { financeApi } from '@/lib/api/services';
+import { useApiResource, useApiList } from '@/hooks/useApiResource';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'sonner';
 import { downloadCsv } from '@/lib/csv';
@@ -18,12 +20,17 @@ import { useTheme } from 'next-themes';
 
 const TABS = ['Revenue', 'Payments', 'Inspector Payouts', 'Invoices', 'Refunds'];
 
+/**
+ * No Laravel monthly revenue/expense series endpoint — chart stays illustrative.
+ * KPIs / invoices use financeApi.summary + financeApi.listInvoices.
+ */
 const REVENUE_DATA = Array.from({ length: 12 }, (_, i) => ({
   month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
   revenue: 4000000 + ((i * 577 + 13) % 7500000),
   expenses: 1000000 + ((i * 311 + 7) % 2800000),
 }));
 
+/** Payment gateway ledger not modeled in Laravel yet — static demo rows. */
 const PAYMENTS = [
   { id: 'PAY-001', customer: 'Adaeze Madu', amount: 5100000, method: 'Paystack', status: 'Success', date: '2026-04-13' },
   { id: 'PAY-002', customer: 'Tunde Fashola', amount: 24000000, method: 'Bank Transfer', status: 'Success', date: '2026-04-12' },
@@ -64,10 +71,17 @@ export default function FinancePage() {
   const isDark = mounted && resolvedTheme === 'dark';
   const chartMuted = isDark ? '#94a3b8' : '#9CA3AF';
   const chartGrid = isDark ? '#334155' : '#F4F6F8';
+  const { data: financeSummary } = useApiResource(() => financeApi.summary());
+  const { data: apiInvoices, refresh: refreshApiInvoices } = useApiList(() => financeApi.listInvoices());
   const [activeTab, setActiveTab] = useState('Revenue');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [invoices, setInvoices] = useState<FinanceInvoiceListRow[]>(() => getAllFinanceInvoiceRows());
+  useEffect(() => {
+    if (apiInvoices && apiInvoices.length > 0) {
+      setInvoices(apiInvoices as unknown as FinanceInvoiceListRow[]);
+    }
+  }, [apiInvoices]);
   const [createInvoiceOpen, setCreateInvoiceOpen] = useState(false);
   const [renderPdfInvoice, setRenderPdfInvoice] = useState<FinanceInvoiceListRow['printable'] | null>(null);
   const [payouts, setPayouts] = useState<PayoutRow[]>(PAYOUTS_SEED);
@@ -236,12 +250,12 @@ export default function FinancePage() {
           <div className="space-y-5">
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {[
-                { label: 'Revenue MTD', value: formatNaira(FINANCE_SUMMARY.revenueMTD), icon: TrendingUp, color: '#1A7A4A' },
-                { label: 'Revenue YTD', value: formatNaira(FINANCE_SUMMARY.revenueYTD), icon: DollarSign, color: '#ff5722' },
-                { label: 'Monthly Target', value: formatNaira(FINANCE_SUMMARY.revenueTarget), icon: TrendingUp, color: '#ff8a65' },
-                { label: 'Pending Payments', value: String(FINANCE_SUMMARY.pendingPayments), icon: CreditCard, color: '#D35400' },
-                { label: 'Pending Amount', value: formatNaira(FINANCE_SUMMARY.pendingAmount), icon: DollarSign, color: '#D35400' },
-                { label: 'Inspector Payouts', value: formatNaira(FINANCE_SUMMARY.inspectorPayouts), icon: Users, color: '#ff8a65' },
+                { label: 'Revenue MTD', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).revenueMTD), icon: TrendingUp, color: '#1A7A4A' },
+                { label: 'Revenue YTD', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).revenueYTD), icon: DollarSign, color: '#ff5722' },
+                { label: 'Monthly Target', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).revenueTarget), icon: TrendingUp, color: '#ff8a65' },
+                { label: 'Pending Payments', value: String((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).pendingPayments), icon: CreditCard, color: '#D35400' },
+                { label: 'Pending Amount', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).pendingAmount), icon: DollarSign, color: '#D35400' },
+                { label: 'Inspector Payouts', value: formatNaira((financeSummary ?? { revenue: 0, expenses: 0, profit: 0, pendingPayouts: 0, outstandingInvoices: 0 }).inspectorPayouts), icon: Users, color: '#ff8a65' },
               ].map(kpi => (
                 <div key={kpi.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4">
                   <kpi.icon size={18} style={{ color: kpi.color }} className="mb-2" />

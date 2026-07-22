@@ -4,12 +4,15 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Eye } from 'lucide-react';
-import { DEALS, formatNaira, STATUS_COLORS } from '@/lib/mockData';
+import { formatNaira, STATUS_COLORS } from '@/lib/mockData';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
+import { dealsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 function DealsPageInner() {
   const pathname = usePathname();
+  const { data: deals, setData: setDeals, loading, error, refresh } = useApiList(() => dealsApi.list());
   const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -26,7 +29,7 @@ function DealsPageInner() {
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.toLowerCase().trim();
-    return DEALS.filter(
+    return deals.filter(
       d =>
         (!stageFilter || d.stage === stageFilter) &&
         (!q ||
@@ -34,7 +37,7 @@ function DealsPageInner() {
           d.buyerName.toLowerCase().includes(q) ||
           d.id.toLowerCase().includes(q))
     );
-  }, [debouncedSearch, stageFilter]);
+  }, [debouncedSearch, stageFilter, deals]);
 
   return (
     <AppLayout currentPath={pathname}>
@@ -52,7 +55,7 @@ function DealsPageInner() {
                   </Link>
                 </>
               ) : (
-                <>{DEALS.length} deals in pipeline</>
+                <>{deals.length} deals in pipeline</>
               )}
             </p>
           </div>

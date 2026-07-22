@@ -4,8 +4,10 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Download, Flag } from 'lucide-react';
-import { CUSTOMERS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
+import { customersApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 
 const TABS = ['Overview', 'Orders', 'Communications', 'Notes'] as const;
 const TAB_PARAM = ['overview', 'orders', 'communications', 'notes'] as const;
@@ -16,7 +18,7 @@ export default function CustomerDetailClient() {
   const searchParams = useSearchParams();
   const params = useParams();
   const customerId = params.id as string;
-  const customer = CUSTOMERS.find(c => c.id === customerId) || CUSTOMERS[0];
+  const { data: customer, loading, error } = useApiResource(() => customersApi.get(customerId), [customerId]);
 
   const tabFromUrl = useMemo(() => {
     const t = (searchParams.get('tab') || 'overview').toLowerCase();
@@ -36,6 +38,21 @@ export default function CustomerDetailClient() {
     next.set('tab', TAB_PARAM[i] ?? 'overview');
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
   };
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading customer…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !customer) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-red-700">{error || 'Customer not found'}</div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout currentPath={pathname}>

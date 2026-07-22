@@ -4,17 +4,34 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Send } from 'lucide-react';
-import { OFFERS, formatNaira, STATUS_COLORS } from '@/lib/mockData';
+import { formatNaira, STATUS_COLORS } from '@/lib/mockData';
 import { toast } from 'sonner';
+import { offersApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 
 export default function OfferDetailPage() {
   const pathname = usePathname();
   const params = useParams();
   const offerId = params.id as string;
-  const offer = OFFERS.find(o => o.id === offerId) || OFFERS[0];
+  const { data: offer, loading, error } = useApiResource(() => offersApi.get(offerId), [offerId]);
   const [responseModal, setResponseModal] = useState(false);
   const [response, setResponse] = useState<'Accepted' | 'Rejected' | null>(null);
   const [responseNote, setResponseNote] = useState('');
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading offer…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !offer) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-red-700">{error || 'Offer not found'}</div>
+      </AppLayout>
+    );
+  }
 
   const handleRecord = () => {
     if (!response) { toast.error('Please select a response'); return; }

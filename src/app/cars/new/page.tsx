@@ -4,7 +4,10 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Check, ChevronRight, AlertTriangle, Upload, User, Building2, Factory } from 'lucide-react';
-import { BRANDS, MODELS, YEARS, NIGERIAN_STATES, CARS, CRM_CONTACTS, SALES_STAFF } from '@/lib/mockData';
+import { NIGERIAN_STATES, SALES_STAFF } from '@/lib/mockData';
+import { carsApi, crmApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
+import { hydrateReferenceCache, getCachedBrands, getCachedModels } from '@/lib/reference/referenceCache';
 import { CAR_DOCUMENT_TYPES } from '@/lib/cars/documents';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -13,6 +16,7 @@ import { clearDraft, getGuestUserId, loadDraft, saveDraft } from '@/lib/drafts';
 import { validateCarStep0, validateCarStep1, validateCarStep2 } from '@/lib/validation/carNewSteps';
 import { SearchableSelect } from '@/components/shared/SearchableSelect';
 import { findModelById, yearOptionsForModelId } from '@/lib/reference/carCascade';
+import { appointmentsApi } from '@/lib/api/services';
 
 const STEPS = ['Vehicle Identity', 'Seller Contact', 'Purchase', 'Documents'];
 const COLOUR_SWATCHES: { name: string; hex: string }[] = [
@@ -68,6 +72,19 @@ function NewCarPageInner() {
   const [form, setForm] = useState(makeInitialForm);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { data: inventory } = useApiList(() => carsApi.list());
+  const { data: crmContacts } = useApiList(() => crmApi.list());
+  const [brands, setBrands] = useState(() => getCachedBrands());
+  const [models, setModels] = useState(() => getCachedModels());
+  const [, setRefTick] = useState(0);
+
+  useEffect(() => {
+    void hydrateReferenceCache().then(() => {
+      setBrands(getCachedBrands());
+      setModels(getCachedModels());
+      setRefTick(t => t + 1);
+    });
+  }, []);
 
   const persistDraft = () => {
     const payload: CarDraftPayload = {
@@ -94,8 +111,8 @@ function NewCarPageInner() {
     const qModel = searchParams.get('model');
     const qYear = searchParams.get('year');
     if (!qBrand && !qModel && !qYear) return;
-    const brand = BRANDS.find(b => b.id === qBrand);
-    const model = MODELS.find(m => m.id === qModel && (!brand || m.brandId === brand.id));
+    const brand = brands.find(b => b.id === qBrand);
+    const model = models.find(m => m.id === qModel && (!brand || m.brandId === brand.id));
     setForm(prev => ({
       ...prev,
       brandId: brand?.id ?? prev.brandId,
@@ -110,30 +127,10 @@ function NewCarPageInner() {
     let cancelled = false;
     (async () => {
       try {
-        const r = await fetch(`/api/appointments/${appointmentId}`, { cache: 'no-store' });
-        if (!r.ok) return;
-        const j = await r.json();
-        const ap = j.appointment as
-          | {
-              bookingId: string;
-              id: string;
-              make: string;
-              model: string;
-              year: number;
-              transmission: string;
-              vinNumber: string;
-              plateNumber?: string;
-              firstName: string;
-              lastName: string;
-              email: string;
-              phone: string;
-              location: string;
-              serviceAddress: string;
-            }
-          | undefined;
+        const ap = await appointmentsApi.get(appointmentId);
         if (cancelled || !ap) return;
-        const brand = BRANDS.find(b => b.name === ap.make);
-        const model = MODELS.find(m => m.brandId === brand?.id && m.name === ap.model);
+        const brand = brands.find(b => b.name === ap.make);
+        const model = models.find(m => m.brandId === brand?.id && m.name === ap.model);
         const stateMatch = NIGERIAN_STATES.find(s => ap.serviceAddress?.includes(s) || ap.location === s);
         setForm(prev => ({
           ...prev,
@@ -234,14 +231,14 @@ function NewCarPageInner() {
     toast.message('Draft discarded');
   };
 
-  const filteredModels = MODELS.filter(m => m.brandId === form.brandId);
+  const filteredModels = models.filter(m => m.brandId === form.brandId);
 
   const vinWarning = useMemo(() => {
     const v = form.vin.trim().toUpperCase();
     if (v.length !== 17 || /[IOQ]/.test(v)) return null;
-    const exact = CARS.find(c => c.vin.toUpperCase() === v);
+    const exact = inventory.find(c => c.vin.toUpperCase() === v);
     if (exact) return { kind: 'exact' as const, carId: exact.id };
-    const sim = findSimilarVins(v, CARS.map(c => c.vin.toUpperCase()), 2);
+    const sim = findSimilarVins(v, inventory.map(c => c.vin.toUpperCase()), 2);
     if (sim.length) return { kind: 'similar' as const, vins: sim };
     return null;
   }, [form.vin]);
@@ -249,7 +246,7 @@ function NewCarPageInner() {
   const plateClash = useMemo(() => {
     const p = form.plate.trim();
     if (p.length < 3) return null;
-    const hit = CARS.find(c => platesPossiblyEqual(c.plate, p));
+    const hit = inventory.find(c => platesPossiblyEqual(c.plate, p));
     return hit ? hit.id : null;
   }, [form.plate]);
 
@@ -265,7 +262,7 @@ function NewCarPageInner() {
   };
 
   const emailDuplicate = useMemo(
-    () => CRM_CONTACTS.some(c => c.email.toLowerCase() === form.email.trim().toLowerCase() && form.email.trim().length > 0),
+    () => crmContacts.some(c => c.email.toLowerCase() === form.email.trim().toLowerCase() && form.email.trim().length > 0),
     [form.email]
   );
 
@@ -361,17 +358,44 @@ function NewCarPageInner() {
       return;
     }
     setSaving(true);
-    await new Promise(r => setTimeout(r, 1500));
+    let newCarId = 'CK-49';
+    try {
+      const brand = brands.find(b => b.id === form.brandId);
+      const model = models.find(m => m.id === form.modelId);
+      const created = await carsApi.create({
+        brand: brand?.name ?? '',
+        model: model?.name ?? '',
+        year: Number(form.year) || new Date().getFullYear(),
+        plate: form.plate,
+        vin: form.vin,
+        colour: form.colourCustom || form.colour,
+        mileage: Number(String(form.mileage).replace(/,/g, '')) || 0,
+        city: form.city,
+        state: form.state,
+        channel: form.channel,
+        purchasePrice: Number(form.purchasePrice) || 0,
+        status: 'Acquired',
+        transmission: form.transmission,
+        bodyType: form.bodyType,
+        engineNumber: form.engineNumber,
+        contactType: form.contactType,
+        contactName: [form.firstName, form.lastName].filter(Boolean).join(' '),
+        contactEmail: form.email,
+        contactPhone: form.phone,
+        salesPerson: form.salesPerson,
+        purchaseDate: form.purchaseDate,
+      });
+      newCarId = created.id;
+    } catch (e) {
+      setSaving(false);
+      toast.error(e instanceof Error ? e.message : 'Could not register car');
+      return;
+    }
     setSaving(false);
     clearDraft(DRAFT_FORM, uid);
-    const newCarId = 'CK-49';
     if (fromAppointment && appointmentId) {
       try {
-        await fetch(`/api/appointments/${appointmentId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ linkedCarId: newCarId }),
-        });
+        await appointmentsApi.update(appointmentId, { linkedCarId: newCarId });
         toast.success(`Car ${newCarId} created from Appointment ${apptBanner?.bookingId ?? appointmentId}`);
       } catch {
         toast.success(`${newCarId} created — link appointment manually`);
@@ -381,7 +405,7 @@ function NewCarPageInner() {
         return;
       }
     } else {
-      toast.success('CK-49 Created Successfully');
+      toast.success(`${newCarId} Created Successfully`);
     }
     router.push(`/cars/${newCarId}`);
   };
@@ -488,7 +512,7 @@ function NewCarPageInner() {
                       set('brandId', v);
                       set('modelId', '');
                     }}
-                    options={BRANDS.filter(b => b.active).map(b => ({
+                    options={brands.filter(b => b.active).map(b => ({
                       value: b.id,
                       label: `${b.logo} ${b.name}`,
                     }))}

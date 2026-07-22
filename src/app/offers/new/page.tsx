@@ -5,12 +5,16 @@ import AppLogo from '@/components/ui/AppLogo';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Send } from 'lucide-react';
-import { CARS, CRM_CONTACTS, formatNaira } from '@/lib/mockData';
+import { formatNaira } from '@/lib/mockData';
+import { carsApi, crmApi, offersApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 export default function NewOfferPage() {
   const pathname = usePathname();
+  const { data: cars } = useApiList(() => carsApi.list());
+  const { data: contacts } = useApiList(() => crmApi.list());
   const router = useRouter();
   const [form, setForm] = useState({
     carId: '', contactId: '', offerPrice: '', validDays: '7',
@@ -18,8 +22,8 @@ export default function NewOfferPage() {
   });
   const [saving, setSaving] = useState(false);
 
-  const selectedCar = CARS.find(c => c.id === form.carId);
-  const selectedContact = CRM_CONTACTS.find(c => c.id === form.contactId);
+  const selectedCar = cars.find(c => c.id === form.carId);
+  const selectedContact = contacts.find(c => c.id === form.contactId);
   const expiryDate = form.validDays ? new Date(Date.now() + parseInt(form.validDays) * 86400000).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
   const set = (key: string, val: string | boolean) => setForm(prev => ({ ...prev, [key]: val }));
@@ -27,18 +31,49 @@ export default function NewOfferPage() {
   const handleSend = async () => {
     if (!form.carId || !form.contactId || !form.offerPrice) { toast.error('Car, contact, and offer price are required'); return; }
     setSaving(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setSaving(false);
-    toast.success('Offer sent successfully!');
-    router.push('/offers');
+    try {
+      const created = await offersApi.create({
+        carId: form.carId,
+        carName: selectedCar ? `${selectedCar.brand} ${selectedCar.model}` : form.carId,
+        contactId: form.contactId,
+        contactName: selectedContact?.name,
+        offerPrice: Number(form.offerPrice),
+        validUntil: expiryDate,
+        notes: form.notes,
+        status: 'Sent',
+        sentVia: [form.sendEmail && 'Email', form.sendSMS && 'SMS'].filter(Boolean),
+      });
+      if (created?.id) {
+        await offersApi.send(created.id, [form.sendEmail && 'email', form.sendSMS && 'sms'].filter(Boolean) as string[]).catch(() => undefined);
+      }
+      toast.success('Offer sent successfully!');
+      router.push('/offers');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not send offer');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDraft = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 800));
-    setSaving(false);
-    toast.success('Offer saved as draft');
-    router.push('/offers');
+    try {
+      await offersApi.create({
+        carId: form.carId,
+        carName: selectedCar ? `${selectedCar.brand} ${selectedCar.model}` : form.carId,
+        contactId: form.contactId,
+        contactName: selectedContact?.name,
+        offerPrice: Number(form.offerPrice) || 0,
+        notes: form.notes,
+        status: 'Draft',
+      });
+      toast.success('Offer saved as draft');
+      router.push('/offers');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not save draft');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -61,7 +96,7 @@ export default function NewOfferPage() {
                 <select value={form.carId} onChange={e => set('carId', e.target.value)}
                   className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                   <option value="">Select car…</option>
-                  {CARS.map(c => <option key={c.id} value={c.id}>{c.id} — {c.brand} {c.model} {c.year}</option>)}
+                  {cars.map(c => <option key={c.id} value={c.id}>{c.id} — {c.brand} {c.model} {c.year}</option>)}
                 </select>
               </div>
               <div>
@@ -69,7 +104,7 @@ export default function NewOfferPage() {
                 <select value={form.contactId} onChange={e => set('contactId', e.target.value)}
                   className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                   <option value="">Select contact…</option>
-                  {CRM_CONTACTS.map(c => <option key={c.id} value={c.id}>{c.name} ({c.type})</option>)}
+                  {contacts.map(c => <option key={c.id} value={c.id}>{c.name} ({c.type})</option>)}
                 </select>
               </div>
               <div>

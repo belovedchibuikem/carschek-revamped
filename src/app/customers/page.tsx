@@ -4,10 +4,12 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Search, Eye, Flag, ChevronLeft, ChevronRight } from 'lucide-react';
-import { CUSTOMERS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
+import { customersApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 export default function CustomersPage() {
   const pathname = usePathname();
@@ -15,7 +17,8 @@ export default function CustomersPage() {
   const debouncedSearch = useDebouncedValue(search, 300);
   const [page, setPage] = useState(1);
   const pageSize = 12;
-  const [rows, setRows] = useState(CUSTOMERS);
+  const { data: rows, setData: setRows, loading, error, refresh } = useApiList(() => customersApi.list());
+  const [saving, setSaving] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '', type: 'Individual', city: '', state: '' });
 
@@ -40,7 +43,7 @@ export default function CustomersPage() {
   );
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newCustomer.name || !newCustomer.email) {
       toast.error('Name and email are required');
       return;
@@ -50,26 +53,27 @@ export default function CustomersPage() {
       toast.error('Duplicate email — a customer with this address already exists');
       return;
     }
-    const id = `CUS-${Date.now().toString(36).toUpperCase().slice(-6)}`;
-    setRows(prev => [
-      ...prev,
-      {
-        id,
+    setSaving(true);
+    try {
+      const created = await customersApi.create({
         name: newCustomer.name.trim(),
         email: emailLower,
         phone: newCustomer.phone.trim() || '—',
-        type: newCustomer.type as 'Individual' | 'Dealer' | 'Corporate',
+        type: newCustomer.type,
         city: newCustomer.city.trim() || 'Lagos',
         state: newCustomer.state.trim() || 'Lagos',
-        status: 'Active' as const,
-        orders: 0,
-        createdAt: new Date().toISOString().slice(0, 10),
+        status: 'Active',
         avatar: newCustomer.name.trim().slice(0, 2).toUpperCase(),
-      },
-    ]);
-    toast.success(`Customer "${newCustomer.name}" added`);
-    setShowAddModal(false);
-    setNewCustomer({ name: '', email: '', phone: '', type: 'Individual', city: '', state: '' });
+      });
+      setRows(prev => [...prev, created]);
+      toast.success(`Customer "${newCustomer.name}" added`);
+      setShowAddModal(false);
+      setNewCustomer({ name: '', email: '', phone: '', type: 'Individual', city: '', state: '' });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not add customer');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -102,7 +106,7 @@ export default function CustomersPage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8]">Cancel</button>
-              <button type="button" onClick={handleAdd} className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]">Add Customer</button>
+              <button type="button" onClick={() => void handleAdd()} disabled={saving} className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19] disabled:opacity-60">{saving ? 'Saving…' : 'Add Customer'}</button>
             </div>
           </div>
         </div>
@@ -112,7 +116,7 @@ export default function CustomersPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Customers</h1>
-            <p className="text-sm text-[#6B7280]">{rows.length} customers</p>
+            <p className="text-sm text-[#6B7280]">{loading ? 'Loading…' : `${rows.length} customers`}</p>
           </div>
           <button type="button" onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
             <Plus size={16} /> Add Customer
@@ -128,7 +132,15 @@ export default function CustomersPage() {
           )}
         </div>
 
-        {filtered.length === 0 ? (
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex justify-between gap-3">
+            <p className="text-sm text-red-700">{error}</p>
+            <button type="button" onClick={() => void refresh()} className="text-sm font-semibold text-red-700 underline">Retry</button>
+          </div>
+        )}
+        {loading ? (
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-8 text-sm text-[#6B7280]">Loading customers…</div>
+        ) : filtered.length === 0 ? (
           <div className="bg-white rounded-xl border border-[#E5E7EB]">
             <EmptyState title="No customers match" hint="Try another search or add a customer." />
           </div>

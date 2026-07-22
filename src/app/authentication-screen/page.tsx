@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { setCarschekSessionCookies } from '@/lib/auth/session';
+import { setAccessToken } from '@/lib/api/client';
+import { authApi } from '@/lib/api/services';
 import AppLogo from '@/components/ui/AppLogo';
 import { Eye, EyeOff, Shield, ArrowLeft, CheckCircle, Mail, Lock, RefreshCw, ChevronRight, AlertTriangle } from 'lucide-react';
 
@@ -131,6 +133,7 @@ export default function AuthenticationScreen() {
   const [welcomeName, setWelcomeName] = useState('Promise Ndem');
   const [forgotEmail, setForgotEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otpToken, setOtpToken] = useState<string | null>(null);
 
   const loginForm = useForm<LoginForm>({ defaultValues: { email: '', password: '', remember: false } });
   const forgotForm = useForm<ForgotForm>();
@@ -151,47 +154,83 @@ export default function AuthenticationScreen() {
   const handleLogin = async (data: LoginForm) => {
     if (lockedUntil) return;
     setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 1000));
-    const match = DEMO_ACCOUNTS.find(a => a.email === data.email && a.password === data.password);
-    if (!match) {
+    try {
+      const res = await authApi.login(data.email, data.password);
+      setOtpToken(res.otp_token);
+      const demoHint = DEMO_ACCOUNTS.find(a => a.email === data.email);
+      if (demoHint) {
+        setWelcomeRole(demoHint.role);
+        setWelcomeName(demoHint.name);
+      } else {
+        setWelcomeName(data.email.split('@')[0] || 'User');
+      }
+      setFailedAttempts(0);
+      setStep('2fa');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Invalid credentials';
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
-      if (newAttempts >= 5) {
+      if (newAttempts >= 5 || /locked/i.test(message)) {
         setLockedUntil(Date.now() + 15 * 60 * 1000);
         setLockCountdown(900);
       }
-      loginForm.setError('password', { message: 'Invalid credentials — use the demo accounts below to sign in' });
+      loginForm.setError('password', {
+        message: /locked/i.test(message)
+          ? message
+          : 'Invalid credentials — use the demo accounts below to sign in',
+      });
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-    setWelcomeRole(match.role);
-    setWelcomeName(match.name);
-    setIsSubmitting(false);
-    setStep('2fa');
   };
 
-  const handle2FA = (code: string) => {
-    if (code === '123456' || code.length === 6) {
+  const handle2FA = async (code: string) => {
+    if (!otpToken || code.length !== 6) return;
+    setIsSubmitting(true);
+    try {
+      const res = await authApi.verifyOtp(otpToken, code);
+      setAccessToken(res.token);
+      const role = (res.user.role || welcomeRole) as keyof typeof ROLE_CONFIG;
+      setWelcomeRole(role in ROLE_CONFIG ? role : 'super-admin');
+      setWelcomeName(res.user.name || welcomeName);
+      setCarschekSessionCookies(res.user.role || role);
       toast.success('Identity verified successfully');
-      setCarschekSessionCookies(welcomeRole);
       setStep('welcome');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Verification failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleForgotSubmit = async (data: ForgotForm) => {
     setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 800));
-    setForgotEmail(data.email);
-    setIsSubmitting(false);
-    setStep('forgot-2');
+    try {
+      await authApi.forgotPassword(data.email);
+      setForgotEmail(data.email);
+      setStep('forgot-2');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not send reset link');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleNewPassword = async () => {
+  const handleNewPassword = async (data: NewPasswordForm) => {
     setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 800));
-    setIsSubmitting(false);
-    toast.success('Password updated successfully. Please sign in.');
-    setStep('login');
+    try {
+      await authApi.resetPassword({
+        email: forgotEmail,
+        token: 'demo-reset-token',
+        password: data.password,
+      });
+      toast.success('Password updated successfully. Please sign in.');
+      setStep('login');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not update password');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const fillDemo = (account: typeof DEMO_ACCOUNTS[0]) => {

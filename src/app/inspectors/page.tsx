@@ -4,10 +4,12 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Search, Grid, List, Star, MapPin } from 'lucide-react';
-import { INSPECTORS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
+import { inspectorsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 export default function InspectorsPage() {
   const pathname = usePathname();
@@ -16,17 +18,18 @@ export default function InspectorsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [inviteModal, setInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const { data: inspectors, loading, error, refresh } = useApiList(() => inspectorsApi.list());
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.toLowerCase().trim();
-    return INSPECTORS.filter(
+    return inspectors.filter(
       i =>
         !q ||
         i.name.toLowerCase().includes(q) ||
         i.email.toLowerCase().includes(q) ||
         i.zone.some(z => z.toLowerCase().includes(q))
     );
-  }, [debouncedSearch]);
+  }, [debouncedSearch, inspectors]);
 
   const statusColor = (s: string) => s === 'online' ? 'bg-green-500' : s === 'en-route' ? 'bg-amber-500' : 'bg-gray-400';
   const statusLabel = (s: string) => s === 'online' ? 'Online' : s === 'en-route' ? 'En Route' : 'Offline';
@@ -64,7 +67,7 @@ export default function InspectorsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Inspectors</h1>
-            <p className="text-sm text-[#6B7280]">{INSPECTORS.filter(i => i.status === 'online').length}/{INSPECTORS.length} online</p>
+            <p className="text-sm text-[#6B7280]">{loading ? '…' : `${inspectors.filter(i => i.status === 'online').length}/${inspectors.length}`} online</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center bg-[#F4F6F8] rounded-lg p-1">
@@ -86,7 +89,15 @@ export default function InspectorsPage() {
           )}
         </div>
 
-        {filtered.length === 0 ? (
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex justify-between gap-3">
+            <p className="text-sm text-red-700">{error}</p>
+            <button type="button" onClick={() => void refresh()} className="text-sm font-semibold text-red-700 underline">Retry</button>
+          </div>
+        )}
+        {loading ? (
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-8 text-sm text-[#6B7280]">Loading inspectors…</div>
+        ) : filtered.length === 0 ? (
           <div className="bg-white rounded-xl border border-[#E5E7EB]">
             <EmptyState title="No inspectors match" hint="Try another search or invite a new inspector." />
           </div>

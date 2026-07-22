@@ -4,9 +4,11 @@ import React, { useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { DEALS, formatNaira, STATUS_COLORS } from '@/lib/mockData';
+import { formatNaira, STATUS_COLORS } from '@/lib/mockData';
 import { Handshake, Send, ShieldCheck, CheckSquare, Square, Car, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { dealsApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 
 function getCarschekRole(): string {
   if (typeof document === 'undefined') return '';
@@ -18,7 +20,7 @@ export default function DealDetailPage() {
   const pathname = usePathname();
   const params = useParams();
   const id = params.id as string;
-  const deal = DEALS.find(d => d.id === id);
+  const { data: deal, loading, error } = useApiResource(() => dealsApi.get(id), [id]);
 
   const [messages, setMessages] = useState(() => [
     { id: 'm1', role: 'system' as const, text: `Deal ${id} opened. Stage: Negotiation.` },
@@ -33,6 +35,21 @@ export default function DealDetailPage() {
     buyerConfirmed: false,
   });
   const [escrowReleased, setEscrowReleased] = useState(false);
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading deal…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !deal) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-red-700">{error || 'Deal not found'}</div>
+      </AppLayout>
+    );
+  }
 
   const allHandoverDone = useMemo(() => Object.values(checks).every(Boolean), [checks]);
 

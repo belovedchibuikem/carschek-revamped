@@ -4,8 +4,10 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Star, MapPin, Calendar, BarChart2, Clock } from 'lucide-react';
-import { INSPECTORS, ORDERS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
+import { inspectorsApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 
 const TABS = ['Overview', 'Schedule', 'Earnings', 'Account'] as const;
 const TAB_PARAM = ['overview', 'schedule', 'earnings', 'account'] as const;
@@ -16,9 +18,19 @@ export default function InspectorDetailClient() {
   const searchParams = useSearchParams();
   const params = useParams();
   const inspectorId = params.id as string;
-  const inspector = INSPECTORS.find(i => i.id === inspectorId) || INSPECTORS[0];
+  const { data: inspector, loading, error } = useApiResource(() => inspectorsApi.get(inspectorId), [inspectorId]);
+  const { data: jobs } = useApiResource(
+    async () => (inspectorId ? ((await inspectorsApi.jobs(inspectorId)) as unknown[]) : []),
+    [inspectorId]
+  );
 
-  const inspectorOrders = ORDERS.filter(o => o.inspectorId === inspector.id);
+  const inspectorOrders = (jobs ?? []) as Array<{
+    id: string;
+    vehicle?: string;
+    status?: string;
+    scheduledAt?: string;
+    zone?: string;
+  }>;
 
   const tabFromUrl = useMemo(() => {
     const t = (searchParams.get('tab') || 'overview').toLowerCase();
@@ -38,6 +50,21 @@ export default function InspectorDetailClient() {
     next.set('tab', TAB_PARAM[i] ?? 'overview');
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
   };
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading inspector…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !inspector) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-red-700">{error || 'Inspector not found'}</div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout currentPath={pathname}>

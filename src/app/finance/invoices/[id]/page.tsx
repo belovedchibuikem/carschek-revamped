@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { FileText, Mail, Printer, Download } from 'lucide-react';
 import { formatNaira } from '@/lib/mockData';
+import { financeApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 import { toast } from 'sonner';
 import { downloadCsv } from '@/lib/csv';
 import { getInvoiceDetailPagePayload } from '@/lib/finance/seedFinanceInvoices';
@@ -14,9 +16,28 @@ export default function InvoiceDetailPage() {
   const pathname = usePathname();
   const params = useParams();
   const id = decodeURIComponent(params.id as string);
-  const inv = getInvoiceDetailPagePayload(id);
+  const { data: apiInvoice, loading } = useApiResource(() => financeApi.getInvoice(id), [id]);
+  const seedInv = getInvoiceDetailPagePayload(id);
+  const inv = apiInvoice
+    ? {
+        ...seedInv,
+        id: apiInvoice.id,
+        invoiceNumber: (apiInvoice.invoiceNumber as string) || apiInvoice.id,
+        status: (apiInvoice.status as string) || seedInv?.status || 'Draft',
+        amount: Number(apiInvoice.total ?? seedInv?.amount ?? 0),
+        clientName: (apiInvoice.clientName as string) || seedInv?.clientName || '—',
+      }
+    : seedInv;
 
   const total = inv?.amount ?? 0;
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading invoice…</div>
+      </AppLayout>
+    );
+  }
 
   if (!inv) {
     return (

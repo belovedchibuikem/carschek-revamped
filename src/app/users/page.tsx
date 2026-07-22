@@ -4,8 +4,10 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 
 import { Plus, Search } from 'lucide-react';
-import { USERS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
+import { usersApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   'super-admin': { label: 'Super Admin', color: 'bg-amber-100 text-amber-800' },
@@ -17,19 +19,37 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function UsersPage() {
   const pathname = usePathname();
+  const { data: users, loading, error, refresh } = useApiList(() => usersApi.list());
   const [search, setSearch] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteForm, setInviteForm] = useState({ email: '', role: 'ops-manager' });
 
-  const filtered = USERS.filter(u =>
+  const filtered = users.filter(u =>
     !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleInvite = () => {
+  const handleInvite = async () => {
     if (!inviteForm.email) { toast.error('Email is required'); return; }
-    toast.success(`Invite sent to ${inviteForm.email}`);
-    setShowInviteModal(false);
-    setInviteForm({ email: '', role: 'ops-manager' });
+    try {
+      const local = inviteForm.email.split('@')[0] || 'user';
+      const name = local
+        .replace(/[._-]+/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+      const tempPassword = `Invite@${Math.random().toString(36).slice(2, 10)}A1`;
+      await usersApi.create({
+        email: inviteForm.email,
+        name,
+        role: inviteForm.role,
+        status: 'Active',
+        password: tempPassword,
+      });
+      toast.success(`User created for ${inviteForm.email} (temp password set)`);
+      setShowInviteModal(false);
+      setInviteForm({ email: '', role: 'ops-manager' });
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not invite user');
+    }
   };
 
   return (
@@ -65,7 +85,7 @@ export default function UsersPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Users</h1>
-            <p className="text-sm text-[#6B7280]">{USERS.length} team members</p>
+            <p className="text-sm text-[#6B7280]">{users.length} team members</p>
           </div>
           <button onClick={() => setShowInviteModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
             <Plus size={16} /> Invite Member

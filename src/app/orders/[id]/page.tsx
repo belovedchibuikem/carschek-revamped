@@ -4,10 +4,12 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, User, MapPin, Clock, CheckCircle, MessageSquare } from 'lucide-react';
-import { ORDERS, STATUS_COLORS } from '@/lib/mockData';
+import { STATUS_COLORS } from '@/lib/mockData';
 import { toast } from 'sonner';
 import LiveInspectionPanel from '@/components/orders/LiveInspectionPanel';
 import { openPrintableReport } from '@/lib/print';
+import { ordersApi, inspectorsApi } from '@/lib/api/services';
+import { useApiResource, useApiList } from '@/hooks/useApiResource';
 
 const TIMELINE_EVENTS = [
   { status: 'New', time: '2026-04-12 14:30', actor: 'System', note: 'Order created via web booking' },
@@ -25,8 +27,24 @@ export default function OrderDetailPage() {
   const pathname = usePathname();
   const params = useParams();
   const orderId = params.id as string;
-  const order = ORDERS.find(o => o.id === orderId) || ORDERS[0];
+  const { data: order, loading, error } = useApiResource(() => ordersApi.get(orderId), [orderId]);
+  const { data: inspectors } = useApiList(() => inspectorsApi.list());
   const [reassignModal, setReassignModal] = useState(false);
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading order…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !order) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-red-700">{error || 'Order not found'}</div>
+      </AppLayout>
+    );
+  }
 
   const getActions = (): OrderAction[] => {
     switch (order.status) {
@@ -79,15 +97,20 @@ export default function OrderDetailPage() {
           <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full animate-fade-in">
             <h3 className="text-base font-heading font-semibold text-[#1F2937] mb-4">Assign Inspector</h3>
             <div className="space-y-2 mb-5">
-              {['Emeka Okonkwo', 'Chidinma Eze', 'Ngozi Obi'].map(name => (
-                <button key={name} onClick={() => { toast.success(`Inspector ${name} assigned`); setReassignModal(false); }}
+              {(inspectors.length ? inspectors : []).slice(0, 8).map(ins => (
+                <button key={ins.id} onClick={() => {
+                  void ordersApi.assign(orderId, ins.id).then(() => {
+                    toast.success(`Inspector ${ins.name} assigned`);
+                    setReassignModal(false);
+                  }).catch(e => toast.error(e instanceof Error ? e.message : 'Assign failed'));
+                }}
                   className="w-full flex items-center gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:border-[#ff8a65] hover:bg-blue-50 transition-all text-left">
                   <div className="w-8 h-8 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-xs font-bold">
-                    {name.split(' ').map(n => n[0]).join('')}
+                    {ins.avatar || ins.name.split(' ').map((n: string) => n[0]).join('')}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-[#1F2937]">{name}</p>
-                    <p className="text-xs text-[#1A7A4A]">● Available</p>
+                    <p className="text-sm font-medium text-[#1F2937]">{ins.name}</p>
+                    <p className="text-xs text-[#1A7A4A]">● {ins.status === 'online' ? 'Available' : ins.status}</p>
                   </div>
                 </button>
               ))}

@@ -4,7 +4,9 @@ import React from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Printer } from 'lucide-react';
-import { CARS, formatNaira } from '@/lib/mockData';
+import { formatNaira } from '@/lib/mockData';
+import { carsApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 import AppLayout from '@/components/AppLayout';
 import AppLogo from '@/components/ui/AppLogo';
 
@@ -13,7 +15,9 @@ export default function ProofOfSalePage() {
   const pathname = usePathname();
   const router = useRouter();
   const id = params.id as string;
-  const car = CARS.find(c => c.id === id) || CARS[0];
+  const { data: car, loading, error } = useApiResource(() => carsApi.get(params.id as string), [params.id]);
+  if (loading) return <AppLayout currentPath={pathname}><div className="p-8 text-sm text-[#6B7280]">Loading…</div></AppLayout>;
+  if (error || !car) return <AppLayout currentPath={pathname}><div className="p-8 text-sm text-red-700">{error || 'Car not found'}</div></AppLayout>;
 
   return (
     <AppLayout currentPath={pathname}>

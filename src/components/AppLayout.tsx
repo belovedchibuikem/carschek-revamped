@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import { hydrateReferenceCache } from '@/lib/reference/referenceCache';
+import { setAppointmentLookupCars } from '@/lib/appointments/lookup';
+import { carsApi } from '@/lib/api/services';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -11,6 +14,15 @@ interface AppLayoutProps {
 export default function AppLayout({ children, currentPath = '' }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Warm Brand → Model → Year cascade from API (or mock facades)
+  useEffect(() => {
+    void hydrateReferenceCache();
+    void carsApi
+      .list()
+      .then(cars => setAppointmentLookupCars(cars.map(c => ({ id: c.id, vin: c.vin, plate: c.plate }))))
+      .catch(() => undefined);
+  }, []);
 
   // Close mobile sidebar on route change
   useEffect(() => {

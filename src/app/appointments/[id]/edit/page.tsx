@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppointmentForm } from '@/components/appointments/AppointmentForm';
 import type { Appointment } from '@/lib/appointments/types';
+import { appointmentsApi } from '@/lib/api/services';
 
 function EditInner() {
   const pathname = usePathname();
@@ -23,13 +24,10 @@ function EditInner() {
     (async () => {
       setLoading(true);
       try {
-        const [one, list] = await Promise.all([
-          fetch(`/api/appointments/${id}`, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)),
-          fetch('/api/appointments', { cache: 'no-store' }).then(r => r.json()),
-        ]);
+        const [one, list] = await Promise.all([appointmentsApi.get(id), appointmentsApi.list()]);
         if (cancelled) return;
-        setRow(one?.appointment ?? null);
-        setAll(list.appointments ?? []);
+        setRow(one);
+        setAll(list);
       } catch {
         if (!cancelled) setRow(null);
       } finally {
@@ -88,18 +86,13 @@ function EditInner() {
             onCancel={() => router.push(`/appointments/${id}`)}
             submitLabel="Save changes"
             onSubmit={async payload => {
-              const r = await fetch(`/api/appointments/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-              });
-              const j = await r.json().catch(() => ({}));
-              if (!r.ok) {
-                toast.error(typeof j.error === 'string' ? j.error : 'Could not save');
-                return;
+              try {
+                await appointmentsApi.update(id, payload);
+                toast.success('Appointment updated');
+                router.push(`/appointments?highlight=${encodeURIComponent(row.bookingId)}`);
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : 'Could not save');
               }
-              toast.success('Appointment updated');
-              router.push(`/appointments?highlight=${encodeURIComponent(row.bookingId)}`);
             }}
           />
         </div>

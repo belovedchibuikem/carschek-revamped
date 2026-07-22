@@ -4,15 +4,18 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Search, MessageSquare, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
-import { CRM_CONTACTS, STATUS_COLORS } from '@/lib/mockData';
+import { STATUS_COLORS } from '@/lib/mockData';
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
+import { crmApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 const STAGES = ['Lead', 'Hot Lead', 'Qualified', 'Negotiation', 'Offer Sent', 'Closed Won', 'Cold'];
 
 export default function CRMPage() {
   const pathname = usePathname();
+  const { data: contacts, setData: setContacts, loading, error, refresh } = useApiList(() => crmApi.list());
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -23,10 +26,10 @@ export default function CRMPage() {
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.toLowerCase();
-    return CRM_CONTACTS.filter(
+    return contacts.filter(
       c => !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
     );
-  }, [debouncedSearch]);
+  }, [debouncedSearch, contacts]);
 
   useEffect(() => {
     setPage(1);
@@ -38,11 +41,17 @@ export default function CRMPage() {
   );
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newContact.name || !newContact.email) { toast.error('Name and email are required'); return; }
-    toast.success(`Contact "${newContact.name}" added to CRM`);
-    setShowAddModal(false);
-    setNewContact({ name: '', email: '', phone: '', type: 'Individual', stage: 'Lead' });
+    try {
+      const created = await crmApi.create(newContact);
+      setContacts(prev => [...prev, created]);
+      toast.success(`Contact "${newContact.name}" added to CRM`);
+      setShowAddModal(false);
+      setNewContact({ name: '', email: '', phone: '', type: 'Individual', stage: 'Lead' });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not add contact');
+    }
   };
 
   return (
@@ -93,7 +102,7 @@ export default function CRMPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">CRM</h1>
-            <p className="text-sm text-[#6B7280]">{CRM_CONTACTS.length} contacts in pipeline</p>
+            <p className="text-sm text-[#6B7280]">{contacts.length} contacts in pipeline</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center bg-[#F4F6F8] rounded-lg p-1">
@@ -108,10 +117,10 @@ export default function CRMPage() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total', value: CRM_CONTACTS.length, color: '#ff5722' },
-            { label: 'Hot Leads', value: CRM_CONTACTS.filter(c => c.stage === 'Hot Lead').length, color: '#C0392B' },
-            { label: 'In Negotiation', value: CRM_CONTACTS.filter(c => c.stage === 'Negotiation').length, color: '#D35400' },
-            { label: 'Closed Won', value: CRM_CONTACTS.filter(c => c.stage === 'Closed Won').length, color: '#1A7A4A' },
+            { label: 'Total', value: contacts.length, color: '#ff5722' },
+            { label: 'Hot Leads', value: contacts.filter(c => c.stage === 'Hot Lead').length, color: '#C0392B' },
+            { label: 'In Negotiation', value: contacts.filter(c => c.stage === 'Negotiation').length, color: '#D35400' },
+            { label: 'Closed Won', value: contacts.filter(c => c.stage === 'Closed Won').length, color: '#1A7A4A' },
           ].map(s => (
             <div key={s.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4 text-center">
               <p className="text-2xl font-heading font-bold" style={{ color: s.color }}>{s.value}</p>
@@ -209,7 +218,7 @@ export default function CRMPage() {
           <div className="overflow-x-auto pb-4">
             <div className="flex gap-4 min-w-max">
               {STAGES.map(stage => {
-                const stageContacts = CRM_CONTACTS.filter(c => c.stage === stage).filter(c => {
+                const stageContacts = contacts.filter(c => c.stage === stage).filter(c => {
                   const q = debouncedSearch.toLowerCase();
                   return !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
                 });

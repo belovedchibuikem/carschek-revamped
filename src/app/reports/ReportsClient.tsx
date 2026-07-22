@@ -4,10 +4,12 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, CheckCircle } from 'lucide-react';
-import { REPORTS, STATUS_COLORS } from '@/lib/mockData';
+import { STATUS_COLORS } from '@/lib/mockData';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useTableHotkeys } from '@/hooks/useTableHotkeys';
 import { FilterPresetBar } from '@/components/shared/FilterPresetBar';
+import { reportsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 const TAB_CONFIG = [
   { param: 'qa', label: 'QA Queue' },
@@ -26,6 +28,7 @@ function matchesTab(param: string, status: string): boolean {
 
 export default function ReportsClient() {
   const pathname = usePathname();
+  const { data: reports, loading, error, refresh } = useApiList(() => reportsApi.list());
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
@@ -79,7 +82,7 @@ export default function ReportsClient() {
     [pathname, router]
   );
 
-  const filtered = REPORTS.filter(r => {
+  const filtered = reports.filter(r => {
     const q = debouncedSearch.toLowerCase();
     const matchSearch =
       !q ||
@@ -110,7 +113,7 @@ export default function ReportsClient() {
     return { label: 'Normal', color: 'bg-green-100 text-green-700' };
   };
 
-  const qaCount = REPORTS.filter(r => r.status === 'QA Review').length;
+  const qaCount = reports.filter(r => r.status === 'QA Review').length;
   const isFiltering = search !== debouncedSearch;
 
   return (

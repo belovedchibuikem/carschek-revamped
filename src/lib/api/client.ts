@@ -8,6 +8,8 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 /** Set to false when pointing at a real Laravel API. */
 export const USE_API_MOCK = process.env.NEXT_PUBLIC_USE_API_MOCK !== 'false';
 
+export const ACCESS_TOKEN_KEY = 'carschek-access-token';
+
 const baseURL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || 'https://admin.carschek.com/api/v1';
 
@@ -19,7 +21,7 @@ export const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(config => {
   if (typeof window !== 'undefined') {
-    const token = window.localStorage.getItem('carschek-access-token');
+    const token = window.localStorage.getItem(ACCESS_TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -39,4 +41,19 @@ apiClient.interceptors.response.use(
 export async function apiRequest<T>(config: AxiosRequestConfig): Promise<T> {
   const { data } = await apiClient.request<T>(config);
   return data;
+}
+
+export function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function setAccessToken(token: string): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function clearAccessToken(): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(ACCESS_TOKEN_KEY);
 }

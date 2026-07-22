@@ -5,17 +5,18 @@ import Link from 'next/link';
 import { ArrowRight, CalendarCheck, CalendarClock, CalendarDays, Wrench, Hash, Phone } from 'lucide-react';
 import type { Appointment } from '@/lib/appointments/types';
 import { computeAppointmentKpis } from '@/lib/appointments/logic';
+import { appointmentsApi } from '@/lib/api/services';
 
 export function AppointmentDashboardKpis() {
   const [stats, setStats] = useState<ReturnType<typeof computeAppointmentKpis> | null>(null);
 
   useEffect(() => {
     let c = false;
-    fetch('/api/appointments', { cache: 'no-store' })
-      .then(r => (r.ok ? r.json() : null))
-      .then((j: { appointments?: Appointment[] } | null) => {
-        if (c || !j?.appointments) return;
-        setStats(computeAppointmentKpis(j.appointments));
+    appointmentsApi
+      .list()
+      .then((appointments: Appointment[]) => {
+        if (c) return;
+        setStats(computeAppointmentKpis(appointments));
       })
       .catch(() => {});
     return () => {

@@ -14,6 +14,7 @@ import {
   isAppointmentConfirmed,
 } from '@/lib/appointments/logic';
 import { findCarIdByVinOrPlate } from '@/lib/appointments/lookup';
+import { appointmentsApi } from '@/lib/api/services';
 
 function ServiceNextBanner({ a }: { a: Appointment }) {
   const router = useRouter();
@@ -101,9 +102,10 @@ export default function AppointmentDetailPage() {
     (async () => {
       setLoading(true);
       try {
-        const r = await fetch(`/api/appointments/${id}`, { cache: 'no-store' });
-        const j = r.ok ? await r.json() : null;
-        if (!c) setA(j?.appointment ?? null);
+        const row = await appointmentsApi.get(id);
+        if (!c) setA(row);
+      } catch {
+        if (!c) setA(null);
       } finally {
         if (!c) setLoading(false);
       }
@@ -341,12 +343,15 @@ export default function AppointmentDetailPage() {
               <button
                 type="button"
                 onClick={async () => {
-                  const r = await fetch(`/api/appointments/${a.id}`, { method: 'DELETE' });
-                  setDeleteOpen(false);
-                  if (r.ok) {
+                  try {
+                    await appointmentsApi.remove(a.id);
+                    setDeleteOpen(false);
                     toast.success(`Appointment ${a.bookingId} deleted`);
                     router.push('/appointments');
-                  } else toast.error('Delete failed');
+                  } catch {
+                    setDeleteOpen(false);
+                    toast.error('Delete failed');
+                  }
                 }}
                 className="px-4 py-2 bg-[#C0392B] text-white rounded-lg text-sm font-semibold"
               >

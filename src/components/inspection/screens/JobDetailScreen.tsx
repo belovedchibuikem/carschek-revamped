@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Car, Clock, Copy, MapPin, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import { useInspectorHref } from '@/contexts/InspectorRouteContext';
-import { findMockJob } from '@/lib/inspection/mockInspectorJobs';
+import { findMockJob, type InspectorJobCard } from '@/lib/inspection/mockInspectorJobs';
+import { mapOrderToJobCard } from '@/lib/inspection/mapOrderToJobCard';
 import { db } from '@/lib/db/schema';
 import {
   loadSessionTimerSeconds,
@@ -14,10 +15,19 @@ import {
   startInspectionSessionDexie,
 } from '@/lib/inspection/sessionDexie';
 import { useInspectionSessionTimer } from '@/lib/inspection/useInspectionSessionTimer';
-import { REPORTS } from '@/lib/mockData';
+import { ordersApi, reportsApi } from '@/lib/api/services';
+import { USE_API_MOCK } from '@/lib/api/client';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
 
 const INSPECTOR_ID = 'INS-001';
+
+type PrevReport = {
+  id: string;
+  submittedAt: string;
+  inspectorName: string;
+  score: number;
+  status: string;
+};
 
 type Props = {
   layout: InspectionLayoutMode;
@@ -27,10 +37,55 @@ type Props = {
 export function JobDetailScreen({ layout, jobId }: Props) {
   const router = useRouter();
   const href = useInspectorHref();
-  const job = findMockJob(jobId);
+  const [job, setJob] = useState<InspectorJobCard | null>(() => findMockJob(jobId) ?? null);
+  const [jobLoading, setJobLoading] = useState(!findMockJob(jobId) && !USE_API_MOCK);
+  const [prevReports, setPrevReports] = useState<PrevReport[]>([]);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null);
   const [inspectionStarted, setInspectionStarted] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      if (!USE_API_MOCK) {
+        setJobLoading(true);
+        try {
+          const order = await ordersApi.get(jobId);
+          if (!cancelled) setJob(mapOrderToJobCard(order));
+        } catch {
+          const mock = findMockJob(jobId);
+          if (!cancelled) setJob(mock ?? null);
+        } finally {
+          if (!cancelled) setJobLoading(false);
+        }
+      } else if (!cancelled) {
+        setJob(findMockJob(jobId) ?? null);
+      }
+
+      try {
+        const reports = await reportsApi.list();
+        if (!cancelled) {
+          setPrevReports(
+            reports
+              .filter(r => r.orderId === jobId || r.status === 'Approved')
+              .slice(0, 3)
+              .map(r => ({
+                id: r.id,
+                submittedAt: r.submittedAt,
+                inspectorName: r.inspectorName,
+                score: r.score,
+                status: r.status,
+              }))
+          );
+        }
+      } catch {
+        if (!cancelled) setPrevReports([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [jobId]);
 
   useEffect(() => {
     void (async () => {
@@ -74,6 +129,14 @@ export function JobDetailScreen({ layout, jobId }: Props) {
     router.push(href(`inspect/${jobId}/overview`));
   };
 
+  if (jobLoading) {
+    return (
+      <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#6B7280]">
+        Loading job…
+      </div>
+    );
+  }
+
   if (!job) {
     return (
       <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 text-center">
@@ -104,8 +167,6 @@ export function JobDetailScreen({ layout, jobId }: Props) {
       <h1 className="font-heading text-xl font-bold text-[#1F2937]">{jobId} · {titleSuffix}</h1>
     </div>
   );
-
-  const prevReports = REPORTS.slice(0, 3);
 
   return (
     <div className="space-y-4">

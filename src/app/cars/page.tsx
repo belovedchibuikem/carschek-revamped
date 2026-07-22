@@ -22,22 +22,24 @@ import {
   Settings2,
   X,
 } from 'lucide-react';
-import { CARS, formatNaira, STATUS_COLORS } from '@/lib/mockData';
+import { formatNaira, STATUS_COLORS } from '@/lib/mockData';
+import { carsApi } from '@/lib/api/services';
 import { CircularScoreProgress } from '@/components/shared/CircularScoreProgress';
 import { toast } from 'sonner';
 import { downloadCsv } from '@/lib/csv';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useApiList } from '@/hooks/useApiResource';
 import { useTableHotkeys } from '@/hooks/useTableHotkeys';
 import { FilterPresetBar } from '@/components/shared/FilterPresetBar';
 import { InlineSelectCell, InlineNumberCell } from '@/components/shared/InlineEdit';
-import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { TableSkeleton, EmptyState } from '@/components/shared/TableSkeleton';
 import DuplicateResolutionModal, { carToDuplicateSnapshot } from '@/components/cars/DuplicateResolutionModal';
 import AuctionSetupModal from '@/app/cars/components/AuctionSetupModal';
 
 const PIPELINE_STAGES = ['Acquired', 'Inspection Linked', 'At Buyer', 'Listed', 'Sold'];
 const CHANNELS = ['Auction', 'Market Place', 'Offline', 'B2B', 'Other'];
 
-type CarRow = (typeof CARS)[number];
+type CarRow = Awaited<ReturnType<typeof carsApi.list>>[number];
 
 type ColKey =
   | 'ckId' |'vehicle' |'plate' |'status' |'purchase' |'sales' |'score' |'docs' |'vin' |'year' |'channel' |'created' |'warnings';
@@ -65,16 +67,16 @@ function parseDate(s: string) {
   return Number.isNaN(t) ? 0 : t;
 }
 
-function findDuplicateMatch(car: CarRow): CarRow | null {
-  const other = CARS.find(c => c.id !== car.id && (c.vin === car.vin || c.hasDuplicate));
-  return other ?? CARS.find(c => c.id !== car.id) ?? null;
+function findDuplicateMatch(car: CarRow, inventory: CarRow[]): CarRow | null {
+  const other = inventory.find(c => c.id !== car.id && (c.vin === car.vin || c.hasDuplicate));
+  return other ?? inventory.find(c => c.id !== car.id) ?? null;
 }
 
 function CarsPageInner() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [cars, setCars] = useState(CARS);
+  const { data: cars, setData: setCars, loading, error, refresh } = useApiList(() => carsApi.list());
   // Filters initialise from the URL so views are shareable; changes write back below.
   const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -234,10 +236,15 @@ function CarsPageInner() {
 
   const removeCar = (id: string) => setCars(prev => prev.filter(c => c.id !== id));
 
-  const handleDelete = (row: CarRow) => {
-    removeCar(row.id);
-    setDeleteConfirm(null);
-    toast.success(`Car ${row.id} deleted successfully`);
+  const handleDelete = async (row: CarRow) => {
+    try {
+      await carsApi.remove(row.id);
+      removeCar(row.id);
+      setDeleteConfirm(null);
+      toast.success(`Car ${row.id} deleted successfully`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not delete car');
+    }
   };
 
   const exportCSV = () => {
@@ -503,18 +510,18 @@ function CarsPageInner() {
         />
       )}
 
-      {duplicateFor && findDuplicateMatch(duplicateFor) && (
+      {duplicateFor && findDuplicateMatch(duplicateFor, cars) && (
         <DuplicateResolutionModal
           open
           onClose={() => setDuplicateFor(null)}
           current={carToDuplicateSnapshot(duplicateFor, 'Promise Ndem', formatNaira)}
-          match={carToDuplicateSnapshot(findDuplicateMatch(duplicateFor)!, 'Promise Ndem', formatNaira)}
+          match={carToDuplicateSnapshot(findDuplicateMatch(duplicateFor, cars)!, 'Promise Ndem', formatNaira)}
           duplicateCount={duplicateMatchCount(duplicateFor)}
           onMarkUnique={() => {
             setCars(prev => prev.map(c => (c.id === duplicateFor.id ? { ...c, hasDuplicate: false } : c)));
           }}
           onMerge={masterId => {
-            const m = findDuplicateMatch(duplicateFor);
+            const m = findDuplicateMatch(duplicateFor, cars);
             if (!m) return;
             const victim = masterId === duplicateFor.id ? m.id : duplicateFor.id;
             removeCar(victim);
@@ -567,7 +574,9 @@ function CarsPageInner() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Cars</h1>
-            <p className="text-sm text-[#6B7280]">{filtered.length} vehicles in system</p>
+            <p className="text-sm text-[#6B7280]">
+              {loading ? 'Loading…' : `${filtered.length} vehicles in system`}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={exportCSV} className="flex items-center gap-2 px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium text-[#6B7280] hover:bg-[#F4F6F8] transition-colors">
@@ -578,6 +587,15 @@ function CarsPageInner() {
             </Link>
           </div>
         </div>
+
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-red-700">{error}</p>
+            <button type="button" onClick={() => void refresh()} className="text-sm font-semibold text-red-700 underline">
+              Retry
+            </button>
+          </div>
+        )}
 
         <div className={`bg-white rounded-xl border border-[#E5E7EB] p-4 flex flex-col gap-3 relative ${isFiltering ? 'pb-8' : ''}`}>
           <div className="flex flex-wrap gap-3 items-end">
@@ -737,14 +755,21 @@ function CarsPageInner() {
                 </tr>
               </thead>
               <tbody>
-                {isFiltering && (
+                {(loading || isFiltering) && (
                   <tr>
                     <td colSpan={activeColCount + 2} className="p-0">
                       <TableSkeleton rows={6} cols={activeColCount + 2} />
                     </td>
                   </tr>
                 )}
-                {!isFiltering &&
+                {!loading && !isFiltering && paginated.length === 0 && (
+                  <tr>
+                    <td colSpan={activeColCount + 2}>
+                      <EmptyState title="No cars match" hint="Adjust filters or register a new car." />
+                    </td>
+                  </tr>
+                )}
+                {!loading && !isFiltering &&
                   paginated.map((car, idx) => (
                     <tr
                       key={car.id}

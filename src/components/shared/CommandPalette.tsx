@@ -13,13 +13,21 @@ import {
   Calendar,
   FileText,
 } from 'lucide-react';
-import { CARS, CUSTOMERS, ORDERS, INSPECTORS, REPORTS } from '@/lib/mockData';
+import { carsApi, customersApi, ordersApi, inspectorsApi, reportsApi } from '@/lib/api/services';
 import { useCommandPaletteStore } from '@/stores/commandPaletteStore';
 
 const RECENT_KEY = 'carschek-cmdk-recent-v2';
 const DEBOUNCE_MS = 150;
 
 type RecentEntry = { label: string; href: string };
+
+type SearchIndex = {
+  cars: Awaited<ReturnType<typeof carsApi.list>>;
+  customers: Awaited<ReturnType<typeof customersApi.list>>;
+  orders: Awaited<ReturnType<typeof ordersApi.list>>;
+  inspectors: Awaited<ReturnType<typeof inspectorsApi.list>>;
+  reports: Awaited<ReturnType<typeof reportsApi.list>>;
+};
 
 type Hit = {
   cat: 'CARS' | 'CUSTOMERS' | 'ORDERS' | 'INSPECTORS' | 'REPORTS';
@@ -29,9 +37,9 @@ type Hit = {
   icon: typeof Car;
 };
 
-function collectHits(q: string): Hit[] {
+function collectHits(q: string, idx: SearchIndex): Hit[] {
   const d = q.toLowerCase();
-  const cars = CARS.filter(
+  const cars = idx.cars.filter(
     c =>
       c.id.toLowerCase().includes(d) ||
       c.vin.toLowerCase().includes(d) ||
@@ -50,7 +58,7 @@ function collectHits(q: string): Hit[] {
         }) satisfies Hit
     );
 
-  const customers = CUSTOMERS.filter(
+  const customers = idx.customers.filter(
     cu => cu.name.toLowerCase().includes(d) || cu.email.toLowerCase().includes(d) || cu.phone.includes(d)
   )
     .slice(0, 3)
@@ -65,7 +73,7 @@ function collectHits(q: string): Hit[] {
         }) satisfies Hit
     );
 
-  const orders = ORDERS.filter(
+  const orders = idx.orders.filter(
     o =>
       o.id.toLowerCase().includes(d) ||
       o.vehicle.toLowerCase().includes(d) ||
@@ -84,7 +92,7 @@ function collectHits(q: string): Hit[] {
         }) satisfies Hit
     );
 
-  const inspectors = INSPECTORS.filter(
+  const inspectors = idx.inspectors.filter(
     i => i.name.toLowerCase().includes(d) || i.zone.some(z => z.toLowerCase().includes(d))
   )
     .slice(0, 3)
@@ -99,7 +107,7 @@ function collectHits(q: string): Hit[] {
         }) satisfies Hit
     );
 
-  const reports = REPORTS.filter(
+  const reports = idx.reports.filter(
     r =>
       r.id.toLowerCase().includes(d) ||
       r.carName.toLowerCase().includes(d) ||
@@ -143,13 +151,26 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
   const [debounced, setDebounced] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [recent, setRecent] = useState<RecentEntry[]>([]);
+  const [idx, setIdx] = useState<SearchIndex>({ cars: [], customers: [], orders: [], inspectors: [], reports: [] });
+
+  useEffect(() => {
+    void Promise.all([
+      carsApi.list(),
+      customersApi.list(),
+      ordersApi.list(),
+      inspectorsApi.list(),
+      reportsApi.list(),
+    ]).then(([cars, customers, orders, inspectors, reports]) => {
+      setIdx({ cars, customers, orders, inspectors, reports });
+    });
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(q.trim()), DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [q]);
 
-  const hits = useMemo(() => collectHits(debounced), [debounced]);
+  const hits = useMemo(() => collectHits(debounced, idx), [debounced, idx]);
 
   useEffect(() => {
     try {

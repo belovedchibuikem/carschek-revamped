@@ -4,12 +4,16 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 
 import { Plus, Search, Grid, List, Edit, Trash2, X } from 'lucide-react';
-import { BRANDS, MODELS, CARS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
+import { referenceApi, carsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 export default function BrandsPage() {
   const pathname = usePathname();
-  const [brands, setBrands] = useState(BRANDS);
+  const { data: brands, setData: setBrands, loading, error, refresh } = useApiList(() => referenceApi.brands());
+  const { data: models } = useApiList(() => referenceApi.models());
+  const { data: cars } = useApiList(() => carsApi.list());
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -18,28 +22,38 @@ export default function BrandsPage() {
 
   const filtered = brands.filter(b => b.name.toLowerCase().includes(search.toLowerCase()));
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newBrand.name) { toast.error('Brand name is required'); return; }
-    const brand = { id: `b${Date.now()}`, name: newBrand.name, country: newBrand.country, flag: '🌍', models: 0, cars: 0, active: newBrand.active, logo: newBrand.name[0].toUpperCase() };
-    setBrands(prev => [...prev, brand]);
-    setShowAddModal(false);
-    setNewBrand({ name: '', country: '', active: true });
-    toast.success(`Brand "${newBrand.name}" added successfully`);
+    try {
+      const created = await referenceApi.storeBrand(newBrand) as (typeof brands)[number];
+      setBrands(prev => [...prev, { id: (created as { id?: string }).id || `b${Date.now()}`, name: newBrand.name, country: newBrand.country, flag: '🌍', models: 0, cars: 0, active: newBrand.active, logo: newBrand.name[0].toUpperCase(), ...created }]);
+      setShowAddModal(false);
+      setNewBrand({ name: '', country: '', active: true });
+      toast.success(`Brand "${newBrand.name}" added successfully`);
+      void refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not add brand');
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const brand = brands.find(b => b.id === id);
     if (!brand) return;
-    const modelCount = MODELS.filter(m => m.brandId === id).length;
-    const carCount = CARS.filter(c => c.brand === brand.name).length;
+    const modelCount = models.filter(m => m.brandId === id).length;
+    const carCount = cars.filter(c => c.brand === brand.name).length;
     if (modelCount > 0 || carCount > 0) {
       toast.error(`Cannot delete ${brand.name} — ${modelCount} model(s) and ${carCount} car(s) are linked`);
       setDeleteConfirm(null);
       return;
     }
-    setBrands(prev => prev.filter(b => b.id !== id));
-    setDeleteConfirm(null);
-    toast.success('Brand deleted');
+    try {
+      await referenceApi.deleteBrand(id);
+      setBrands(prev => prev.filter(b => b.id !== id));
+      setDeleteConfirm(null);
+      toast.success('Brand deleted');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not delete brand');
+    }
   };
 
   return (

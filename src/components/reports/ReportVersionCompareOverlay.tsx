@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import {
   diffReportLines,
   getReportSnapshotForVersion,
   getReportVersionMeta,
+  hydrateReportVersions,
   type ReportVersionMeta,
 } from '@/lib/reports/reportVersions';
 
@@ -15,11 +16,23 @@ export interface ReportVersionCompareOverlayProps {
 }
 
 export default function ReportVersionCompareOverlay({ reportId, onClose }: ReportVersionCompareOverlayProps) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    void hydrateReportVersions(reportId).then(() => setTick(n => n + 1));
+  }, [reportId]);
+
   const meta = getReportVersionMeta(reportId);
+  void tick;
   const versions = meta.length ? meta.map(m => m.version) : [1];
   const latest = versions[versions.length - 1] ?? 1;
   const [leftV, setLeftV] = useState(versions[0] ?? 1);
   const [rightV, setRightV] = useState(latest);
+
+  useEffect(() => {
+    if (!meta.length) return;
+    setLeftV(meta[0]!.version);
+    setRightV(meta[meta.length - 1]!.version);
+  }, [meta.length, reportId]);
 
   const leftSnap = getReportSnapshotForVersion(reportId, leftV);
   const rightSnap = getReportSnapshotForVersion(reportId, rightV);

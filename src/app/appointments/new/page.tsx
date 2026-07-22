@@ -8,21 +8,19 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppointmentForm } from '@/components/appointments/AppointmentForm';
 import type { Appointment } from '@/lib/appointments/types';
-import { APPOINTMENTS_SEED } from '@/lib/appointments/seed';
+import { appointmentsApi } from '@/lib/api/services';
 
 function NewAppointmentInner() {
   const pathname = usePathname();
   const router = useRouter();
-  const [all, setAll] = useState<Appointment[]>([...APPOINTMENTS_SEED]);
+  const [all, setAll] = useState<Appointment[]>([]);
   const [nextStep, setNextStep] = useState<{ id: string; bookingId: string; serviceType: string } | null>(null);
 
   const refreshList = async () => {
     try {
-      const r = await fetch('/api/appointments', { cache: 'no-store' });
-      const j = await r.json();
-      setAll(j.appointments ?? []);
+      setAll(await appointmentsApi.list());
     } catch {
-      /* keep seed */
+      /* keep previous */
     }
   };
 
@@ -54,20 +52,14 @@ function NewAppointmentInner() {
             onCancel={() => router.push('/appointments')}
             submitLabel="Submit"
             onSubmit={async payload => {
-              const r = await fetch('/api/appointments', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...payload, createdBy: 'USR-001' }),
-              });
-              const j = await r.json().catch(() => ({}));
-              if (!r.ok) {
-                toast.error(typeof j.error === 'string' ? j.error : 'Could not create');
-                return;
+              try {
+                const apt = await appointmentsApi.create({ ...payload, createdBy: 'USR-001' });
+                toast.success(`Appointment created — Booking ID: ${apt.bookingId}`);
+                await refreshList();
+                setNextStep({ id: apt.id, bookingId: apt.bookingId, serviceType: apt.serviceType });
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : 'Could not create');
               }
-              const apt = j.appointment as Appointment;
-              toast.success(`Appointment created — Booking ID: ${apt.bookingId}`);
-              await refreshList();
-              setNextStep({ id: apt.id, bookingId: apt.bookingId, serviceType: apt.serviceType });
             }}
           />
         </div>

@@ -5,11 +5,12 @@ import { usePathname, useParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { ArrowLeft, Download, Share2, ChevronDown, Loader2 } from 'lucide-react';
-import { REPORTS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
 import {
   getReportVersionMeta,
   getDefaultVersionForReport,
+  hydrateReportVersions,
   mergeReportWithSnapshot,
 } from '@/lib/reports/reportVersions';
 import ReportVersionCompareOverlay from '@/components/reports/ReportVersionCompareOverlay';
@@ -20,6 +21,8 @@ import { loadDexieVehiclePhotoObjectUrls } from '@/lib/inspection/dexieVehiclePh
 import type { VehicleAngleId } from '@/lib/inspection/vehiclePhotoAngles';
 import { EMPTY_VEHICLE_PHOTO_MAP, useVehiclePhotoStore } from '@/stores/vehiclePhotoStore';
 import { captureElementToPdf } from '@/lib/reportPdf';
+import { reportsApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 
 const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => m.QRCodeSVG), { ssr: false });
 
@@ -29,14 +32,17 @@ export default function ReportViewPage() {
   const pathname = usePathname();
   const params = useParams();
   const reportId = params.id as string;
-  const report = REPORTS.find(r => r.id === reportId) || REPORTS[0];
-  const orderId = report.orderId;
-  const versionMeta = getReportVersionMeta(report.id);
-  const [viewVersion, setViewVersion] = useState(() => getDefaultVersionForReport(reportId, report.version));
+  const { data: report, loading, error } = useApiResource(() => reportsApi.get(reportId), [reportId]);
+  const [viewVersion, setViewVersion] = useState(1);
+  const [versionsReady, setVersionsReady] = useState(0);
   const [compareOpen, setCompareOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ReportVariant>('modern');
   const [shareAccess, setShareAccess] = useState(false);
   const [downloading, setDownloading] = useState(false);
+
+  const orderId = report?.orderId ?? '';
+  const versionMeta = report ? getReportVersionMeta(report.id, report) : [];
+  void versionsReady;
 
   // Same data pipeline as the inspector report screen (Dexie checklist + photos)
   const storePhotoUrls = useVehiclePhotoStore(s => s.urlsByOrder[orderId] ?? EMPTY_VEHICLE_PHOTO_MAP);
@@ -44,11 +50,29 @@ export default function ReportViewPage() {
   const [reportData, setReportData] = useState<InspectionReportData | null>(null);
 
   useEffect(() => {
-    const r = REPORTS.find(x => x.id === reportId) || REPORTS[0];
-    setViewVersion(getDefaultVersionForReport(reportId, r.version));
+    if (!report) return;
+    let cancelled = false;
+    void hydrateReportVersions(reportId, report).then(() => {
+      if (cancelled) return;
+      setVersionsReady(n => n + 1);
+      setViewVersion(getDefaultVersionForReport(reportId, report.version, report));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [reportId, report]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('access') === 'demo') {
+      sessionStorage.setItem(ACCESS_KEY(reportId), '1');
+    }
+    setShareAccess(sessionStorage.getItem(ACCESS_KEY(reportId)) === '1');
   }, [reportId]);
 
   useEffect(() => {
+    if (!orderId) return;
     let cancelled = false;
     let revokeDexie: (() => void) | undefined;
     void loadDexieVehiclePhotoObjectUrls(orderId).then(({ map, revoke }) => {
@@ -68,23 +92,30 @@ export default function ReportViewPage() {
   const mergedPhotoUrls = useMemo(() => ({ ...dexiePhotoMap, ...storePhotoUrls }), [dexiePhotoMap, storePhotoUrls]);
 
   useEffect(() => {
+    if (!report || !orderId) return;
     void buildReportData(orderId, {
       photoUrls: mergedPhotoUrls,
       fallbackScore: report.score,
       inspectorName: report.inspectorName,
     }).then(setReportData);
-  }, [orderId, mergedPhotoUrls, report.score, report.inspectorName]);
+  }, [orderId, mergedPhotoUrls, report]);
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading report…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !report) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-red-700">{error || 'Report not found'}</div>
+      </AppLayout>
+    );
+  }
 
   const displayReport = mergeReportWithSnapshot(report.id, report, viewVersion);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const p = new URLSearchParams(window.location.search);
-    if (p.get('access') === 'demo') {
-      sessionStorage.setItem(ACCESS_KEY(reportId), '1');
-    }
-    setShareAccess(sessionStorage.getItem(ACCESS_KEY(reportId)) === '1');
-  }, [reportId]);
 
   const copyShareLink = () => {
     const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/reports/${report.id}?access=demo`;

@@ -4,9 +4,11 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, MessageSquare, Car } from 'lucide-react';
-import { CRM_CONTACTS, OFFERS } from '@/lib/mockData';
+
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { crmApi, offersApi } from '@/lib/api/services';
+import { useApiResource, useApiList } from '@/hooks/useApiResource';
 
 const TABS = ['Overview', 'Cars', 'Offers', 'Communications', 'Notes'];
 
@@ -14,12 +16,28 @@ export default function CRMContactPage() {
   const pathname = usePathname();
   const params = useParams();
   const contactId = params.id as string;
-  const contact = CRM_CONTACTS.find(c => c.id === contactId) || CRM_CONTACTS[0];
+  const { data: contact, loading, error } = useApiResource(() => crmApi.get(contactId), [contactId]);
+  const { data: offers } = useApiList(() => offersApi.list());
   const [activeTab, setActiveTab] = useState(0);
   const [notes, setNotes] = useState<string[]>(['Interested in Toyota Camry 2015. Budget around ₦5M.']);
   const [newNote, setNewNote] = useState('');
 
-  const contactOffers = OFFERS.filter(o => o.contactId === contact.id);
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading contact…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !contact) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-red-700">{error || 'Contact not found'}</div>
+      </AppLayout>
+    );
+  }
+
+  const contactOffers = offers.filter(o => o.contactId === contact.id);
 
   return (
     <AppLayout currentPath={pathname}>

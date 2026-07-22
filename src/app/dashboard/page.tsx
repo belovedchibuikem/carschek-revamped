@@ -8,16 +8,23 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, Cell
 } from 'recharts';
-import { formatNaira, getScoreColor, INSPECTORS } from '@/lib/mockData';
+import { formatNaira, getScoreColor } from '@/lib/mockData';
+import { activityApi, dashboardApi, financeApi, inspectorsApi } from '@/lib/api/services';
+import { useApiResource, useApiList } from '@/hooks/useApiResource';
 import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
 import { AppointmentDashboardKpis } from '@/components/dashboard/AppointmentDashboardKpis';
 
+/**
+ * No Laravel time-series endpoint for booking volume / revenue mix charts yet —
+ * keep illustrative series until `/dashboard/charts` (or similar) exists.
+ */
 const BOOKING_DATA = Array.from({ length: 30 }, (_, i) => ({
   day: `Apr ${i + 1}`,
   booked: 5 + ((i * 13 + 7) % 15),
   completed: 3 + ((i * 11 + 5) % 12),
 }));
 
+/** Illustrative category mix — finance API only exposes summary totals, not breakdown. */
 const REVENUE_DATA = [
   { name: 'Inspection Fees', value: 4200000, color: '#ff5722' },
   { name: 'Marketplace Commission', value: 3100000, color: '#ff8a65' },
@@ -25,24 +32,8 @@ const REVENUE_DATA = [
   { name: 'B2B Services', value: 2350000, color: '#D35400' },
 ];
 
-const LEADERBOARD = [
-  { rank: 1, name: 'Emeka Okonkwo', jobs: 142, score: 81, zone: 'Lagos Island', avatar: 'EO' },
-  { rank: 2, name: 'Chidinma Eze', jobs: 98, score: 85, zone: 'Abuja', avatar: 'CE' },
-  { rank: 3, name: 'Ngozi Obi', jobs: 115, score: 82, zone: 'Port Harcourt', avatar: 'NO' },
-  { rank: 4, name: 'Seun Afolabi', jobs: 89, score: 79, zone: 'Ibadan', avatar: 'SA' },
-  { rank: 5, name: 'Babatunde Adeyemi', jobs: 67, score: 77, zone: 'Lagos Island', avatar: 'BA' },
-];
-
-const ACTIVITY = [
-  { icon: '📋', text: 'Order ORD-1892 moved to QA Review', time: '2m ago', link: '/orders/ORD-1892' },
-  { icon: '✅', text: 'Inspector Emeka completed job #142', time: '15m ago', link: '/inspectors/INS-001' },
-  { icon: '💰', text: '₦5,100,000 payment received for CK-41', time: '1h ago', link: '/finance' },
-  { icon: '🚗', text: 'New car CK-47 registered by Promise Ndem', time: '2h ago', link: '/cars/CK-47' },
-  { icon: '🔨', text: 'New bid ₦4,950,000 on AUC-001', time: '3h ago', link: '/auctions/AUC-001' },
-  { icon: '📄', text: 'Report RPT-440 approved by QA', time: '4h ago', link: '/reports/RPT-440' },
-];
-
-const NIGERIA_ZONES = [
+/** Zone heat map is UI-only (no geo aggregate endpoint). */
+const NIGERIA_ZONES_STATIC = [
   { name: 'Lagos', x: 15, y: 68, volume: 45, score: 79 },
   { name: 'Abuja', x: 48, y: 42, volume: 28, score: 83 },
   { name: 'Port Harcourt', x: 55, y: 72, volume: 18, score: 81 },
@@ -69,6 +60,10 @@ function CountUp({ target, prefix = '', suffix = '' }: { target: number; prefix?
 
 export default function DashboardPage() {
   const pathname = usePathname();
+  const { data: apiKpis } = useApiResource(() => dashboardApi.kpis());
+  const { data: inspectors } = useApiList(() => inspectorsApi.list());
+  const { data: activityLog } = useApiList(() => activityApi.list());
+  const { data: financeSummary } = useApiResource(() => financeApi.summary());
   const chartTheme = useRechartsTheme();
   const [chartRange, setChartRange] = useState<'7D' | '30D' | '90D'>('30D');
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
@@ -108,10 +103,84 @@ export default function DashboardPage() {
     if (key === 'completed') setShowCompletedSeries(v => !v);
   };
 
+  const ordersKpi = (apiKpis as {
+    orders?: { total?: number; new?: number; assigned?: number; inProgress?: number };
+    appointments?: { today?: number };
+    inspectors?: { online?: number; total?: number };
+  } | null) ?? null;
+  const inspectionsToday =
+    ordersKpi?.appointments?.today ??
+    (ordersKpi?.orders
+      ? (ordersKpi.orders.inProgress ?? 0) + (ordersKpi.orders.assigned ?? 0)
+      : 7);
+  const pendingOrders =
+    ordersKpi?.orders
+      ? (ordersKpi.orders.new ?? 0) + (ordersKpi.orders.assigned ?? 0) + (ordersKpi.orders.inProgress ?? 0)
+      : 12;
+  const inspectorsOnline =
+    ordersKpi?.inspectors?.online ?? (inspectors.filter(i => i.status === 'online').length || 11);
+
+  const revenueMtd = Number(
+    (financeSummary as { revenueMTD?: number } | null)?.revenueMTD ?? 0
+  ) || 12450000;
+  const revenueTarget = Number(
+    (financeSummary as { revenueTarget?: number } | null)?.revenueTarget ?? 20000000
+  );
+  const avgScore =
+    inspectors.length > 0
+      ? Math.round(inspectors.reduce((s, i) => s + (i.avgScore ?? 0), 0) / inspectors.length)
+      : 79;
+
+  const leaderboard = [...inspectors]
+    .sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0) || (b.totalJobs ?? 0) - (a.totalJobs ?? 0))
+    .slice(0, 5)
+    .map((ins, i) => ({
+      rank: i + 1,
+      id: ins.id,
+      name: ins.name,
+      jobs: ins.totalJobs ?? 0,
+      score: ins.avgScore ?? 0,
+      zone: Array.isArray(ins.zone) ? ins.zone[0] ?? '—' : String(ins.zone ?? '—'),
+      avatar: ins.avatar || ins.name.split(' ').map(p => p[0]).join('').slice(0, 2),
+    }));
+
+  const activityFeed = activityLog.slice(0, 8).map(a => {
+    const targetType = String(a.targetType ?? '').toLowerCase();
+    let icon = '📋';
+    let link = '/activity';
+    if (targetType.includes('order')) {
+      icon = '📋';
+      link = `/orders/${a.target}`;
+    } else if (targetType.includes('report')) {
+      icon = '📄';
+      link = `/reports/${a.target}`;
+    } else if (targetType.includes('car')) {
+      icon = '🚗';
+      link = `/cars/${a.target}`;
+    } else if (targetType.includes('auction')) {
+      icon = '🔨';
+      link = `/auctions/${a.target}`;
+    } else if (targetType.includes('inspector')) {
+      icon = '✅';
+      link = `/inspectors/${a.target}`;
+    } else if (targetType.includes('finance') || targetType.includes('invoice')) {
+      icon = '💰';
+      link = '/finance';
+    }
+    return {
+      icon,
+      text: `${a.action}${a.target ? ` — ${a.target}` : ''}`,
+      time: a.timestamp
+        ? new Date(a.timestamp).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        : '—',
+      link,
+    };
+  });
+
   const kpis = [
     {
       label: 'Inspections Today',
-      value: 7,
+      value: inspectionsToday,
       trend: +2,
       trendLabel: 'vs yesterday',
       icon: ClipboardList,
@@ -120,7 +189,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Pending Orders',
-      value: 12,
+      value: pendingOrders,
       trend: -3,
       trendLabel: 'needs attention',
       icon: Activity,
@@ -129,18 +198,18 @@ export default function DashboardPage() {
     },
     {
       label: 'Revenue MTD',
-      value: 12450000,
+      value: revenueMtd,
       isNaira: true,
-      progress: 62,
-      trendLabel: '₦20M target',
+      progress: Math.min(100, Math.round((revenueMtd / Math.max(1, revenueTarget)) * 100)),
+      trendLabel: `${formatNaira(revenueTarget)} target`,
       icon: DollarSign,
       color: '#1A7A4A',
       href: '/finance',
     },
     {
       label: 'Active Inspectors',
-      value: 11,
-      suffix: '/15 online',
+      value: inspectorsOnline,
+      suffix: `/${ordersKpi?.inspectors?.total ?? (inspectors.length || 15)} online`,
       trendLabel: 'available now',
       icon: Users,
       color: '#ff8a65',
@@ -148,7 +217,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Avg Carschek Score',
-      value: 79,
+      value: avgScore,
       suffix: '/100',
       trendLabel: 'platform average',
       icon: Star,
@@ -307,7 +376,7 @@ export default function DashboardPage() {
               <svg viewBox="0 0 100 100" className="w-full h-full opacity-20 absolute inset-0">
                 <path d="M10,30 L20,20 L35,18 L50,15 L65,18 L80,22 L88,35 L90,50 L85,65 L75,78 L60,85 L45,88 L30,82 L18,72 L10,58 L8,45 Z" fill="#ff5722" />
               </svg>
-              {NIGERIA_ZONES.map(zone => {
+              {NIGERIA_ZONES_STATIC.map(zone => {
                 const size = 8 + (zone.volume / 45) * 20;
                 const isSelected = selectedZone === zone.name;
                 return (
@@ -333,7 +402,7 @@ export default function DashboardPage() {
               })}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              {NIGERIA_ZONES.map(z => (
+              {NIGERIA_ZONES_STATIC.map(z => (
                 <button key={z.name} onClick={() => setSelectedZone(selectedZone === z.name ? null : z.name)}
                   className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-all ${selectedZone === z.name ? 'bg-[#ff5722] text-white border-[#ff5722]' : 'bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#ff8a65]'}`}>
                   <MapPin size={10} /> {z.name}
@@ -352,8 +421,8 @@ export default function DashboardPage() {
               <Link href="/inspectors" className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">View all <ChevronRight size={12} /></Link>
             </div>
             <div className="space-y-2">
-              {LEADERBOARD.map((ins, i) => (
-                <Link key={ins.rank} href={`/inspectors/${INSPECTORS[i]?.id ?? `INS-00${ins.rank}`}`}
+              {leaderboard.map((ins, i) => (
+                <Link key={ins.id} href={`/inspectors/${ins.id}`}
                   className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-[#F4F6F8] transition-colors group">
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-gray-100 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-700' : 'bg-[#F4F6F8] text-[#6B7280]'}`}>
                     {ins.rank}
@@ -371,6 +440,9 @@ export default function DashboardPage() {
                   </div>
                 </Link>
               ))}
+              {leaderboard.length === 0 && (
+                <p className="text-sm text-[#6B7280] py-4 text-center">No inspector stats yet.</p>
+              )}
             </div>
           </div>
 
@@ -381,7 +453,7 @@ export default function DashboardPage() {
               <Link href="/activity" className="text-xs text-[#ff8a65] hover:underline flex items-center gap-1">View all <ChevronRight size={12} /></Link>
             </div>
             <div className="space-y-1">
-              {ACTIVITY.map((item, i) => (
+              {activityFeed.map((item, i) => (
                 <Link key={`act-${i}`} href={item.link}
                   className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#F4F6F8] transition-colors group">
                   <span className="text-base flex-shrink-0 mt-0.5">{item.icon}</span>
@@ -392,6 +464,9 @@ export default function DashboardPage() {
                   <ChevronRight size={14} className="text-[#9CA3AF] group-hover:text-[#ff8a65] transition-colors mt-1 flex-shrink-0" />
                 </Link>
               ))}
+              {activityFeed.length === 0 && (
+                <p className="text-sm text-[#6B7280] py-4 text-center">No recent activity.</p>
+              )}
             </div>
           </div>
         </div>

@@ -12,7 +12,12 @@ import {
   type InspectorJobCard,
   type InspectorJobStatusUi,
 } from '@/lib/inspection/mockInspectorJobs';
+import { mapOrderToJobCard } from '@/lib/inspection/mapOrderToJobCard';
+import { authApi, inspectorsApi } from '@/lib/api/services';
+import { USE_API_MOCK } from '@/lib/api/client';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
+
+const DEFAULT_INSPECTOR_ID = 'INS-001';
 
 function statusChipClass(s: InspectorJobStatusUi): string {
   switch (s) {
@@ -61,29 +66,77 @@ export function JobsScreen({ layout }: Props) {
   const href = useInspectorHref();
   const { online } = useOnlineStatus();
   const [today, setToday] = useState('');
+  const [jobs, setJobs] = useState<InspectorJobCard[]>(MOCK_INSPECTOR_JOBS);
+  const [inspectorName, setInspectorName] = useState(MOCK_INSPECTOR_NAME);
 
   useEffect(() => {
     setToday(new Date().toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      if (USE_API_MOCK) {
+        setJobs(MOCK_INSPECTOR_JOBS);
+        setInspectorName(MOCK_INSPECTOR_NAME);
+        return;
+      }
+      try {
+        let inspectorId = DEFAULT_INSPECTOR_ID;
+        try {
+          const me = await authApi.me();
+          const email = me.user?.email?.toLowerCase();
+          const list = await inspectorsApi.list();
+          const match = list.find(i => i.email?.toLowerCase() === email) ?? list[0];
+          if (match) {
+            inspectorId = match.id;
+            if (!cancelled) setInspectorName(match.name);
+          }
+        } catch {
+          /* keep default inspector id */
+        }
+        const rows = (await inspectorsApi.jobs(inspectorId)) as Array<{
+          id: string;
+          status?: string;
+          vehicle?: string;
+          plate?: string | null;
+          customerName?: string | null;
+          customerPhone?: string | null;
+          zone?: string | null;
+          scheduledAt?: string | null;
+        }>;
+        if (cancelled) return;
+        if (Array.isArray(rows) && rows.length) {
+          setJobs(rows.map(r => mapOrderToJobCard(r)));
+        } else {
+          setJobs([]);
+        }
+      } catch {
+        if (!cancelled) setJobs(MOCK_INSPECTOR_JOBS);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const stats = useMemo(() => {
-    const jobs = MOCK_INSPECTOR_JOBS;
     const todayCount = jobs.length;
     const completed = jobs.filter(j => j.status === 'completed').length;
     const pending = jobs.filter(j => j.status !== 'completed').length;
+    const scored = jobs.filter(j => j.carschekScore != null);
     const avg =
-      jobs.filter(j => j.carschekScore != null).reduce((a, j) => a + (j.carschekScore ?? 0), 0) /
-      Math.max(1, jobs.filter(j => j.carschekScore != null).length);
+      scored.reduce((a, j) => a + (j.carschekScore ?? 0), 0) / Math.max(1, scored.length);
     return {
       todayJobs: todayCount,
       completed,
       pending,
-      avgScore: Math.round(avg) || 81,
+      avgScore: Math.round(avg) || 0,
     };
-  }, []);
+  }, [jobs]);
 
-  const jobCards = (jobs: InspectorJobCard[]) =>
-    jobs.map(job => (
+  const jobCards = (list: InspectorJobCard[]) =>
+    list.map(job => (
       <div
         key={job.id}
         className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
@@ -144,7 +197,7 @@ export function JobsScreen({ layout }: Props) {
         <div>
           <p className="text-sm text-[#6B7280]">{today || '\u00a0'}</p>
           <h1 className="font-heading text-xl font-bold text-[#1F2937]">
-            Good morning, {MOCK_INSPECTOR_NAME.split(' ')[0]} 👋
+            Good morning, {inspectorName.split(' ')[0]} 👋
           </h1>
         </div>
         {headerRight}
@@ -165,7 +218,13 @@ export function JobsScreen({ layout }: Props) {
       </div>
 
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Assigned jobs</h2>
-      <div className="space-y-3">{jobCards(MOCK_INSPECTOR_JOBS)}</div>
+      <div className="space-y-3">
+        {jobs.length ? jobCards(jobs) : (
+          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#6B7280]">
+            No assigned jobs right now.
+          </div>
+        )}
+      </div>
     </>
   );
 

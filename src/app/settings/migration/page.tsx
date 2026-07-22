@@ -17,13 +17,17 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { appendReconciliationEvent } from '@/lib/localActivity';
+import { USE_API_MOCK as MOCK_FLAG } from '@/lib/api/client';
+import { migrationApi } from '@/lib/api/services';
 
 const STORAGE_KEY = 'carschek-migration-connection-v1';
 
 type StepId = 1 | 2 | 3 | 4 | 5;
 type ConnectMethod = 'api' | 'csv';
 
-const ENTITIES = [
+type EntityRow = { id: string; label: string; count: number; note?: string };
+
+const DEFAULT_ENTITIES: EntityRow[] = [
   { id: 'brands', label: 'Vehicle Brands', count: 8 },
   { id: 'models', label: 'Car Models', count: 24 },
   { id: 'years', label: 'Car Years', count: 35 },
@@ -35,7 +39,7 @@ const ENTITIES = [
   { id: 'offers', label: 'Offers', count: 23 },
   { id: 'activity', label: 'Activity Logs', count: 1240 },
   { id: 'documents', label: 'Document Files', count: 0, note: 'Requires manual re-upload after migration' },
-] as const;
+];
 
 const STEPS: { id: StepId; title: string }[] = [
   { id: 1, title: 'Connect' },
@@ -69,8 +73,11 @@ export default function DataMigrationPage() {
   const [baseUrl, setBaseUrl] = useState('https://admin.carschek.com/api');
   const [apiToken, setApiToken] = useState('');
   const [connectionOk, setConnectionOk] = useState<boolean | null>(null);
+  const [runId, setRunId] = useState<number | null>(null);
+  const [entities, setEntities] = useState<EntityRow[]>(DEFAULT_ENTITIES);
+  const [dryRunRows, setDryRunRows] = useState(DRY_RUN_PREVIEW_ROWS);
   const [selected, setSelected] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(ENTITIES.map(e => [e.id, e.id !== 'documents']))
+    Object.fromEntries(DEFAULT_ENTITIES.map(e => [e.id, e.id !== 'documents']))
   );
   const [scanning, setScanning] = useState(false);
   const [validating, setValidating] = useState(false);
@@ -90,10 +97,12 @@ export default function DataMigrationPage() {
         method?: ConnectMethod;
         baseUrl?: string;
         connectionOk?: boolean;
+        runId?: number;
       };
       if (p.method) setMethod(p.method);
       if (p.baseUrl) setBaseUrl(p.baseUrl);
       if (typeof p.connectionOk === 'boolean') setConnectionOk(p.connectionOk);
+      if (typeof p.runId === 'number') setRunId(p.runId);
     } catch {
       /* ignore */
     }
@@ -103,60 +112,167 @@ export default function DataMigrationPage() {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ method, baseUrl, connectionOk, savedAt: Date.now() })
+        JSON.stringify({ method, baseUrl, connectionOk, runId, savedAt: Date.now() })
       );
     } catch {
       /* ignore */
     }
-  }, [method, baseUrl, connectionOk]);
+  }, [method, baseUrl, connectionOk, runId]);
 
   useEffect(() => {
     persistConnection();
   }, [persistConnection]);
 
-  const estimatedRecords = useMemo(() => {
-    return ENTITIES.filter(e => selected[e.id]).reduce((s, e) => s + e.count, 0);
-  }, [selected]);
+  const selectedKeys = useMemo(() => Object.keys(selected).filter(k => selected[k]), [selected]);
 
-  const testConnection = () => {
+  const estimatedRecords = useMemo(() => {
+    return entities.filter(e => selected[e.id]).reduce((s, e) => s + e.count, 0);
+  }, [selected, entities]);
+
+  const ensureRunId = async (): Promise<number> => {
+    if (runId != null) return runId;
+    const res = await migrationApi.connect({
+      method: method === 'csv' ? 'csv' : 'api',
+      base_url: baseUrl,
+      api_token: apiToken,
+      use_demo: MOCK_FLAG || (method === 'api' && apiToken.trim().length < 4),
+    });
+    if (!res.ok || res.run_id == null) throw new Error(res.message || 'Connect failed');
+    setRunId(res.run_id);
+    return res.run_id;
+  };
+
+  const pauseMigration = async () => {
+    if (runId == null) {
+      toast.message('No active migration run');
+      return;
+    }
+    try {
+      await migrationApi.pause(runId);
+      toast.message('Pause requested after current record');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Pause failed');
+    }
+  };
+
+  const cancelMigration = async () => {
+    if (runId == null) {
+      toast.error('No migration run to cancel');
+      return;
+    }
+    try {
+      await migrationApi.cancel(runId);
+      setMigrating(false);
+      toast.error('Cancel requested — partial import retained');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Cancel failed');
+    }
+  };
+
+  const retryFailed = async () => {
+    if (runId == null) {
+      toast.error('No migration run');
+      return;
+    }
+    try {
+      await migrationApi.retryFailed(runId);
+      toast.success('Retry queued for failed records');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Retry failed');
+    }
+  };
+
+  const testConnection = async () => {
     setConnectionOk(null);
     toast.message('Testing connection…');
-    setTimeout(() => {
-      const ok = apiToken.trim().length >= 4 || method === 'csv';
-      setConnectionOk(ok);
-      toast[ok ? 'success' : 'error'](ok ? 'Connection successful' : 'Invalid token or URL');
-    }, 900);
+    try {
+      const res = await migrationApi.connect({
+        method: method === 'csv' ? 'csv' : 'api',
+        base_url: baseUrl,
+        api_token: apiToken,
+        use_demo: MOCK_FLAG || apiToken.trim().length < 4,
+      });
+      setConnectionOk(res.ok);
+      if (res.run_id != null) setRunId(res.run_id);
+      toast[res.ok ? 'success' : 'error'](res.message || (res.ok ? 'Connection successful' : 'Invalid token or URL'));
+    } catch (err) {
+      setConnectionOk(false);
+      toast.error(err instanceof Error ? err.message : 'Connection failed');
+    }
   };
 
-  const scanAgain = () => {
+  const scanAgain = async () => {
     setScanning(true);
-    setTimeout(() => {
-      setScanning(false);
+    try {
+      const id = await ensureRunId();
+      const res = await migrationApi.scan(id, selectedKeys);
+      if (res.entities?.length) {
+        setEntities(
+          res.entities.map(e => ({
+            id: e.id,
+            label: e.label,
+            count: e.count,
+            note: e.note ?? undefined,
+          }))
+        );
+        setSelected(prev => {
+          const next = { ...prev };
+          for (const e of res.entities) {
+            if (next[e.id] === undefined) next[e.id] = e.id !== 'documents';
+          }
+          return next;
+        });
+      }
       toast.success('Scan complete — counts refreshed');
-    }, 1200);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Scan failed');
+    } finally {
+      setScanning(false);
+    }
   };
 
-  const runValidation = () => {
+  const runValidation = async () => {
     setValidating(true);
     setValidationDone(false);
     setDryRunDone(false);
-    setTimeout(() => {
-      setValidating(false);
+    try {
+      const id = await ensureRunId();
+      await migrationApi.validate(id, selectedKeys);
       setValidationDone(true);
       toast.success('Validation finished');
-    }, 1600);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Validation failed');
+    } finally {
+      setValidating(false);
+    }
   };
 
-  const runDryRun = () => {
+  const runDryRun = async () => {
     setValidating(true);
-    setTimeout(() => {
-      setValidating(false);
+    try {
+      const id = await ensureRunId();
+      const res = await migrationApi.dryRun(id, selectedKeys);
+      if (Array.isArray(res.rows) && res.rows.length) {
+        setDryRunRows(
+          res.rows.map(r => ({
+            entity: r.entity,
+            operation: r.operation,
+            records: r.records,
+            outcome: (r.outcome as 'ok' | 'warning' | 'error' | 'skipped') || 'ok',
+            note: r.note,
+          }))
+        );
+      }
       setDryRunDone(true);
       toast.success('Dry run complete — no data was written');
-    }, 2000);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Dry run failed');
+    } finally {
+      setValidating(false);
+    }
   };
 
-  const startMigration = () => {
+  const startMigration = async () => {
     if (typed.trim().toUpperCase() !== 'MIGRATE') {
       toast.error('Type MIGRATE to confirm');
       return;
@@ -164,51 +280,99 @@ export default function DataMigrationPage() {
     setMigrating(true);
     setMigrateProgress(0);
     setMigrateLog([]);
-    const lines = [
-      '✓ Created Brand: Toyota',
-      '✓ Created Model: Toyota Camry (Sedan)',
-      '✓ Imported Car CK-1041: Toyota Camry 2011 — VIN 4T1BF3EK9BU228086',
-      '⚠ Car CK-1036: Duplicate plate detected — flagged for review',
-      '✗ Car CK-1039: Invalid VIN checksum — skipped',
-    ];
-    let i = 0;
-    const tick = () => {
-      i += 1;
-      setMigrateProgress(Math.min(100, Math.floor((i / 40) * 100)));
-      if (i <= lines.length) {
-        setMigrateLog(prev => [...prev, lines[i - 1]!]);
-      }
-      if (i < 40) {
-        setTimeout(tick, 120);
-      } else {
-        setMigrating(false);
-        setSummary({ imported: 1588, warnings: 4, errors: 1, ms: 720000 });
-        appendReconciliationEvent({
-          id: `ACT-REC-${Date.now()}`,
-          actor: 'Data migration',
-          action: 'Reconciliation summary recorded',
-          target: '1588 imported · 4 warnings · 1 error',
-          targetType: 'migration',
-          timestamp: new Date().toISOString(),
-          ip: '—',
-          role: 'System',
-        });
-        setStep(5);
-        toast.success('Migration complete');
-      }
-    };
-    tick();
+
+    if (MOCK_FLAG) {
+      const lines = [
+        '✓ Created Brand: Toyota',
+        '✓ Created Model: Toyota Camry (Sedan)',
+        '✓ Imported Car CK-1041: Toyota Camry 2011 — VIN 4T1BF3EK9BU228086',
+        '⚠ Car CK-1036: Duplicate plate detected — flagged for review',
+        '✗ Car CK-1039: Invalid VIN checksum — skipped',
+      ];
+      let i = 0;
+      const tick = () => {
+        i += 1;
+        setMigrateProgress(Math.min(100, Math.floor((i / 40) * 100)));
+        if (i <= lines.length) {
+          setMigrateLog(prev => [...prev, lines[i - 1]!]);
+        }
+        if (i < 40) {
+          setTimeout(tick, 120);
+        } else {
+          setMigrating(false);
+          setSummary({ imported: 1588, warnings: 4, errors: 1, ms: 720000 });
+          appendReconciliationEvent({
+            id: `ACT-REC-${Date.now()}`,
+            actor: 'Data migration',
+            action: 'Reconciliation summary recorded',
+            target: '1588 imported · 4 warnings · 1 error',
+            targetType: 'migration',
+            timestamp: new Date().toISOString(),
+            ip: '—',
+            role: 'System',
+          });
+          setStep(5);
+          toast.success('Migration complete');
+        }
+      };
+      tick();
+      return;
+    }
+
+    try {
+      const id = await ensureRunId();
+      await migrationApi.start(id, 'MIGRATE', selectedKeys);
+      const poll = async () => {
+        const p = await migrationApi.progress(id);
+        setMigrateProgress(p.progress);
+        setMigrateLog(p.log ?? []);
+        if (p.status === 'completed' || p.status === 'failed' || p.status === 'cancelled') {
+          setMigrating(false);
+          const totals = p.totals ?? {};
+          setSummary({
+            imported: totals.imported ?? 0,
+            warnings: totals.warnings ?? 0,
+            errors: totals.errors ?? 0,
+            ms: totals.ms ?? 0,
+          });
+          appendReconciliationEvent({
+            id: `ACT-REC-${Date.now()}`,
+            actor: 'Data migration',
+            action: 'Reconciliation summary recorded',
+            target: `${totals.imported ?? 0} imported · ${totals.warnings ?? 0} warnings · ${totals.errors ?? 0} error`,
+            targetType: 'migration',
+            timestamp: new Date().toISOString(),
+            ip: '—',
+            role: 'System',
+          });
+          setStep(5);
+          toast.success(p.status === 'completed' ? 'Migration complete' : `Migration ${p.status}`);
+          return;
+        }
+        window.setTimeout(() => {
+          void poll();
+        }, 800);
+      };
+      await poll();
+    } catch (err) {
+      setMigrating(false);
+      toast.error(err instanceof Error ? err.message : 'Migration failed');
+    }
   };
 
-  const downloadReport = () => {
-    const csv = ['record,status,message', 'CK-1041,imported,ok', 'CK-1039,skipped,invalid VIN'].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'carschek-migration-report.csv';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast.success('Report downloaded');
+  const downloadReport = async () => {
+    try {
+      const id = runId ?? 1;
+      const blob = await migrationApi.downloadReport(id);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'carschek-migration-report.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast.success('Report downloaded');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Download failed');
+    }
   };
 
   return (
@@ -343,14 +507,14 @@ export default function DataMigrationPage() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => setSelected(Object.fromEntries(ENTITIES.map(e => [e.id, true])))}
+                      onClick={() => setSelected(Object.fromEntries(entities.map(e => [e.id, true])))}
                       className="text-sm font-medium text-[#ff8a65] hover:underline"
                     >
                       Select All
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelected(Object.fromEntries(ENTITIES.map(e => [e.id, false])))}
+                      onClick={() => setSelected(Object.fromEntries(entities.map(e => [e.id, false])))}
                       className="text-sm font-medium text-[#6B7280] hover:underline"
                     >
                       Deselect All
@@ -370,7 +534,7 @@ export default function DataMigrationPage() {
                   Estimated time: ~{Math.max(1, Math.round(estimatedRecords / 140))} minutes for {estimatedRecords.toLocaleString()} records
                 </p>
                 <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                  {ENTITIES.map(e => (
+                  {entities.map(e => (
                     <label
                       key={e.id}
                       className={`flex items-center gap-3 p-3 rounded-lg border ${
@@ -468,7 +632,7 @@ export default function DataMigrationPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {DRY_RUN_PREVIEW_ROWS.map((row, i) => (
+                          {dryRunRows.map((row, i) => (
                             <tr key={`${row.entity}-${i}`} className="border-b border-[#F4F6F8] last:border-0">
                               <td className="px-4 py-2.5 text-[#1F2937]">{row.entity}</td>
                               <td className="px-4 py-2.5 font-mono text-xs text-[#6B7280]">{row.operation}</td>
@@ -538,7 +702,7 @@ export default function DataMigrationPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => toast.message('Pause after current record (mock)')}
+                    onClick={() => void pauseMigration()}
                     disabled={!migrating}
                     className="px-3 py-2 text-sm border border-[#E5E7EB] rounded-lg disabled:opacity-40"
                   >
@@ -546,7 +710,7 @@ export default function DataMigrationPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => toast.error('Cancel requested — partial import retained (mock)')}
+                    onClick={() => void cancelMigration()}
                     className="px-3 py-2 text-sm border border-red-200 text-red-700 rounded-lg"
                   >
                     Cancel Migration
@@ -611,7 +775,7 @@ export default function DataMigrationPage() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => toast.success('Retry queued for failed records (mock)')}
+                    onClick={() => void retryFailed()}
                     className="px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-semibold"
                   >
                     Retry Failed Records

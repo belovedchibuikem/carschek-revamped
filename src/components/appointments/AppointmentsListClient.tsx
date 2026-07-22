@@ -29,6 +29,7 @@ import {
 } from '@/lib/appointments/logic';
 import { findCarIdByVinOrPlate } from '@/lib/appointments/lookup';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { appointmentsApi } from '@/lib/api/services';
 
 export type AppointmentsListVariant = 'all' | 'confirmed' | 'unconfirmed' | 'inspected';
 
@@ -40,10 +41,7 @@ type Props = {
 };
 
 async function fetchAppointments(): Promise<Appointment[]> {
-  const r = await fetch('/api/appointments', { cache: 'no-store' });
-  if (!r.ok) throw new Error('Failed to load');
-  const j = await r.json();
-  return j.appointments as Appointment[];
+  return appointmentsApi.list();
 }
 
 export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, pathname }: Props) {
@@ -185,16 +183,13 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
   };
 
   const runConfirm = async (a: Appointment, callStatus: string, notes: string) => {
-    const r = await fetch(`/api/appointments/${a.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    try {
+      await appointmentsApi.update(a.id, {
         callStatus,
         status: callStatus === 'Called & Confirmed' ? 'confirmed' : a.status,
         notes: notes || a.notes,
-      }),
-    });
-    if (!r.ok) {
+      });
+    } catch {
       toast.error('Could not confirm');
       return;
     }
@@ -207,18 +202,25 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
   const runDelete = async (a: Appointment) => {
     setDeleteRow(null);
     setRemovingIds(prev => new Set(prev).add(a.id));
-    const r = await fetch(`/api/appointments/${a.id}`, { method: 'DELETE' });
-    window.setTimeout(async () => {
-      if (r.ok) {
+    try {
+      await appointmentsApi.remove(a.id);
+      window.setTimeout(async () => {
         toast.success(`Appointment ${a.bookingId} deleted`);
         await refresh();
-      } else toast.error('Delete failed');
+        setRemovingIds(prev => {
+          const n = new Set(prev);
+          n.delete(a.id);
+          return n;
+        });
+      }, 280);
+    } catch {
+      toast.error('Delete failed');
       setRemovingIds(prev => {
         const n = new Set(prev);
         n.delete(a.id);
         return n;
       });
-    }, 280);
+    }
   };
 
   const inspectCar = (a: Appointment) => {
@@ -254,11 +256,7 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
       return;
     }
     for (const id of ids) {
-      await fetch(`/api/appointments/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ callStatus: bulkCallStatus, status: 'confirmed' }),
-      });
+      await appointmentsApi.update(id, { callStatus: bulkCallStatus, status: 'confirmed' });
     }
     toast.success(`Confirmed ${ids.length} appointments`);
     setBulkOpen(false);

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { carsApi } from '@/lib/api/services';
 
 const STAGES = ['Acquired', 'Inspection Linked', 'At Buyer', 'Listed', 'Sold'] as const;
 export type CarPipelineStage = (typeof STAGES)[number];
@@ -74,12 +75,7 @@ export function StatusStepper({
     }
     setPending(true);
     try {
-      const res = await fetch(`/api/cars/${encodeURIComponent(carId)}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: STAGES[confirmIdx] }),
-      });
-      if (!res.ok) throw new Error('Status update failed');
+      await carsApi.updateStatus(carId, STAGES[confirmIdx]);
       onStageIndexChange(confirmIdx);
       toast.success('Status advanced — logged to activity trail');
     } catch {

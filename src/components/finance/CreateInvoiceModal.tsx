@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
-import { CRM_CONTACTS } from '@/lib/mockData';
+import { crmApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 import type {
   ClientType,
   DiscountType,
@@ -94,6 +95,7 @@ export type CreateInvoiceModalProps = {
 };
 
 export function CreateInvoiceModal({ open, onClose, onCreated }: CreateInvoiceModalProps) {
+  const { data: contacts } = useApiList(() => crmApi.list());
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [clientType, setClientType] = useState<ClientType>('Individual');
   const [clientName, setClientName] = useState('');
@@ -130,7 +132,7 @@ export function CreateInvoiceModal({ open, onClose, onCreated }: CreateInvoiceMo
   }, [lines, discountType, discountValue]);
 
   const applyContact = (name: string) => {
-    const c = CRM_CONTACTS.find(x => x.name.toLowerCase() === name.trim().toLowerCase());
+    const c = contacts.find(x => x.name.toLowerCase() === name.trim().toLowerCase());
     if (!c) return;
     setEmail(c.email);
     setPhone(c.phone);
@@ -319,7 +321,7 @@ export function CreateInvoiceModal({ open, onClose, onCreated }: CreateInvoiceMo
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           <datalist id="finance-crm-names">
-            {CRM_CONTACTS.map(c => (
+            {contacts.map(c => (
               <option key={c.id} value={c.name} />
             ))}
           </datalist>

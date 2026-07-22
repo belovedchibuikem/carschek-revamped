@@ -4,8 +4,10 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Check, Bell } from 'lucide-react';
-import { NOTIFICATIONS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
+import { notificationsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 const FILTER_TABS = ['All', 'Orders', 'Reports', 'Payments', 'System'];
 
@@ -13,7 +15,7 @@ function NotificationsPageContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const { data: notifications, setData: setNotifications, loading, error, refresh } = useApiList(() => notificationsApi.list());
   const [activeFilter, setActiveFilter] = useState('All');
 
   useEffect(() => {
@@ -38,13 +40,23 @@ function NotificationsPageContent() {
     return n.type === want;
   });
 
-  const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    toast.success('All notifications marked as read');
+  const markAllRead = async () => {
+    try {
+      await notificationsApi.markAllRead();
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      toast.success('All notifications marked as read');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not mark all read');
+    }
   };
 
-  const markRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const markRead = async (id: string) => {
+    try {
+      await notificationsApi.markRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch {
+      /* ignore */
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;

@@ -27,6 +27,8 @@ import {
   loadDamagePhotoObjectUrlsForItem,
   loadDamagePhotosForOrder,
 } from '@/lib/inspection/dexieDamagePhotos';
+import { USE_API_MOCK } from '@/lib/api/client';
+import { carsApi, ordersApi, reportsApi } from '@/lib/api/services';
 
 const REPORT_INSPECTOR_NAME = 'Emeka Adeyemi';
 const REPORT_CERT = 'CA-0041';
@@ -164,7 +166,14 @@ export async function buildReportData(
   const job = findMockJob(inspectionId);
   // Admin orders register — keeps superadmin-side reports tallying with the
   // order/report rows when the order is not one of the inspector PWA mock jobs.
-  const adminOrder = job ? undefined : ORDERS.find(o => o.id === inspectionId);
+  let adminOrder = job ? undefined : ORDERS.find(o => o.id === inspectionId);
+  if (!job && !adminOrder && !USE_API_MOCK) {
+    try {
+      adminOrder = await ordersApi.get(inspectionId);
+    } catch {
+      adminOrder = undefined;
+    }
+  }
   const durationSec = await loadSessionTimerSeconds(inspectionId);
   const signatureDataUrl = await loadSignatureBase64(inspectionId);
 
@@ -383,8 +392,23 @@ export async function buildReportData(
   const s03Def = getSectionDef('S03');
   const s03State = await loadChecklistState(inspectionId, 'S03');
   const s03SyncPayload = await loadLatestS03SyncPayload(inspectionId);
-  const linkedReport = REPORTS.find(r => r.orderId === inspectionId);
-  const linkedCar = linkedReport?.carId ? CARS.find(c => c.id === linkedReport.carId) : undefined;
+  let linkedReport = REPORTS.find(r => r.orderId === inspectionId);
+  let linkedCar = linkedReport?.carId ? CARS.find(c => c.id === linkedReport!.carId) : undefined;
+  if (!USE_API_MOCK) {
+    try {
+      if (!linkedReport) {
+        const reports = await reportsApi.list();
+        linkedReport = reports.find(r => r.orderId === inspectionId);
+      }
+      const carId =
+        linkedReport?.carId ?? (adminOrder as { carId?: string } | undefined)?.carId;
+      if (carId && !linkedCar) {
+        linkedCar = await carsApi.get(carId);
+      }
+    } catch {
+      /* keep mock fallbacks */
+    }
+  }
   const carS03Fields = linkedCar ? carRegisterToS03Fields(linkedCar as CarRegisterRow) : {};
 
   const carDetailFields = (s03Def?.fields ?? []).map(f => ({

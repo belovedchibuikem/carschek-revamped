@@ -4,23 +4,26 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Clock, Eye } from 'lucide-react';
-import { AUCTIONS, formatNaira } from '@/lib/mockData';
+import { formatNaira } from '@/lib/mockData';
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
+import { auctionsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 export default function AuctionsPage() {
   const pathname = usePathname();
+  const { data: auctions, setData: setAuctions, loading, error, refresh } = useApiList(() => auctionsApi.list());
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [bidsPanel, setBidsPanel] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.toLowerCase().trim();
-    return AUCTIONS.filter(
+    return auctions.filter(
       a => !q || a.carName.toLowerCase().includes(q) || a.id.toLowerCase().includes(q)
     );
-  }, [debouncedSearch]);
+  }, [debouncedSearch, auctions]);
 
   const getTimeRemaining = (endsAt: string) => {
     const diff = new Date(endsAt).getTime() - Date.now();
@@ -73,7 +76,7 @@ export default function AuctionsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Auctions</h1>
-            <p className="text-sm text-[#6B7280]">{AUCTIONS.filter(a => a.status === 'Active').length} active auctions</p>
+            <p className="text-sm text-[#6B7280]">{auctions.filter(a => a.status === 'Active').length} active auctions</p>
           </div>
         </div>
 

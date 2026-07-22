@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, Users, Star } from 'lucide-react';
 import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts';
 import { useRechartsTheme } from '@/lib/charts/rechartsTheme';
+import { dashboardApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 
 function useCountUp(target: number, duration = 1200) {
   const [val, setVal] = useState(0);
@@ -45,8 +47,17 @@ const SPARKLINES = {
 
 export default function DashboardKPIs() {
   const t = useRechartsTheme();
-  const inspections = useCountUp(47);
-  const pending = useCountUp(9);
+  const { data: kpis } = useApiResource(() => dashboardApi.kpis());
+  const inspTotal = Number((kpis as { appointments?: { today?: number }; orders?: { total?: number } } | null)?.appointments?.today
+    ?? (kpis as { orders?: { total?: number } } | null)?.orders?.total
+    ?? 47);
+  const pendingTotal = Number((kpis as { orders?: { new?: number; assigned?: number; inProgress?: number } } | null)?.orders
+    ? ((kpis as { orders: { new?: number; assigned?: number; inProgress?: number } }).orders.new ?? 0)
+      + ((kpis as { orders: { new?: number; assigned?: number; inProgress?: number } }).orders.assigned ?? 0)
+      + ((kpis as { orders: { new?: number; assigned?: number; inProgress?: number } }).orders.inProgress ?? 0)
+    : 9);
+  const inspections = useCountUp(inspTotal);
+  const pending = useCountUp(pendingTotal);
   const scoreVal = useCountUp(78);
 
   const formatNaira = (v: number) => `₦${(v / 1000000).toFixed(2)}M`;

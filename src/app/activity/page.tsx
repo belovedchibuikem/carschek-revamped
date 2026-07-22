@@ -3,15 +3,18 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import { Search, Download, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
-import { ACTIVITY_LOG } from '@/lib/mockData';
+
 import { toast } from 'sonner';
 import { downloadCsv } from '@/lib/csv';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
 import { readReconciliationEvents } from '@/lib/localActivity';
+import { activityApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 export default function ActivityPage() {
   const pathname = usePathname();
+  const { data: activityLog, loading, error, refresh } = useApiList(() => activityApi.list());
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -32,10 +35,10 @@ export default function ActivityPage() {
       ip: r.ip,
       role: r.role,
     }));
-    return [...recon, ...ACTIVITY_LOG].sort(
+    return [...recon, ...activityLog].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
-  }, [logTick]);
+  }, [logTick, activityLog]);
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.toLowerCase().trim();

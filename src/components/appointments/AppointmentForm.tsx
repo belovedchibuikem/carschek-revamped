@@ -1,9 +1,12 @@
 'use client';
+import { carsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
+import { hydrateReferenceCache, getCachedBrands, getCachedModels } from '@/lib/reference/referenceCache';
+import { setAppointmentLookupCars } from '@/lib/appointments/lookup';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { BRANDS, MODELS } from '@/lib/mockData';
-import { CARS } from '@/lib/mockData';
+
 import { yearOptionsForModelName } from '@/lib/reference/carCascade';
 import {
   BOOKING_SOURCES,
@@ -136,22 +139,35 @@ export function AppointmentForm({
   onCancel,
   submitLabel,
 }: Props) {
+  const { data: cars } = useApiList(() => carsApi.list());
+  const [brands, setBrands] = useState(() => getCachedBrands());
+  const [models, setModels] = useState(() => getCachedModels());
+  useEffect(() => {
+    void hydrateReferenceCache().then(() => {
+      setBrands(getCachedBrands());
+      setModels(getCachedModels());
+    });
+  }, []);
+  useEffect(() => {
+    if (cars.length) setAppointmentLookupCars(cars.map(c => ({ id: c.id, vin: c.vin, plate: c.plate })));
+  }, [cars]);
+
   const { register, handleSubmit, watch, setValue, control, formState } = useForm<AppointmentFormValues>({
     defaultValues: defaultsFromAppointment(initial),
   });
 
   const make = watch('make');
   const model = watch('model');
-  const brand = useMemo(() => BRANDS.find(b => b.name === make), [make]);
+  const brand = useMemo(() => brands.find(b => b.name === make), [make, brands]);
   const modelOptions = useMemo(
-    () => MODELS.filter(m => m.brandId === brand?.id),
-    [brand?.id]
+    () => models.filter(m => m.brandId === brand?.id),
+    [brand?.id, models]
   );
 
   const vinDup = (vin: string) => {
     const v = vin.replace(/\s/g, '').toUpperCase();
     if (v.length !== 17) return null;
-    const carHit = CARS.find(c => c.vin.replace(/\s/g, '').toUpperCase() === v);
+    const carHit = cars.find(c => c.vin.replace(/\s/g, '').toUpperCase() === v);
     if (carHit) return `Matches existing car ${carHit.id}`;
     const aptHit = allAppointments.find(
       a => a.id !== excludeId && a.vinNumber.replace(/\s/g, '').toUpperCase() === v
@@ -281,11 +297,11 @@ export function AppointmentForm({
                   value={field.value}
                   onChange={v => {
                     field.onChange(v);
-                    const b = BRANDS.find(x => x.name === v);
-                    const first = MODELS.find(m => m.brandId === b?.id);
+                    const b = brands.find(x => x.name === v);
+                    const first = models.find(m => m.brandId === b?.id);
                     if (first) setValue('model', first.name);
                   }}
-                  options={BRANDS.filter(b => b.active).map(b => ({ value: b.name, label: b.name }))}
+                  options={brands.filter(b => b.active).map(b => ({ value: b.name, label: b.name }))}
                   placeholder="Search or select make…"
                   searchPlaceholder="Search brands…"
                 />

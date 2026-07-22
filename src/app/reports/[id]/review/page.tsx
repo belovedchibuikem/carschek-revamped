@@ -1,16 +1,18 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Check, X, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
-import { REPORTS, getScoreLabel } from '@/lib/mockData';
+import { getScoreLabel } from '@/lib/mockData';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { CarschekScore } from '@/components/shared/CarschekScore';
 import { openPrintableReport } from '@/lib/print';
-import { getReportVersionMeta } from '@/lib/reports/reportVersions';
+import { getReportVersionMeta, hydrateReportVersions } from '@/lib/reports/reportVersions';
 import { enqueueQaReportApprove } from '@/lib/qaOfflineQueue';
+import { reportsApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 
 const SECTIONS = [
   { id: 'S01', name: 'Engine & Powertrain', items: [
@@ -31,10 +33,9 @@ const SECTIONS = [
 export default function ReportReviewPage() {
   const pathname = usePathname();
   const params = useParams();
-  const reportId = params.id as string;
-  const report = REPORTS.find(r => r.id === reportId) || REPORTS[0];
   const router = useRouter();
-
+  const reportId = params.id as string;
+  const { data: report, loading, error } = useApiResource(() => reportsApi.get(reportId), [reportId]);
   const [expandedSections, setExpandedSections] = useState<string[]>(['S01']);
   const [qaChecks, setQaChecks] = useState({
     photos: false,
@@ -47,35 +48,83 @@ export default function ReportReviewPage() {
   const [adminComment, setAdminComment] = useState('');
   const [approving, setApproving] = useState(false);
   const [correctionNote, setCorrectionNote] = useState('');
+  const [versionsTick, setVersionsTick] = useState(0);
+  const [rejecting, setRejecting] = useState(false);
   const [showCorrectionForm, setShowCorrectionForm] = useState(false);
   const [qaRightTab, setQaRightTab] = useState<'checklist' | 'history'>('checklist');
-  const versionHistory = getReportVersionMeta(report.id);
 
+  useEffect(() => {
+    if (!report) return;
+    void hydrateReportVersions(reportId, report).then(() => setVersionsTick(n => n + 1));
+  }, [reportId, report]);
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading report…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !report) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-red-700">{error || 'Report not found'}</div>
+      </AppLayout>
+    );
+  }
+
+  void versionsTick;
+  const versionHistory = getReportVersionMeta(report.id, report);
   const allChecked = Object.values(qaChecks).every(Boolean);
 
   const handleApprove = async () => {
     if (!allChecked) { toast.error('Complete all QA checks including QA signature acknowledgment'); return; }
     setApproving(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setApproving(false);
-    const offline = typeof navigator !== 'undefined' && !navigator.onLine;
-    if (offline) {
-      await enqueueQaReportApprove(reportId, {
-        qaChecks,
-        adminComment,
-        at: Date.now(),
-      });
-      toast.success('Approved locally — queued for sync when you are back online.');
-    } else {
+    try {
+      await reportsApi.qaApprove(reportId, { qaChecks, adminComment });
       toast.success('Report approved! PDF generated and customer notified.');
+    } catch {
+      const offline = typeof navigator !== 'undefined' && !navigator.onLine;
+      if (offline) {
+        await enqueueQaReportApprove(reportId, {
+          qaChecks,
+          adminComment,
+          at: Date.now(),
+        });
+        toast.success('Approved locally — queued for sync when you are back online.');
+      } else {
+        toast.error('Could not approve report');
+        setApproving(false);
+        return;
+      }
     }
+    setApproving(false);
     router.push('/reports?tab=approved');
   };
 
-  const handleRequestCorrections = () => {
+  const handleRequestCorrections = async () => {
     if (!correctionNote) { toast.error('Please provide correction notes'); return; }
-    toast.success('Corrections requested. Inspector notified.');
-    setShowCorrectionForm(false);
+    try {
+      await reportsApi.qaReject(reportId, { reason: 'corrections', note: correctionNote, adminComment });
+      toast.success('Corrections requested. Inspector notified.');
+      setShowCorrectionForm(false);
+      router.push('/reports?tab=qa');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not request corrections');
+    }
+  };
+
+  const handleReject = async () => {
+    setRejecting(true);
+    try {
+      await reportsApi.qaReject(reportId, { reason: 'rejected', adminComment });
+      toast.success('Report rejected');
+      router.push('/reports?tab=rejected');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not reject report');
+    } finally {
+      setRejecting(false);
+    }
   };
 
   const toggleSection = (id: string) => {
@@ -268,9 +317,9 @@ export default function ReportReviewPage() {
                       className="w-full py-2.5 bg-[#D35400] text-white text-sm font-semibold rounded-xl hover:bg-orange-700 transition-all">
                       Request Corrections
                     </button>
-                    <button onClick={() => toast.success('Report rejected')}
-                      className="w-full py-2.5 border border-[#C0392B] text-[#C0392B] text-sm font-semibold rounded-xl hover:bg-red-50 transition-all">
-                      Reject Report
+                    <button type="button" onClick={() => void handleReject()} disabled={rejecting}
+                      className="w-full py-2.5 border border-[#C0392B] text-[#C0392B] text-sm font-semibold rounded-xl hover:bg-red-50 transition-all disabled:opacity-50">
+                      {rejecting ? 'Rejecting…' : 'Reject Report'}
                     </button>
                   </div>
 

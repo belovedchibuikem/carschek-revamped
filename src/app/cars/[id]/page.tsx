@@ -15,7 +15,9 @@ import {
   ExternalLink,
   Loader2,
 } from 'lucide-react';
-import { AUCTIONS, CARS, formatNaira, LISTINGS, REPORTS } from '@/lib/mockData';
+import { formatNaira } from '@/lib/mockData';
+import { carsApi, auctionsApi, listingsApi, reportsApi } from '@/lib/api/services';
+import { useApiResource, useApiList } from '@/hooks/useApiResource';
 import { CarschekScore } from '@/components/shared/CarschekScore';
 import { toast } from 'sonner';
 import DuplicateResolutionModal, { carToDuplicateSnapshot } from '@/components/cars/DuplicateResolutionModal';
@@ -41,7 +43,11 @@ function CarDetailPageContent() {
   const searchParams = useSearchParams();
   const params = useParams();
   const carId = params.id as string;
-  const car = CARS.find(c => c.id === carId) || CARS[0];
+  const { data: car, loading: carLoading, error: carError } = useApiResource(() => carsApi.get(carId), [carId]);
+  const { data: auctions } = useApiList(() => auctionsApi.list());
+  const { data: listings } = useApiList(() => listingsApi.list());
+  const { data: reports } = useApiList(() => reportsApi.list());
+  const { data: allCars } = useApiList(() => carsApi.list());
 
   const activeTab = useMemo(() => {
     const t = searchParams.get('tab');
@@ -55,38 +61,51 @@ function CarDetailPageContent() {
     router.replace(`${pathname}?tab=${id}`, { scroll: false });
   };
 
-  const auction = useMemo(() => AUCTIONS.find(a => a.carId === car.id), [car.id]);
-  const listing = useMemo(() => LISTINGS.find(l => l.carId === car.id), [car.id]);
+  const auction = useMemo(() => (car ? auctions.find(a => a.carId === car.id) : undefined), [car, auctions]);
+  const listing = useMemo(() => (car ? listings.find(l => l.carId === car.id) : undefined), [car, listings]);
 
   const [editMain, setEditMain] = useState(false);
   const [editContact, setEditContact] = useState(false);
-  const [editData, setEditData] = useState({ ...car });
+  const [editData, setEditData] = useState<Awaited<ReturnType<typeof carsApi.get>> | null>(null);
   const [contact, setContact] = useState({
     name: 'Adaeze Mensah',
     email: 'adaeze@gmail.com',
     phone: '+2348012345678',
     type: 'Individual',
   });
-  const [currentStage, setCurrentStage] = useState(PIPELINE_STAGES.indexOf(car.status as (typeof PIPELINE_STAGES)[number]));
+  const [currentStage, setCurrentStage] = useState(0);
   const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [warningsOpen, setWarningsOpen] = useState(false);
   const [complianceOpen, setComplianceOpen] = useState(false);
   const [tabDirty, setTabDirty] = useState<Record<number, boolean>>({});
-  const [marketplaceVisibility, setMarketplaceVisibility] = useState<'Not Visible' | 'Visible' | 'Featured'>(
-    (listing?.visibility as 'Not Visible' | 'Visible' | 'Featured') ?? 'Visible'
-  );
-  const [featuredToggle, setFeaturedToggle] = useState(listing?.featured ?? false);
-  const [newListPrice, setNewListPrice] = useState(String(listing?.price ?? car.salePrice ?? car.purchasePrice));
+  const [marketplaceVisibility, setMarketplaceVisibility] = useState<'Not Visible' | 'Visible' | 'Featured'>('Visible');
+  const [featuredToggle, setFeaturedToggle] = useState(false);
+  const [newListPrice, setNewListPrice] = useState('');
   const [pctOff, setPctOff] = useState<1 | 5 | 10 | 15 | 20>(5);
+  const [carHydrated, setCarHydrated] = useState(false);
+
+  // Hydrate car-dependent local state once loaded
+  useEffect(() => {
+    if (!car || carHydrated) return;
+    setEditData({ ...car });
+    setCurrentStage(PIPELINE_STAGES.indexOf(car.status as (typeof PIPELINE_STAGES)[number]));
+    setMarketplaceVisibility((listing?.visibility as 'Not Visible' | 'Visible' | 'Featured') ?? 'Visible');
+    setFeaturedToggle(listing?.featured ?? false);
+    setNewListPrice(String(listing?.price ?? car.salePrice ?? car.purchasePrice ?? ''));
+    setSellingPrice(car.salePrice ?? 0);
+    setPurchasePrices([{ id: '1', amount: car.purchasePrice, type: 'Final', date: car.createdAt, by: 'Promise Ndem' }]);
+    setCarHydrated(true);
+  }, [car, listing, carHydrated]);
+
   const [marketplaceLoading, setMarketplaceLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [purchasePrices, setPurchasePrices] = useState<
     { id: string; amount: number; type: 'Ear' | 'Final' | 'Revised'; date: string; by: string }[]
-  >([{ id: '1', amount: car.purchasePrice, type: 'Final', date: car.createdAt, by: 'Promise Ndem' }]);
+  >([]);
   const [addingPrice, setAddingPrice] = useState(false);
   const [newPriceRow, setNewPriceRow] = useState({ amount: '', type: 'Ear\' as \'Ear\' | \'Final\' | \'Revised', date: '' });
   const [paymentStatus, setPaymentStatus] = useState<'Done' | 'Pending' | 'Overdue'>('Done');
-  const [sellingPrice, setSellingPrice] = useState(car.salePrice ?? 0);
+  const [sellingPrice, setSellingPrice] = useState(0);
   const [salePaymentStatus, setSalePaymentStatus] = useState<'Done' | 'Pending' | 'Overdue'>('Done');
   const [handoverSeller, setHandoverSeller] = useState('');
   const [handoverBuyer, setHandoverBuyer] = useState('');
@@ -94,42 +113,52 @@ function CarDetailPageContent() {
   const [duplicateDismissed, setDuplicateDismissed] = useState(false);
 
   const matchCar = useMemo(() => {
-    const vinMatch = CARS.find(c => c.id !== car.id && c.vin === car.vin);
+    if (!car) return null;
+    const vinMatch = allCars.find(c => c.id !== car.id && c.vin === car.vin);
     if (vinMatch) return vinMatch;
-    if (car.hasDuplicate) return CARS.find(c => c.id !== car.id) ?? null;
+    if (car.hasDuplicate) return allCars.find(c => c.id !== car.id) ?? null;
     return null;
-  }, [car]);
+  }, [car, allCars]);
 
   const duplicateMatchCount = useMemo(
-    () => CARS.filter(c => c.id !== car.id && (c.vin === car.vin || c.plate === car.plate)).length,
-    [car]
+    () => (car ? allCars.filter(c => c.id !== car.id && (c.vin === car.vin || c.plate === car.plate)).length : 0),
+    [car, allCars]
   );
 
-  const linkedInspection = useMemo(() => REPORTS.some(r => r.carId === car.id), [car.id]);
+  const linkedInspection = useMemo(() => (car ? reports.some(r => (r as { carId?: string }).carId === car.id) : false), [car, reports]);
 
   useEffect(() => {
     setDuplicateDismissed(false);
-  }, [car.id]);
-
-  const margin =
-    car.salePrice || sellingPrice
-      ? (((sellingPrice || car.salePrice || 0) - car.purchasePrice) / car.purchasePrice * 100).toFixed(2)
-      : null;
+  }, [car?.id]);
 
   const computedMarketPrice = useMemo(() => {
     const n = Number(newListPrice.replace(/\D/g, '')) || 0;
     return Math.round(n * (1 - pctOff / 100));
   }, [newListPrice, pctOff]);
 
-  const oldMarketPrice = listing?.price ?? car.salePrice ?? car.purchasePrice;
-
   const anyDirty = editMain || editContact || Object.values(tabDirty).some(Boolean);
 
   useEffect(() => {
+    if (!car) return;
     setEditData({ ...car });
     setCurrentStage(PIPELINE_STAGES.indexOf(car.status as (typeof PIPELINE_STAGES)[number]));
     setSellingPrice(car.salePrice ?? 0);
   }, [car]);
+
+  if (carLoading || !car || !editData) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">{carError || 'Loading car…'}</div>
+      </AppLayout>
+    );
+  }
+
+  const margin =
+    car.salePrice || sellingPrice
+      ? ((((sellingPrice || car.salePrice || 0) - car.purchasePrice) / car.purchasePrice) * 100).toFixed(2)
+      : null;
+
+  const oldMarketPrice = listing?.price ?? car.salePrice ?? car.purchasePrice;
 
   const markDirty = (tab: number) => setTabDirty(d => ({ ...d, [tab]: true }));
 

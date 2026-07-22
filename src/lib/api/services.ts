@@ -1,8 +1,11 @@
 /**
  * Typed resource facades — feature modules should import from here instead of raw mock arrays.
  * Set NEXT_PUBLIC_USE_API_MOCK=false and NEXT_PUBLIC_API_BASE_URL for Laravel.
+ *
+ * Laravel returns bare arrays/objects and maps public_id → `id`. Thin adapters live here
+ * so pages keep their existing field expectations.
  */
-import { apiRequest, USE_API_MOCK } from '@/lib/api/client';
+import { apiClient, apiRequest, clearAccessToken, USE_API_MOCK } from '@/lib/api/client';
 import {
   CARS,
   CUSTOMERS,
@@ -14,21 +17,197 @@ import {
   AUCTIONS,
   BRANDS,
   MODELS,
+  YEARS,
+  CRM_CONTACTS,
+  OFFERS,
+  NOTIFICATIONS,
+  ACTIVITY_LOG,
+  FINANCE_SUMMARY,
+  USERS,
 } from '@/lib/mockData';
 import type { Appointment } from '@/lib/appointments/types';
 import { APPOINTMENTS_SEED } from '@/lib/appointments/seed';
 
-async function mockData<T>(data: T): Promise<T> {
+async function mockData<T>(data: T, delayMs = 0): Promise<T> {
+  if (delayMs > 0) await new Promise(r => setTimeout(r, delayMs));
   return data;
 }
+
+/** Same-origin Next mock routes (mutable in-memory store) while USE_API_MOCK=true. */
+async function nextJson<T>(input: string, init?: RequestInit): Promise<T> {
+  const r = await fetch(input, { cache: 'no-store', ...init });
+  const j = (await r.json().catch(() => ({}))) as T & { error?: string; message?: string };
+  if (!r.ok) {
+    throw new Error(
+      (typeof j === 'object' && j && ('error' in j || 'message' in j)
+        ? String((j as { error?: string; message?: string }).error || (j as { message?: string }).message)
+        : null) || `Request failed (${r.status})`
+    );
+  }
+  return j;
+}
+
+export type AuthUser = {
+  id: number | string;
+  public_id?: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar?: string | null;
+  phone?: string | null;
+  status?: string;
+  last_login_at?: string | null;
+};
+
+const DEMO_AUTH = [
+  { role: 'super-admin', email: 'promise@carschek.com', password: 'Carschek@2026', name: 'Promise Ndem', public_id: 'USR-001' },
+  { role: 'ops-manager', email: 'operations@carschek.com', password: 'OpsManager@2026', name: 'Chukwuemeka Obi', public_id: 'USR-002' },
+  { role: 'inspector', email: 'emeka.inspector@carschek.com', password: 'Inspector@2026', name: 'Emeka Okonkwo', public_id: 'USR-003' },
+  { role: 'finance', email: 'finance@carschek.com', password: 'Finance@2026', name: 'Amaka Finance', public_id: 'USR-004' },
+  { role: 'support', email: 'support@carschek.com', password: 'Support@2026', name: 'Kola Support', public_id: 'USR-005' },
+] as const;
+
+// ── Auth ────────────────────────────────────────────────────────────────────
+
+export const authApi = {
+  login: async (email: string, password: string) => {
+    if (USE_API_MOCK) {
+      await mockData(null, 400);
+      const match = DEMO_AUTH.find(a => a.email === email && a.password === password);
+      if (!match) throw new Error('Invalid credentials.');
+      return { requires_otp: true as const, otp_token: `mock-otp:${match.email}` };
+    }
+    return apiRequest<{ requires_otp: boolean; otp_token: string }>({
+      method: 'POST',
+      url: '/auth/login',
+      data: { email, password },
+    });
+  },
+
+  verifyOtp: async (otp_token: string, code: string) => {
+    if (USE_API_MOCK) {
+      await mockData(null, 300);
+      if (!/^\d{6}$/.test(code)) throw new Error('The verification code is incorrect.');
+      const email = otp_token.replace(/^mock-otp:/, '');
+      const match = DEMO_AUTH.find(a => a.email === email) ?? DEMO_AUTH[0];
+      return {
+        token: `mock-token-${match.public_id}`,
+        user: {
+          id: match.public_id,
+          public_id: match.public_id,
+          name: match.name,
+          email: match.email,
+          role: match.role,
+          avatar: match.name
+            .split(' ')
+            .map(p => p[0])
+            .join('')
+            .slice(0, 2),
+          status: 'Active',
+        } satisfies AuthUser,
+      };
+    }
+    return apiRequest<{ token: string; user: AuthUser }>({
+      method: 'POST',
+      url: '/auth/verify-otp',
+      data: { otp_token, code },
+    });
+  },
+
+  logout: async () => {
+    if (USE_API_MOCK) {
+      clearAccessToken();
+      return { message: 'Logged out.' };
+    }
+    try {
+      return await apiRequest<{ message: string }>({ method: 'POST', url: '/auth/logout' });
+    } finally {
+      clearAccessToken();
+    }
+  },
+
+  me: () =>
+    USE_API_MOCK
+      ? mockData({
+          user: {
+            id: 'USR-001',
+            public_id: 'USR-001',
+            name: 'Promise Ndem',
+            email: 'promise@carschek.com',
+            role: 'super-admin',
+            status: 'Active',
+          } satisfies AuthUser,
+        })
+      : apiRequest<{ user: AuthUser }>({ method: 'GET', url: '/auth/me' }),
+
+  forgotPassword: (email: string) =>
+    USE_API_MOCK
+      ? mockData({ message: 'If an account exists for that email, a password reset link has been sent.' }, 500)
+      : apiRequest<{ message: string }>({ method: 'POST', url: '/auth/forgot-password', data: { email } }),
+
+  resetPassword: (payload: { email: string; token: string; password: string }) =>
+    USE_API_MOCK
+      ? mockData({ message: 'Your password has been reset. You can now log in.' }, 500)
+      : apiRequest<{ message: string }>({ method: 'POST', url: '/auth/reset-password', data: payload }),
+};
+
+// ── Cars ────────────────────────────────────────────────────────────────────
 
 export const carsApi = {
   list: () => (USE_API_MOCK ? mockData([...CARS]) : apiRequest<typeof CARS>({ method: 'GET', url: '/cars' })),
   get: (id: string) =>
     USE_API_MOCK
       ? mockData(CARS.find(c => c.id === id) ?? CARS[0])
-      : apiRequest<(typeof CARS)[0]>({ method: 'GET', url: `/cars/${id}` }),
+      : apiRequest<(typeof CARS)[0]>({ method: 'GET', url: `/cars/${id}`, params: { detail: 1 } }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...CARS[0], ...data, id: `CK-${Date.now()}` } as (typeof CARS)[0], 400)
+      : apiRequest<(typeof CARS)[0]>({ method: 'POST', url: '/cars', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...(CARS.find(c => c.id === id) ?? CARS[0]), ...data } as (typeof CARS)[0], 300)
+      : apiRequest<(typeof CARS)[0]>({ method: 'PATCH', url: `/cars/${id}`, data }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<{ message?: string }>({ method: 'DELETE', url: `/cars/${id}` }),
+  updateStatus: async (id: string, status: string) => {
+    if (USE_API_MOCK) {
+      return nextJson<{ ok: boolean; carId: string; status: string | null }>(
+        `/api/cars/${encodeURIComponent(id)}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        }
+      );
+    }
+    return apiRequest<unknown>({ method: 'PATCH', url: `/cars/${id}/status`, data: { status } });
+  },
+  uploadDocument: (id: string, key: string, formData: FormData) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, key }, 400)
+      : apiRequest<unknown>({
+          method: 'POST',
+          url: `/cars/${id}/documents/${encodeURIComponent(key)}`,
+          data: formData,
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }),
+  approveDocument: (id: string, key: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, key }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/cars/${id}/documents/${encodeURIComponent(key)}/approve` }),
+  rejectDocument: (id: string, key: string, reason?: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, key }, 200)
+      : apiRequest<unknown>({
+          method: 'POST',
+          url: `/cars/${id}/documents/${encodeURIComponent(key)}/reject`,
+          data: { reason },
+        }),
 };
+
+// ── Orders ──────────────────────────────────────────────────────────────────
 
 export const ordersApi = {
   list: () => (USE_API_MOCK ? mockData([...ORDERS]) : apiRequest<typeof ORDERS>({ method: 'GET', url: '/orders' })),
@@ -36,7 +215,25 @@ export const ordersApi = {
     USE_API_MOCK
       ? mockData(ORDERS.find(o => o.id === id) ?? ORDERS[0])
       : apiRequest<(typeof ORDERS)[0]>({ method: 'GET', url: `/orders/${id}` }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...ORDERS[0], ...data, id: `ORD-${Date.now()}` } as (typeof ORDERS)[0], 300)
+      : apiRequest<(typeof ORDERS)[0]>({ method: 'POST', url: '/orders', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...(ORDERS.find(o => o.id === id) ?? ORDERS[0]), ...data } as (typeof ORDERS)[0], 300)
+      : apiRequest<(typeof ORDERS)[0]>({ method: 'PATCH', url: `/orders/${id}`, data }),
+  assign: (id: string, inspectorId: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id, inspectorId }, 300)
+      : apiRequest<unknown>({ method: 'POST', url: `/orders/${id}/assign`, data: { inspectorId } }),
+  updateStatus: (id: string, status: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id, status }, 300)
+      : apiRequest<unknown>({ method: 'PATCH', url: `/orders/${id}/status`, data: { status } }),
 };
+
+// ── Customers / CRM ─────────────────────────────────────────────────────────
 
 export const customersApi = {
   list: () =>
@@ -45,7 +242,59 @@ export const customersApi = {
     USE_API_MOCK
       ? mockData(CUSTOMERS.find(c => c.id === id) ?? CUSTOMERS[0])
       : apiRequest<(typeof CUSTOMERS)[0]>({ method: 'GET', url: `/customers/${id}` }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...CUSTOMERS[0], ...data, id: `CUS-${Date.now()}` } as (typeof CUSTOMERS)[0], 300)
+      : apiRequest<(typeof CUSTOMERS)[0]>({ method: 'POST', url: '/customers', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...(CUSTOMERS.find(c => c.id === id) ?? CUSTOMERS[0]), ...data } as (typeof CUSTOMERS)[0], 300)
+      : apiRequest<(typeof CUSTOMERS)[0]>({ method: 'PATCH', url: `/customers/${id}`, data }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/customers/${id}` }),
 };
+
+export const crmApi = {
+  list: () =>
+    USE_API_MOCK
+      ? mockData([...CRM_CONTACTS])
+      : apiRequest<typeof CRM_CONTACTS>({ method: 'GET', url: '/crm/contacts' }),
+  get: (id: string) =>
+    USE_API_MOCK
+      ? mockData(CRM_CONTACTS.find(c => c.id === id) ?? CRM_CONTACTS[0])
+      : apiRequest<(typeof CRM_CONTACTS)[0]>({ method: 'GET', url: `/crm/contacts/${id}` }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...CRM_CONTACTS[0], ...data, id: `CRM-${Date.now()}` } as (typeof CRM_CONTACTS)[0], 300)
+      : apiRequest<(typeof CRM_CONTACTS)[0]>({ method: 'POST', url: '/crm/contacts', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData(
+          { ...(CRM_CONTACTS.find(c => c.id === id) ?? CRM_CONTACTS[0]), ...data } as (typeof CRM_CONTACTS)[0],
+          300
+        )
+      : apiRequest<(typeof CRM_CONTACTS)[0]>({ method: 'PATCH', url: `/crm/contacts/${id}`, data }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/crm/contacts/${id}` }),
+  updateStage: (id: string, stage: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id, stage }, 200)
+      : apiRequest<unknown>({ method: 'PATCH', url: `/crm/contacts/${id}/stage`, data: { stage } }),
+  addNote: (id: string, body: { body: string } | Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id: `note-${Date.now()}`, ...body }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/crm/contacts/${id}/notes`, data: body }),
+  addCommunication: (id: string, body: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id: `comm-${Date.now()}`, ...body }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/crm/contacts/${id}/communications`, data: body }),
+};
+
+// ── Reports / inspections ───────────────────────────────────────────────────
 
 export const reportsApi = {
   list: () => (USE_API_MOCK ? mockData([...REPORTS]) : apiRequest<typeof REPORTS>({ method: 'GET', url: '/reports' })),
@@ -53,6 +302,122 @@ export const reportsApi = {
     USE_API_MOCK
       ? mockData(REPORTS.find(r => r.id === id) ?? REPORTS[0])
       : apiRequest<(typeof REPORTS)[0]>({ method: 'GET', url: `/reports/${id}` }),
+  versions: (id: string) =>
+    USE_API_MOCK
+      ? mockData(
+          id === 'RPT-445'
+            ? [
+                {
+                  id: '1',
+                  version: 1,
+                  kind: 'Original',
+                  author: 'Emeka Okonkwo',
+                  score: 70,
+                  defects: 5,
+                  criticalDefects: 1,
+                  createdAt: '2026-04-15T10:42:00',
+                  snapshot: {
+                    lines: [
+                      { id: 'L1', text: 'Engine mounts: minor vibration noted' },
+                      { id: 'L2', text: 'Rear bumper: crack on right side' },
+                      { id: 'L3', text: 'Dashboard warning lights: check engine on' },
+                    ],
+                  },
+                },
+                {
+                  id: '2',
+                  version: 2,
+                  kind: 'QA Edited',
+                  author: 'Promise Ndem',
+                  score: 72,
+                  defects: 4,
+                  criticalDefects: 1,
+                  summary: 'corrected engine section',
+                  createdAt: '2026-04-16T09:15:00',
+                  snapshot: {
+                    lines: [
+                      { id: 'L1', text: 'Engine mounts: pass after re-test' },
+                      { id: 'L2', text: 'Rear bumper: crack on right side' },
+                      { id: 'L3', text: 'Dashboard warning lights: check engine on' },
+                    ],
+                  },
+                },
+                {
+                  id: '3',
+                  version: 3,
+                  kind: 'Approved',
+                  author: 'Chukwuemeka Obi',
+                  score: 72,
+                  defects: 4,
+                  criticalDefects: 1,
+                  createdAt: '2026-04-16T11:30:00',
+                  snapshot: {
+                    lines: [
+                      { id: 'L1', text: 'Engine mounts: pass after re-test' },
+                      { id: 'L2', text: 'Rear bumper: crack on right side' },
+                      { id: 'L3', text: 'Dashboard warning lights: check engine on' },
+                    ],
+                  },
+                },
+              ]
+            : [
+                {
+                  id: '1',
+                  version: REPORTS.find(r => r.id === id)?.version ?? 1,
+                  kind: 'Original',
+                  author: REPORTS.find(r => r.id === id)?.inspectorName ?? 'Inspector',
+                  score: REPORTS.find(r => r.id === id)?.score ?? 0,
+                  defects: REPORTS.find(r => r.id === id)?.defects ?? 0,
+                  criticalDefects: REPORTS.find(r => r.id === id)?.criticalDefects ?? 0,
+                  createdAt: REPORTS.find(r => r.id === id)?.submittedAt ?? new Date().toISOString(),
+                },
+              ]
+        )
+      : apiRequest<unknown[]>({ method: 'GET', url: `/reports/${id}/versions` }),
+  qaApprove: (id: string, data?: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 300)
+      : apiRequest<unknown>({ method: 'POST', url: `/reports/${id}/qa-approve`, data }),
+  qaReject: (id: string, data?: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 300)
+      : apiRequest<unknown>({ method: 'POST', url: `/reports/${id}/qa-reject`, data }),
+  flagInspection: async (id: string, data: Record<string, unknown>) => {
+    if (USE_API_MOCK) {
+      return nextJson<unknown>(`/api/inspections/${encodeURIComponent(id)}/flag`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    }
+    return apiRequest<unknown>({ method: 'PATCH', url: `/inspections/${id}/flag`, data });
+  },
+};
+
+// ── Commerce ────────────────────────────────────────────────────────────────
+
+export const offersApi = {
+  list: () => (USE_API_MOCK ? mockData([...OFFERS]) : apiRequest<typeof OFFERS>({ method: 'GET', url: '/offers' })),
+  get: (id: string) =>
+    USE_API_MOCK
+      ? mockData(OFFERS.find(o => o.id === id) ?? OFFERS[0])
+      : apiRequest<(typeof OFFERS)[0]>({ method: 'GET', url: `/offers/${id}` }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...OFFERS[0], ...data, id: `OFR-${Date.now()}` } as (typeof OFFERS)[0], 300)
+      : apiRequest<(typeof OFFERS)[0]>({ method: 'POST', url: '/offers', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...(OFFERS.find(o => o.id === id) ?? OFFERS[0]), ...data } as (typeof OFFERS)[0], 300)
+      : apiRequest<(typeof OFFERS)[0]>({ method: 'PATCH', url: `/offers/${id}`, data }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/offers/${id}` }),
+  send: (id: string, channels?: string[]) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id, channels }, 400)
+      : apiRequest<unknown>({ method: 'POST', url: `/offers/${id}/send`, data: { channels } }),
 };
 
 export const dealsApi = {
@@ -61,6 +426,18 @@ export const dealsApi = {
     USE_API_MOCK
       ? mockData(DEALS.find(d => d.id === id) ?? DEALS[0])
       : apiRequest<(typeof DEALS)[0]>({ method: 'GET', url: `/deals/${id}` }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...DEALS[0], ...data, id: `DEAL-${Date.now()}` } as (typeof DEALS)[0], 300)
+      : apiRequest<(typeof DEALS)[0]>({ method: 'POST', url: '/deals', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...(DEALS.find(d => d.id === id) ?? DEALS[0]), ...data } as (typeof DEALS)[0], 300)
+      : apiRequest<(typeof DEALS)[0]>({ method: 'PATCH', url: `/deals/${id}`, data }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/deals/${id}` }),
 };
 
 export const listingsApi = {
@@ -70,15 +447,26 @@ export const listingsApi = {
     USE_API_MOCK
       ? mockData(LISTINGS.find(l => l.id === id) ?? LISTINGS[0])
       : apiRequest<(typeof LISTINGS)[0]>({ method: 'GET', url: `/listings/${id}` }),
-};
-
-export const inspectorsApi = {
-  list: () =>
-    USE_API_MOCK ? mockData([...INSPECTORS]) : apiRequest<typeof INSPECTORS>({ method: 'GET', url: '/inspectors' }),
-  get: (id: string) =>
+  create: (data: Record<string, unknown>) =>
     USE_API_MOCK
-      ? mockData(INSPECTORS.find(i => i.id === id) ?? INSPECTORS[0])
-      : apiRequest<(typeof INSPECTORS)[0]>({ method: 'GET', url: `/inspectors/${id}` }),
+      ? mockData({ ...LISTINGS[0], ...data, id: `LST-${Date.now()}` } as (typeof LISTINGS)[0], 300)
+      : apiRequest<(typeof LISTINGS)[0]>({ method: 'POST', url: '/listings', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...(LISTINGS.find(l => l.id === id) ?? LISTINGS[0]), ...data } as (typeof LISTINGS)[0], 300)
+      : apiRequest<(typeof LISTINGS)[0]>({ method: 'PATCH', url: `/listings/${id}`, data }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/listings/${id}` }),
+  updateVisibility: (id: string, visibility: string, featured?: boolean) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id, visibility, featured }, 200)
+      : apiRequest<unknown>({
+          method: 'PATCH',
+          url: `/listings/${id}/visibility`,
+          data: { visibility, featured },
+        }),
 };
 
 export const auctionsApi = {
@@ -88,13 +476,161 @@ export const auctionsApi = {
     USE_API_MOCK
       ? mockData(AUCTIONS.find(a => a.id === id) ?? AUCTIONS[0])
       : apiRequest<(typeof AUCTIONS)[0]>({ method: 'GET', url: `/auctions/${id}` }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...AUCTIONS[0], ...data, id: `AUC-${Date.now()}` } as (typeof AUCTIONS)[0], 300)
+      : apiRequest<(typeof AUCTIONS)[0]>({ method: 'POST', url: '/auctions', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...(AUCTIONS.find(a => a.id === id) ?? AUCTIONS[0]), ...data } as (typeof AUCTIONS)[0], 300)
+      : apiRequest<(typeof AUCTIONS)[0]>({ method: 'PATCH', url: `/auctions/${id}`, data }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/auctions/${id}` }),
+  placeBid: (id: string, amount: number, bidder = 'Platform bidder') =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id, amount, bidder }, 300)
+      : apiRequest<unknown>({ method: 'POST', url: `/auctions/${id}/bids`, data: { amount, bidder } }),
+  extend: (id: string, hours = 24) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/auctions/${id}/extend`, data: { hours } }),
+  end: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/auctions/${id}/end` }),
 };
 
+// ── Inspectors ──────────────────────────────────────────────────────────────
+
+export const inspectorsApi = {
+  list: () =>
+    USE_API_MOCK ? mockData([...INSPECTORS]) : apiRequest<typeof INSPECTORS>({ method: 'GET', url: '/inspectors' }),
+  get: (id: string) =>
+    USE_API_MOCK
+      ? mockData(INSPECTORS.find(i => i.id === id) ?? INSPECTORS[0])
+      : apiRequest<(typeof INSPECTORS)[0]>({ method: 'GET', url: `/inspectors/${id}` }),
+  jobs: (id: string) =>
+    USE_API_MOCK
+      ? mockData([...ORDERS].filter(o => (o as { inspectorId?: string }).inspectorId === id).slice(0, 5))
+      : apiRequest<unknown[]>({ method: 'GET', url: `/inspectors/${id}/jobs` }),
+};
+
+// ── Appointments ────────────────────────────────────────────────────────────
+
 export const appointmentsApi = {
+  list: async (): Promise<Appointment[]> => {
+    if (USE_API_MOCK) {
+      try {
+        const j = await nextJson<{ appointments?: Appointment[] }>('/api/appointments');
+        return j.appointments ?? [...APPOINTMENTS_SEED];
+      } catch {
+        return [...APPOINTMENTS_SEED] as Appointment[];
+      }
+    }
+    return apiRequest<Appointment[]>({ method: 'GET', url: '/appointments' });
+  },
+  get: async (id: string): Promise<Appointment> => {
+    if (USE_API_MOCK) {
+      const j = await nextJson<{ appointment: Appointment }>(`/api/appointments/${encodeURIComponent(id)}`);
+      return j.appointment;
+    }
+    return apiRequest<Appointment>({ method: 'GET', url: `/appointments/${id}` });
+  },
+  create: async (data: Record<string, unknown>): Promise<Appointment> => {
+    if (USE_API_MOCK) {
+      const j = await nextJson<{ appointment: Appointment }>('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return j.appointment;
+    }
+    return apiRequest<Appointment>({ method: 'POST', url: '/appointments', data });
+  },
+  update: async (id: string, data: Record<string, unknown>): Promise<Appointment> => {
+    if (USE_API_MOCK) {
+      const j = await nextJson<{ appointment: Appointment }>(`/api/appointments/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return j.appointment;
+    }
+    return apiRequest<Appointment>({ method: 'PATCH', url: `/appointments/${id}`, data });
+  },
+  remove: async (id: string): Promise<void> => {
+    if (USE_API_MOCK) {
+      await nextJson<{ ok: boolean }>(`/api/appointments/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      return;
+    }
+    await apiRequest<unknown>({ method: 'DELETE', url: `/appointments/${id}` });
+  },
+};
+
+// ── Finance ─────────────────────────────────────────────────────────────────
+
+export type InvoiceRow = {
+  id: string;
+  invoiceNumber?: string;
+  status?: string;
+  clientName?: string;
+  total?: number;
+  [key: string]: unknown;
+};
+
+export const financeApi = {
+  summary: () =>
+    USE_API_MOCK
+      ? mockData({ ...FINANCE_SUMMARY })
+      : apiRequest<typeof FINANCE_SUMMARY>({ method: 'GET', url: '/finance/summary' }),
+  listInvoices: () =>
+    USE_API_MOCK ? mockData<InvoiceRow[]>([]) : apiRequest<InvoiceRow[]>({ method: 'GET', url: '/invoices' }),
+  getInvoice: (id: string) =>
+    USE_API_MOCK
+      ? mockData<InvoiceRow>({ id, invoiceNumber: id, status: 'Draft', total: 0 })
+      : apiRequest<InvoiceRow>({ method: 'GET', url: `/invoices/${id}` }),
+  createInvoice: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData<InvoiceRow>({ id: `INV-${Date.now()}`, ...data }, 300)
+      : apiRequest<InvoiceRow>({ method: 'POST', url: '/invoices', data }),
+  updateInvoice: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData<InvoiceRow>({ id, ...data }, 300)
+      : apiRequest<InvoiceRow>({ method: 'PATCH', url: `/invoices/${id}`, data }),
+  removeInvoice: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/invoices/${id}` }),
+  markPaid: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/invoices/${id}/mark-paid` }),
+};
+
+// ── Platform ────────────────────────────────────────────────────────────────
+
+export const notificationsApi = {
   list: () =>
     USE_API_MOCK
-      ? mockData([...APPOINTMENTS_SEED] as Appointment[])
-      : apiRequest<Appointment[]>({ method: 'GET', url: '/appointments' }),
+      ? mockData([...NOTIFICATIONS])
+      : apiRequest<typeof NOTIFICATIONS>({ method: 'GET', url: '/notifications' }),
+  markRead: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 100)
+      : apiRequest<unknown>({ method: 'POST', url: `/notifications/${id}/read` }),
+  markAllRead: () =>
+    USE_API_MOCK
+      ? mockData({ ok: true }, 100)
+      : apiRequest<unknown>({ method: 'POST', url: '/notifications/read-all' }),
+};
+
+export const activityApi = {
+  list: () =>
+    USE_API_MOCK
+      ? mockData([...ACTIVITY_LOG])
+      : apiRequest<typeof ACTIVITY_LOG>({ method: 'GET', url: '/activity' }),
 };
 
 export const referenceApi = {
@@ -102,4 +638,304 @@ export const referenceApi = {
     USE_API_MOCK ? mockData([...BRANDS]) : apiRequest<typeof BRANDS>({ method: 'GET', url: '/reference/brands' }),
   models: () =>
     USE_API_MOCK ? mockData([...MODELS]) : apiRequest<typeof MODELS>({ method: 'GET', url: '/reference/models' }),
+  years: () =>
+    USE_API_MOCK ? mockData([...YEARS]) : apiRequest<typeof YEARS>({ method: 'GET', url: '/reference/years' }),
+  storeBrand: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id: `BR-${Date.now()}`, ...data }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: '/reference/brands', data }),
+  updateBrand: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id, ...data }, 200)
+      : apiRequest<unknown>({ method: 'PATCH', url: `/reference/brands/${id}`, data }),
+  deleteBrand: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/reference/brands/${id}` }),
+  toggleBrand: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'PATCH', url: `/reference/brands/${id}/toggle` }),
+  storeModel: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id: `MD-${Date.now()}`, ...data }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: '/reference/models', data }),
+  updateModel: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id, ...data }, 200)
+      : apiRequest<unknown>({ method: 'PATCH', url: `/reference/models/${id}`, data }),
+  deleteModel: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/reference/models/${id}` }),
+  toggleModel: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'PATCH', url: `/reference/models/${id}/toggle` }),
+  storeYear: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id: `YR-${Date.now()}`, ...data }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: '/reference/years', data }),
+  updateYear: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id, ...data }, 200)
+      : apiRequest<unknown>({ method: 'PATCH', url: `/reference/years/${id}`, data }),
+  deleteYear: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/reference/years/${id}` }),
+  toggleYear: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'PATCH', url: `/reference/years/${id}/toggle` }),
+};
+
+export const dashboardApi = {
+  kpis: () =>
+    USE_API_MOCK
+      ? mockData({
+          orders: { total: ORDERS.length, new: 0, assigned: 0, inProgress: 0, qaReview: 0, reported: 0, closed: 0 },
+          reports: { total: REPORTS.length, qaReview: 0, approved: 0, rejected: 0 },
+          inspectors: { total: INSPECTORS.length, online: 0, offline: 0, enRoute: 0 },
+          appointments: { total: APPOINTMENTS_SEED.length, today: 0, pending: 0, confirmed: 0 },
+        })
+      : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/dashboard/kpis' }),
+};
+
+export const settingsApi = {
+  get: () =>
+    USE_API_MOCK
+      ? mockData({ company: 'Carschek', timezone: 'Africa/Lagos' })
+      : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/settings' }),
+  update: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...data }, 300)
+      : apiRequest<Record<string, unknown>>({ method: 'PATCH', url: '/settings', data }),
+};
+
+export const usersApi = {
+  list: () => (USE_API_MOCK ? mockData([...USERS]) : apiRequest<typeof USERS>({ method: 'GET', url: '/users' })),
+  get: (id: string) =>
+    USE_API_MOCK
+      ? mockData(USERS.find(u => u.id === id) ?? USERS[0])
+      : apiRequest<(typeof USERS)[0]>({ method: 'GET', url: `/users/${id}` }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...USERS[0], ...data, id: `USR-${Date.now()}` } as (typeof USERS)[0], 300)
+      : apiRequest<(typeof USERS)[0]>({ method: 'POST', url: '/users', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...(USERS.find(u => u.id === id) ?? USERS[0]), ...data } as (typeof USERS)[0], 300)
+      : apiRequest<(typeof USERS)[0]>({ method: 'PATCH', url: `/users/${id}`, data }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/users/${id}` }),
+};
+
+// ── Sync (inspector offline) ────────────────────────────────────────────────
+
+export const syncApi = {
+  startInspection: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ id: `INS-RPT-${Date.now()}`, ...data }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: '/inspections', data }),
+  upsertItem: (inspectionId: string, itemKey: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ok: true }, 60)
+      : apiRequest<unknown>({
+          method: 'PATCH',
+          url: `/inspections/${inspectionId}/items/${encodeURIComponent(itemKey)}`,
+          data,
+        }),
+  completeSection: (inspectionId: string, sectionKey: string, data?: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ok: true }, 60)
+      : apiRequest<unknown>({
+          method: 'POST',
+          url: `/inspections/${inspectionId}/sections/${encodeURIComponent(sectionKey)}/complete`,
+          data,
+        }),
+  submit: (inspectionId: string, data?: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ok: true }, 100)
+      : apiRequest<unknown>({ method: 'POST', url: `/inspections/${inspectionId}/submit`, data }),
+  presigned: async (key: string) => {
+    if (USE_API_MOCK) {
+      return {
+        uploadUrl: `https://mock-upload.carschek.local/${encodeURIComponent(key)}`,
+        publicUrl: `https://cdn.mock.carschek/${encodeURIComponent(key)}`,
+      };
+    }
+    return apiRequest<{ uploadUrl: string; publicUrl: string }>({
+      method: 'GET',
+      url: '/storage/presigned',
+      params: { key },
+    });
+  },
+};
+
+// ── Migration wizard ────────────────────────────────────────────────────────
+
+export type MigrationConnectResult = {
+  ok: boolean;
+  message: string;
+  demo?: boolean;
+  source?: string;
+  run_id?: number;
+  run?: { id: number; status: string; progress: number };
+};
+
+export type MigrationProgress = {
+  id: number;
+  status: string;
+  progress: number;
+  log: string[];
+  totals?: { imported?: number; warnings?: number; errors?: number; ms?: number } | null;
+  demo?: boolean;
+};
+
+export const migrationApi = {
+  connect: (data: {
+    method: 'api' | 'csv' | 'legacy_db' | 'demo';
+    base_url?: string;
+    api_token?: string;
+    csv_path?: string;
+    use_demo?: boolean;
+  }) =>
+    USE_API_MOCK
+      ? mockData<MigrationConnectResult>(
+          {
+            ok: true,
+            message: 'Connection successful (mock)',
+            demo: true,
+            source: 'mock',
+            run_id: 1,
+            run: { id: 1, status: 'pending', progress: 0 },
+          },
+          900
+        )
+      : apiRequest<MigrationConnectResult>({ method: 'POST', url: '/migration/connect', data }),
+
+  scan: (run_id: number, entities?: string[]) =>
+    USE_API_MOCK
+      ? mockData(
+          {
+            run_id,
+            demo: true,
+            source: 'mock',
+            entities: [
+              { id: 'brands', label: 'Vehicle Brands', count: 8, note: null },
+              { id: 'models', label: 'Car Models', count: 24, note: null },
+              { id: 'years', label: 'Car Years', count: 35, note: null },
+              { id: 'cars', label: 'Cars / Vehicles', count: 33, note: null },
+              { id: 'appointments', label: 'Inspection Appointments', count: 89, note: null },
+              { id: 'reports', label: 'Inspection Reports', count: 41, note: null },
+              { id: 'customers', label: 'Customers / Contacts', count: 156, note: null },
+              { id: 'inspectors', label: 'Inspectors', count: 12, note: null },
+              { id: 'offers', label: 'Offers', count: 23, note: null },
+              { id: 'activity', label: 'Activity Logs', count: 1240, note: null },
+              {
+                id: 'documents',
+                label: 'Document Files',
+                count: 0,
+                note: 'Requires manual re-upload after migration',
+              },
+            ],
+          },
+          1200
+        )
+      : apiRequest<{
+          entities: { id: string; label: string; count: number; note: string | null }[];
+          demo: boolean;
+          source: string;
+          run_id: number;
+        }>({ method: 'POST', url: '/migration/scan', data: { run_id, entities } }),
+
+  validate: (run_id: number, entities?: string[]) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, run_id, issues: [] }, 1600)
+      : apiRequest<Record<string, unknown>>({
+          method: 'POST',
+          url: '/migration/validate',
+          data: { run_id, entities },
+        }),
+
+  dryRun: (run_id: number, entities?: string[]) =>
+    USE_API_MOCK
+      ? mockData(
+          {
+            run_id,
+            rows: [
+              { entity: 'Vehicle Brands', operation: 'upsert', records: 8, outcome: 'ok', note: 'All keys matched' },
+              { entity: 'Car Models', operation: 'upsert', records: 24, outcome: 'ok', note: 'Cascade from brands' },
+              { entity: 'Cars / Vehicles', operation: 'insert', records: 32, outcome: 'ok', note: 'New inventory' },
+              {
+                entity: 'Cars / Vehicles',
+                operation: 'skip',
+                records: 1,
+                outcome: 'warning',
+                note: 'Duplicate plate in target',
+              },
+              {
+                entity: 'Cars / Vehicles',
+                operation: 'error',
+                records: 1,
+                outcome: 'error',
+                note: 'Invalid VIN checksum',
+              },
+            ],
+          },
+          2000
+        )
+      : apiRequest<{
+          rows?: {
+            entity: string;
+            operation: string;
+            records: number;
+            outcome: string;
+            note: string;
+          }[];
+          [key: string]: unknown;
+        }>({ method: 'POST', url: '/migration/dry-run', data: { run_id, entities } }),
+
+  start: (run_id: number, confirmation: string, entities?: string[]) =>
+    USE_API_MOCK
+      ? mockData({ message: 'Migration started', run: { id: run_id, status: 'running', progress: 0, log: [] } }, 200)
+      : apiRequest<{ message: string; run: MigrationProgress }>({
+          method: 'POST',
+          url: '/migration/start',
+          data: { run_id, confirmation, entities },
+        }),
+
+  progress: (id: number) =>
+    USE_API_MOCK
+      ? mockData<MigrationProgress>({ id, status: 'completed', progress: 100, log: ['✓ Mock migration complete'] }, 200)
+      : apiRequest<MigrationProgress>({ method: 'GET', url: `/migration/${id}/progress` }),
+
+  pause: (id: number) =>
+    USE_API_MOCK
+      ? mockData({ message: 'Migration paused' }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/migration/${id}/pause` }),
+
+  cancel: (id: number) =>
+    USE_API_MOCK
+      ? mockData({ message: 'Migration cancelled' }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/migration/${id}/cancel` }),
+
+  retryFailed: (id: number) =>
+    USE_API_MOCK
+      ? mockData({ message: 'Retry started' }, 200)
+      : apiRequest<unknown>({ method: 'POST', url: `/migration/${id}/retry-failed` }),
+
+  downloadReport: async (id: number) => {
+    if (USE_API_MOCK) {
+      return new Blob(
+        [['record,status,message', 'CK-1041,imported,ok', 'CK-1039,skipped,invalid VIN'].join('\n')],
+        { type: 'text/csv;charset=utf-8' }
+      );
+    }
+    const { data } = await apiClient.get<Blob>(`/migration/${id}/report.csv`, { responseType: 'blob' });
+    return data;
+  },
 };

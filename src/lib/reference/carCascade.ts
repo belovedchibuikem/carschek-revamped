@@ -1,22 +1,25 @@
 /**
  * Shared Brand → Model → Year cascade for every car form/filter in the app.
  *
- * Single source of truth: reference data in `mockData` (swappable for the
- * API later via `referenceApi`). Forms store either reference ids ('b1'/'m1')
- * or display names ('Toyota'/'Camry') — helpers exist for both so each call
- * site keeps its existing data shape.
+ * Reads from `referenceCache` (hydrated via `referenceApi` / mock facades).
+ * Forms store either reference ids ('b1'/'m1') or display names ('Toyota'/'Camry').
  */
-import { BRANDS, MODELS, YEARS } from '@/lib/mockData';
 import type { SearchableSelectOption } from '@/components/shared/SearchableSelect';
+import {
+  getCachedBrands,
+  getCachedModels,
+  getCachedYears,
+  type ModelRow,
+} from '@/lib/reference/referenceCache';
 
-type ModelRecord = (typeof MODELS)[number];
+type ModelRecord = ModelRow;
 
 const norm = (s: string) => s.trim().toLowerCase();
 
 // ── Brands ────────────────────────────────────────────────────────────────
 
 export function activeBrands() {
-  return BRANDS.filter(b => b.active);
+  return getCachedBrands().filter(b => b.active);
 }
 
 /** Options keyed by brand id ('b1'). */
@@ -31,14 +34,14 @@ export function brandOptionsByName(): SearchableSelectOption[] {
 
 export function findBrandByName(name: string | undefined | null) {
   if (!name) return undefined;
-  return BRANDS.find(b => norm(b.name) === norm(name));
+  return getCachedBrands().find(b => norm(b.name) === norm(name));
 }
 
 // ── Models (cascade off brand) ────────────────────────────────────────────
 
 export function modelsForBrandId(brandId: string | undefined | null): ModelRecord[] {
   if (!brandId) return [];
-  return MODELS.filter(m => m.active && m.brandId === brandId);
+  return getCachedModels().filter(m => m.active && m.brandId === brandId);
 }
 
 export function modelsForBrandName(brandName: string | undefined | null): ModelRecord[] {
@@ -57,7 +60,7 @@ export function modelOptionsByName(brandName: string | undefined | null): Search
 
 export function findModelById(modelId: string | undefined | null) {
   if (!modelId) return undefined;
-  return MODELS.find(m => m.id === modelId);
+  return getCachedModels().find(m => m.id === modelId);
 }
 
 export function findModelByName(
@@ -66,7 +69,7 @@ export function findModelByName(
 ) {
   if (!modelName) return undefined;
   const brand = findBrandByName(brandName);
-  return MODELS.find(
+  return getCachedModels().find(
     m => norm(m.name) === norm(modelName) && (!brand || m.brandId === brand.id)
   );
 }
@@ -74,7 +77,8 @@ export function findModelByName(
 // ── Years (cascade off model) ─────────────────────────────────────────────
 
 function activeYearNumbers(): number[] {
-  return YEARS.filter(y => y.active)
+  return getCachedYears()
+    .filter(y => y.active)
     .map(y => y.year)
     .sort((a, b) => b - a);
 }

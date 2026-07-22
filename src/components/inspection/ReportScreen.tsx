@@ -27,6 +27,7 @@ import { loadReportFormatChoice } from '@/lib/inspection/reportFormatPersistence
 import { ReportDocumentBody } from '@/components/inspection/ReportDocumentBody';
 import { ReportFormatPicker } from '@/components/inspection/ReportFormatPicker';
 import { ReportPreviewSummary } from '@/components/inspection/ReportPreviewSummary';
+import { reportsApi } from '@/lib/api/services';
 
 const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => m.QRCodeSVG), { ssr: false });
 
@@ -158,14 +159,10 @@ export function ReportScreen({ inspectionId, layout }: ReportScreenProps) {
       ? reportData?.defects.filter((_, i) => flagItemIds[`d-${i}`]) ?? []
       : [];
     try {
-      await fetch(`/api/inspections/${encodeURIComponent(inspectionId)}/flag`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reason: flagReason,
-          specificItems: flagItemsMode,
-          flaggedItems,
-        }),
+      await reportsApi.flagInspection(inspectionId, {
+        reason: flagReason,
+        specificItems: flagItemsMode,
+        flaggedItems,
       });
       toast.success('Report flagged — QA team will review within 2 hours');
       setFlagOpen(false);

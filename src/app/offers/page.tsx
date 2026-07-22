@@ -4,19 +4,22 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Search, Send, Eye } from 'lucide-react';
-import { OFFERS, STATUS_COLORS, formatNaira } from '@/lib/mockData';
+import { STATUS_COLORS, formatNaira } from '@/lib/mockData';
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
+import { offersApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 export default function OffersPage() {
   const pathname = usePathname();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [statusFilter, setStatusFilter] = useState('');
+  const { data: offers, loading, error, refresh } = useApiList(() => offersApi.list());
 
   const filtered = useMemo(() => {
-    return OFFERS?.filter(o => {
+    return offers?.filter(o => {
       const q = debouncedSearch?.toLowerCase();
       const matchSearch =
         !q ||
@@ -26,9 +29,9 @@ export default function OffersPage() {
       const matchStatus = !statusFilter || o?.status === statusFilter;
       return matchSearch && matchStatus;
     });
-  }, [debouncedSearch, statusFilter]);
+  }, [debouncedSearch, statusFilter, offers]);
 
-  const statusOptions = [...new Set(OFFERS.map(o => o.status))];
+  const statusOptions = [...new Set(offers.map(o => o.status))];
 
   return (
     <AppLayout currentPath={pathname}>
@@ -36,7 +39,7 @@ export default function OffersPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Offers</h1>
-            <p className="text-sm text-[#6B7280]">{OFFERS?.length} offers total</p>
+            <p className="text-sm text-[#6B7280]">{loading ? '…' : `${offers?.length ?? 0}`} offers total</p>
           </div>
           <Link href="/offers/new" className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
             <Plus size={16} /> Create Offer
@@ -59,7 +62,15 @@ export default function OffersPage() {
           </select>
         </div>
 
-        {filtered?.length === 0 ? (
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex justify-between gap-3">
+            <p className="text-sm text-red-700">{error}</p>
+            <button type="button" onClick={() => void refresh()} className="text-sm font-semibold text-red-700 underline">Retry</button>
+          </div>
+        )}
+        {loading ? (
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-8 text-sm text-[#6B7280]">Loading offers…</div>
+        ) : filtered?.length === 0 ? (
           <div className="bg-white rounded-xl border border-[#E5E7EB]">
             <EmptyState title="No offers match" hint="Adjust search or status, or create a new offer." />
           </div>

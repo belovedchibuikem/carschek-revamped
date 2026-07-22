@@ -4,15 +4,22 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { AUCTIONS, formatNaira } from '@/lib/mockData';
+import { formatNaira } from '@/lib/mockData';
 import { Clock, Gavel, Car, Handshake } from 'lucide-react';
 import { toast } from 'sonner';
+import { auctionsApi } from '@/lib/api/services';
+import { useApiResource } from '@/hooks/useApiResource';
 
-const MOCK_BIDS = [
-  { bidder: 'AutoDeals Nigeria', amount: 4950000, time: '2h ago' },
-  { bidder: 'Tunde Fashola', amount: 4800000, time: '3h ago' },
-  { bidder: 'Anonymous', amount: 4700000, time: '5h ago' },
-];
+function relativeTime(iso?: string): string {
+  if (!iso) return '—';
+  const diff = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(diff) || diff < 0) return 'just now';
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${Math.max(1, mins)}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 48) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
 
 function useCountdown(endsAt: string) {
   const [now, setNow] = useState(-1);
@@ -38,14 +45,35 @@ export default function AuctionDetailPage() {
   const pathname = usePathname();
   const params = useParams();
   const id = params.id as string;
-  const auction = AUCTIONS.find(a => a.id === id);
+  const { data: auction, loading, error, refresh } = useApiResource(() => auctionsApi.get(id), [id]);
   const cd = useCountdown(auction?.endsAt ?? '1970-01-01T00:00:00Z');
+  const bids = ((auction as { bids?: { bidder: string; amount: number; at?: string; anonymous?: boolean }[] } | null)
+    ?.bids ?? [])
+    .slice()
+    .sort((a, b) => (b.amount ?? 0) - (a.amount ?? 0));
 
-  if (!auction) {
+  const extendAuction = async () => {
+    try {
+      await auctionsApi.extend(id, 24);
+      toast.success('Auction extended by 24 hours');
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not extend auction');
+    }
+  };
+
+  if (loading) {
+    return (
+      <AppLayout currentPath={pathname}>
+        <div className="p-8 text-sm text-[#6B7280]">Loading auction…</div>
+      </AppLayout>
+    );
+  }
+  if (error || !auction) {
     return (
       <AppLayout currentPath={pathname}>
         <div className="rounded-xl border border-[#E5E7EB] bg-white p-8 text-center">
-          <p className="font-medium text-[#1F2937]">Auction not found</p>
+          <p className="font-medium text-[#1F2937]">{error || 'Auction not found'}</p>
           <Link href="/auctions" className="mt-3 inline-block text-sm text-[#ff8a65] hover:underline">
             Back to auctions
           </Link>
@@ -127,11 +155,14 @@ export default function AuctionDetailPage() {
             <div>
               <h2 className="text-sm font-heading font-semibold text-[#1F2937] mb-3">Recent bids</h2>
               <ul className="divide-y divide-[#F4F6F8] border border-[#E5E7EB] rounded-xl overflow-hidden">
-                {MOCK_BIDS.map((b, i) => (
-                  <li key={i} className={`flex items-center justify-between px-4 py-3 text-sm ${i === 0 ? 'bg-green-50/80' : 'bg-white'}`}>
-                    <span className="font-medium text-[#1F2937]">{b.bidder}</span>
+                {bids.length === 0 && (
+                  <li className="px-4 py-6 text-sm text-[#6B7280] text-center">No bids yet.</li>
+                )}
+                {bids.map((b, i) => (
+                  <li key={`${b.bidder}-${b.amount}-${i}`} className={`flex items-center justify-between px-4 py-3 text-sm ${i === 0 ? 'bg-green-50/80' : 'bg-white'}`}>
+                    <span className="font-medium text-[#1F2937]">{b.anonymous ? 'Anonymous' : b.bidder}</span>
                     <span className="font-semibold text-[#1F2937]">{formatNaira(b.amount)}</span>
-                    <span className="text-xs text-[#6B7280]">{b.time}</span>
+                    <span className="text-xs text-[#6B7280]">{relativeTime(b.at)}</span>
                   </li>
                 ))}
               </ul>
@@ -146,10 +177,10 @@ export default function AuctionDetailPage() {
             </span>
             <p className="text-xs text-[#6B7280]">Started {new Date(auction.startedAt).toLocaleString('en-NG')}</p>
             <p className="text-xs text-[#6B7280]">Ends {new Date(auction.endsAt).toLocaleString('en-NG')}</p>
-            {auction.status === 'Active' && (
+            {(auction.status === 'Active' || auction.status === 'Extended') && (
               <button
                 type="button"
-                onClick={() => toast.success('Auction extended by 24 hours')}
+                onClick={() => void extendAuction()}
                 className="w-full py-2.5 bg-[#D35400] text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-all"
               >
                 Extend auction

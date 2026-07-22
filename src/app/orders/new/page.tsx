@@ -12,6 +12,7 @@ import {
   modelOptionsByName,
   yearOptionsForModelName,
 } from '@/lib/reference/carCascade';
+import { ordersApi } from '@/lib/api/services';
 
 export default function NewOrderPage() {
   const pathname = usePathname();
@@ -30,10 +31,27 @@ export default function NewOrderPage() {
       return;
     }
     setSaving(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setSaving(false);
-    toast.success('Order ORD-1898 created successfully!');
-    router.push('/orders');
+    try {
+      const scheduledAt = form.scheduledTime
+        ? `${form.scheduledDate}T${form.scheduledTime}:00`
+        : `${form.scheduledDate}T09:00:00`;
+      const created = await ordersApi.create({
+        customerName: form.customerName,
+        customerPhone: form.customerPhone || undefined,
+        vehicle: `${form.brand} ${form.model} ${form.year}`,
+        plate: form.plate || undefined,
+        zone: form.zone || undefined,
+        scheduledAt,
+        notes: form.notes || undefined,
+        status: 'New',
+      });
+      toast.success(`Order ${created.id} created successfully!`);
+      router.push(`/orders/${created.id}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not create order');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

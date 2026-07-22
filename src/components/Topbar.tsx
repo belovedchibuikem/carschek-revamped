@@ -5,9 +5,11 @@ import { Search, Bell, Menu, ChevronDown, X, Sun, Moon, Command, Check } from 'l
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { NOTIFICATIONS } from '@/lib/mockData';
+
 import { useOnlineStatus } from '@/components/providers/NetworkProvider';
 import { clearCarschekSessionCookies } from '@/lib/auth/session';
+import { clearAccessToken } from '@/lib/api/client';
+import { authApi, notificationsApi } from '@/lib/api/services';
 import { getSyncQueuePendingCount } from '@/lib/db/sync';
 import { NetworkStatusChip } from '@/components/network/NetworkStatusChip';
 import { RecentlyViewedMenu } from '@/components/shared/RecentlyViewedMenu';
@@ -60,7 +62,7 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Awaited<ReturnType<typeof notificationsApi.list>>>([]);
   const [syncPending, setSyncPending] = useState(0);
   const [syncRunning, setSyncRunning] = useState(false);
 
@@ -93,6 +95,21 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void notificationsApi
+      .list()
+      .then(list => {
+        if (!cancelled) setNotifications(list);
+      })
+      .catch(() => {
+        /* keep empty on failure */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -135,8 +152,14 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
   const isDark = mounted && (resolvedTheme === 'dark' || theme === 'dark');
   const toggleDarkMode = () => setTheme(isDark ? 'light' : 'dark');
 
-  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  const markRead = (id: string) => setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
+  const markAllRead = () => {
+    void notificationsApi.markAllRead().catch(() => undefined);
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+  const markRead = (id: string) => {
+    void notificationsApi.markRead(id).catch(() => undefined);
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
+  };
 
   const notifTypeIcon: Record<string, string> = {
     order: '📋',
@@ -149,6 +172,8 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleLogout = () => {
+    void authApi.logout().catch(() => clearAccessToken());
+    clearAccessToken();
     clearCarschekSessionCookies();
     setUserMenuOpen(false);
     router.push('/authentication-screen');

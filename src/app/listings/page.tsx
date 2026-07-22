@@ -4,24 +4,27 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Eye } from 'lucide-react';
-import { LISTINGS, formatNaira, getScoreColor } from '@/lib/mockData';
+import { formatNaira, getScoreColor } from '@/lib/mockData';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
+import { listingsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 export default function ListingsPage() {
   const pathname = usePathname();
+  const { data: listings, setData: setListings, loading, error, refresh } = useApiList(() => listingsApi.list());
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
 
   const filtered = useMemo(() => {
     const q = debouncedSearch?.toLowerCase()?.trim();
-    return LISTINGS?.filter(
+    return listings?.filter(
       l =>
         !q ||
         l?.carName?.toLowerCase()?.includes(q) ||
         l?.id?.toLowerCase()?.includes(q)
     );
-  }, [debouncedSearch]);
+  }, [debouncedSearch, listings]);
 
   return (
     <AppLayout currentPath={pathname}>
@@ -29,7 +32,7 @@ export default function ListingsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-heading font-bold text-[#1F2937]">Marketplace Listings</h1>
-            <p className="text-sm text-[#6B7280]">{LISTINGS?.length} active listings</p>
+            <p className="text-sm text-[#6B7280]">{listings?.length} active listings</p>
           </div>
         </div>
 

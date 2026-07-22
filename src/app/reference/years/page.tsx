@@ -4,14 +4,20 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 
 import { Plus, Search, X } from 'lucide-react';
-import { MODELS, BRANDS, YEARS, CARS, formatNaira, getScoreColor } from '@/lib/mockData';
+import { formatNaira, getScoreColor } from '@/lib/mockData';
 import { toast } from 'sonner';
+import { referenceApi, carsApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 import { useRouter } from 'next/navigation';
 
 export default function YearsPage() {
   const pathname = usePathname();
+  const { data: years, setData: setYears, loading, error, refresh } = useApiList(() => referenceApi.years());
+  const { data: models } = useApiList(() => referenceApi.models());
+  const { data: brands } = useApiList(() => referenceApi.brands());
+  const { data: cars } = useApiList(() => carsApi.list());
   const router = useRouter();
-  const [years, setYears] = useState(YEARS);
+  // years from API
   const [newYear, setNewYear] = useState('');
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
@@ -21,14 +27,14 @@ export default function YearsPage() {
   const [batchStart, setBatchStart] = useState('1990');
   const [batchEnd, setBatchEnd] = useState('2025');
 
-  const filteredBrands = BRANDS.filter(b => b.active && b.name.toLowerCase().includes(brandSearch.toLowerCase()));
-  const filteredModels = MODELS.filter(m => m.brandId === selectedBrand && m.name.toLowerCase().includes(modelSearch.toLowerCase()));
+  const filteredBrands = brands.filter(b => b.active && b.name.toLowerCase().includes(brandSearch.toLowerCase()));
+  const filteredModels = models.filter(m => m.brandId === selectedBrand && m.name.toLowerCase().includes(modelSearch.toLowerCase()));
 
-  const selectedBrandData = BRANDS.find(b => b.id === selectedBrand);
-  const selectedModelData = MODELS.find(m => m.id === selectedModel);
+  const selectedBrandData = brands.find(b => b.id === selectedBrand);
+  const selectedModelData = models.find(m => m.id === selectedModel);
 
-  const carsForModel = selectedModel ? CARS.filter(c => {
-    const model = MODELS.find(m => m.id === selectedModel);
+  const carsForModel = selectedModel ? cars.filter(c => {
+    const model = models.find(m => m.id === selectedModel);
     return model && c.model === model.name;
   }) : [];
 

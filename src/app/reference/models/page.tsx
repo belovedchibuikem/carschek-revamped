@@ -4,12 +4,16 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 
 import { Plus, Search, X, Filter } from 'lucide-react';
-import { MODELS, BRANDS } from '@/lib/mockData';
+
 import { toast } from 'sonner';
+import { referenceApi } from '@/lib/api/services';
+import { useApiList } from '@/hooks/useApiResource';
 
 export default function ModelsPage() {
   const pathname = usePathname();
-  const [models, setModels] = useState(MODELS);
+  const { data: models, setData: setModels, loading, error, refresh } = useApiList(() => referenceApi.models());
+  const { data: brands } = useApiList(() => referenceApi.brands());
+  // models from API
   const [search, setSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -24,14 +28,38 @@ export default function ModelsPage() {
       (!brandFilter || m.brandId === brandFilter);
   });
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newModel.brandId || !newModel.name) { toast.error('Brand and model name are required'); return; }
-    const brand = BRANDS.find(b => b.id === newModel.brandId);
-    const model = { id: `m${Date.now()}`, brandId: newModel.brandId, brandName: brand?.name || '', name: newModel.name, bodyTypes: newModel.bodyTypes, cars: 0, active: newModel.active, yearFrom: 1990, yearTo: new Date().getFullYear() };
-    setModels(prev => [...prev, model]);
-    setShowAddModal(false);
-    setNewModel({ brandId: '', name: '', bodyTypes: [], active: true });
-    toast.success(`Model "${newModel.name}" added`);
+    const brand = brands.find(b => b.id === newModel.brandId);
+    try {
+      const created = await referenceApi.storeModel({
+        brandId: newModel.brandId,
+        brandName: brand?.name || '',
+        name: newModel.name,
+        bodyTypes: newModel.bodyTypes,
+        active: newModel.active,
+        yearFrom: 1990,
+        yearTo: new Date().getFullYear(),
+      });
+      setModels(prev => [...prev, {
+        id: (created as { id?: string }).id || `m${Date.now()}`,
+        brandId: newModel.brandId,
+        brandName: brand?.name || '',
+        name: newModel.name,
+        bodyTypes: newModel.bodyTypes,
+        cars: 0,
+        active: newModel.active,
+        yearFrom: 1990,
+        yearTo: new Date().getFullYear(),
+        ...(created as object),
+      }]);
+      setShowAddModal(false);
+      setNewModel({ brandId: '', name: '', bodyTypes: [], active: true });
+      toast.success(`Model "${newModel.name}" added`);
+      void refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not add model');
+    }
   };
 
   const toggleBodyType = (bt: string) => {
@@ -41,7 +69,7 @@ export default function ModelsPage() {
     }));
   };
 
-  const groupedModels = BRANDS.map(b => ({
+  const groupedModels = brands.map(b => ({
     brand: b,
     models: filtered.filter(m => m.brandId === b.id),
   })).filter(g => g.models.length > 0);
@@ -62,7 +90,7 @@ export default function ModelsPage() {
                 <select value={newModel.brandId} onChange={e => setNewModel(p => ({ ...p, brandId: e.target.value }))}
                   className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
                   <option value="">Select brand…</option>
-                  {BRANDS.filter(b => b.active).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  {brands.filter(b => b.active).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
               <div>
@@ -120,7 +148,7 @@ export default function ModelsPage() {
           <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)}
             className="px-3 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
             <option value="">All Brands</option>
-            {BRANDS.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </div>
 
@@ -163,7 +191,7 @@ export default function ModelsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-[#ff5722] flex items-center justify-center text-white text-[10px] font-bold">
-                          {BRANDS.find(b => b.id === m.brandId)?.logo}
+                          {brands.find(b => b.id === m.brandId)?.logo}
                         </div>
                         <span className="text-[#6B7280]">{m.brandName}</span>
                       </div>
