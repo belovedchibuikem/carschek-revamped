@@ -560,6 +560,24 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
             setFormValues(prev => ({ ...prefill, ...prev }));
           }
         }
+
+        // Apply Yes/No/N/A (or lowercase) prefill onto empty toggles (e.g. s02_plate_number)
+        const togglePrefill: Record<string, ToggleValue> = {};
+        for (const [k, v] of Object.entries(prefill)) {
+          const lower = v.trim().toLowerCase();
+          if (lower === 'yes' || lower === 'no' || lower === 'na' || lower === 'n/a') {
+            togglePrefill[k] = lower === 'n/a' ? 'na' : lower;
+          }
+        }
+        if (Object.keys(togglePrefill).length) {
+          setToggleValues(prev => {
+            const next = { ...prev };
+            for (const [k, v] of Object.entries(togglePrefill)) {
+              if (next[k] == null) next[k] = v;
+            }
+            return next;
+          });
+        }
       })
       .finally(() => {
         // Defer until after React applies restored form state — avoids flushing an empty payload.

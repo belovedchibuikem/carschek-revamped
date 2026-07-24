@@ -14,7 +14,8 @@ import {
   isAppointmentConfirmed,
 } from '@/lib/appointments/logic';
 import { findCarIdByVinOrPlate } from '@/lib/appointments/lookup';
-import { appointmentsApi } from '@/lib/api/services';
+import { storeAppointmentInspectionPrefill } from '@/lib/inspection/appointmentPrefill';
+import { appointmentsApi, carsApi } from '@/lib/api/services';
 
 function ServiceNextBanner({ a }: { a: Appointment }) {
   const router = useRouter();
@@ -33,22 +34,43 @@ function ServiceNextBanner({ a }: { a: Appointment }) {
   const carId = a.linkedCarId || findCarIdByVinOrPlate(a.vinNumber, a.plateNumber);
 
   const startFromBooking = async () => {
-    const inspectorId = String(suggestions[0]?.id || '');
-    if (!inspectorId) {
-      toast.message('No inspector suggestion available — assign an inspector first');
-      return;
-    }
     setStarting(true);
     try {
-      const res = await appointmentsApi.startInspection(a.id, {
-        inspector_id: inspectorId,
-        car_id: a.linkedCarId || undefined,
-      });
-      const { storeInspectionPrefill } = await import('@/lib/inspection/prefillStore');
-      storeInspectionPrefill(res.order_id, res.prefill);
-      storeInspectionPrefill(res.car_id, res.prefill);
-      toast.success('Inspection started with booking details prefilled');
-      router.push(`/inspector-app/inspect/${res.order_id}/overview`);
+      let car: Awaited<ReturnType<typeof carsApi.get>> | null = null;
+      if (carId) {
+        try {
+          car = await carsApi.get(carId);
+        } catch {
+          /* ignore */
+        }
+      }
+
+      const inspectorId = String(suggestions[0]?.id || 'INS-001');
+      try {
+        const res = await appointmentsApi.startInspection(a.id, {
+          inspector_id: inspectorId,
+          car_id: a.linkedCarId || carId || undefined,
+        });
+        storeAppointmentInspectionPrefill(a, {
+          car,
+          carId: res.car_id || carId,
+          extraPrefill: res.prefill,
+          extraJobIds: [res.order_id, res.inspection_id],
+        });
+        toast.success('Inspection started with booking details prefilled');
+        router.push(`/inspector-app/inspect/${res.order_id || res.car_id || carId}/overview`);
+        return;
+      } catch {
+        /* Fall through to client-only prefill when API is down */
+      }
+
+      if (!carId) {
+        toast.message('Create a car record first — customer details will prefill after linking');
+        return;
+      }
+      storeAppointmentInspectionPrefill(a, { car, carId });
+      toast.success('Opening inspection with booking details prefilled');
+      router.push(`/inspector-app/inspect/${carId}/overview`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not start inspection');
     } finally {
@@ -158,10 +180,21 @@ export default function AppointmentDetailPage() {
     };
   }, [id]);
 
-  const inspect = (row: Appointment) => {
+  const inspect = async (row: Appointment) => {
     const carId = row.linkedCarId || findCarIdByVinOrPlate(row.vinNumber, row.plateNumber);
-    if (carId) router.push(`/inspector-app/inspect/${carId}/overview`);
-    else toast.message('Create a car record first — use Create car from the menu');
+    if (!carId) {
+      toast.message('Create a car record first — use Create car from the menu');
+      return;
+    }
+    let car: Awaited<ReturnType<typeof carsApi.get>> | null = null;
+    try {
+      car = await carsApi.get(carId);
+    } catch {
+      /* ignore */
+    }
+    storeAppointmentInspectionPrefill(row, { car, carId });
+    toast.message('Booking details will be prefilled in Customer & Car sections');
+    router.push(`/inspector-app/inspect/${carId}/overview`);
   };
 
   if (loading) {
@@ -344,7 +377,7 @@ export default function AppointmentDetailPage() {
         <div className="sticky bottom-0 bg-white/95 backdrop-blur border border-[#E5E7EB] rounded-xl p-3 flex flex-wrap gap-2 justify-center shadow-sm">
           <button
             type="button"
-            onClick={() => inspect(a)}
+            onClick={() => void inspect(a)}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#1A7A4A] text-white text-sm font-semibold hover:bg-[#158f43]"
           >
             <Wrench size={16} /> Inspect car

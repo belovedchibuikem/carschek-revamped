@@ -28,8 +28,9 @@ import {
   slotLabelForDialog,
 } from '@/lib/appointments/logic';
 import { findCarIdByVinOrPlate } from '@/lib/appointments/lookup';
+import { storeAppointmentInspectionPrefill } from '@/lib/inspection/appointmentPrefill';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { appointmentsApi } from '@/lib/api/services';
+import { appointmentsApi, carsApi } from '@/lib/api/services';
 
 export type AppointmentsListVariant = 'all' | 'confirmed' | 'unconfirmed' | 'inspected';
 
@@ -223,14 +224,21 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
     }
   };
 
-  const inspectCar = (a: Appointment) => {
+  const inspectCar = async (a: Appointment) => {
     const carId = a.linkedCarId || findCarIdByVinOrPlate(a.vinNumber, a.plateNumber);
-    if (carId) {
-      toast.message(`Opening inspection for ${carId}`);
-      router.push(`/inspector-app/inspect/${carId}/overview`);
+    if (!carId) {
+      setInspectNoCar(a);
       return;
     }
-    setInspectNoCar(a);
+    let car: Awaited<ReturnType<typeof carsApi.get>> | null = null;
+    try {
+      car = await carsApi.get(carId);
+    } catch {
+      /* appointment fields alone are enough for core prefill */
+    }
+    storeAppointmentInspectionPrefill(a, { car, carId });
+    toast.message(`Opening inspection for ${carId} — booking details prefilled`);
+    router.push(`/inspector-app/inspect/${carId}/overview`);
   };
 
   const createCarHref = (a: Appointment) =>
@@ -522,7 +530,7 @@ export function AppointmentsListClient({ variant, title, showUnconfirmedBanner, 
                                   className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#1A7A4A] hover:bg-[#F4F6F8]"
                                   onClick={() => {
                                     setMenuId(null);
-                                    inspectCar(a);
+                                    void inspectCar(a);
                                   }}
                                 >
                                   Inspect car

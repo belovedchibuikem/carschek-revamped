@@ -10,7 +10,16 @@ import {
 import { toast } from 'sonner';
 import { settingsApi, usersApi, activityApi } from '@/lib/api/services';
 import { useApiList } from '@/hooks/useApiResource';
-import EmailHtmlEditor from '@/components/settings/EmailHtmlEditor';
+import dynamic from 'next/dynamic';
+
+const EmailHtmlEditor = dynamic(() => import('@/components/settings/EmailHtmlEditor'), {
+  ssr: false,
+  loading: () => (
+    <div className="border border-[#E5E7EB] rounded-lg min-h-[280px] bg-white px-3 py-2 text-sm text-[#9CA3AF]">
+      Loading editor…
+    </div>
+  ),
+});
 
 const SETTINGS_NAV = [
   { id: 'general', label: 'General', icon: Settings },

@@ -17,6 +17,7 @@ import { validateCarStep0, validateCarStep1, validateCarStep2 } from '@/lib/vali
 import { SearchableSelect } from '@/components/shared/SearchableSelect';
 import { findModelById, yearOptionsForModelId } from '@/lib/reference/carCascade';
 import { appointmentsApi } from '@/lib/api/services';
+import { storeAppointmentInspectionPrefill } from '@/lib/inspection/appointmentPrefill';
 
 const STEPS = ['Vehicle Identity', 'Seller Contact', 'Purchase', 'Documents'];
 const COLOUR_SWATCHES: { name: string; hex: string }[] = [
@@ -401,6 +402,28 @@ function NewCarPageInner() {
         toast.success(`${newCarId} created — link appointment manually`);
       }
       if (inspectAfter === '1') {
+        try {
+          const ap = await appointmentsApi.get(appointmentId);
+          if (ap) {
+            storeAppointmentInspectionPrefill(ap, {
+              carId: newCarId,
+              car: {
+                brand: brands.find(b => b.id === form.brandId)?.name,
+                model: models.find(m => m.id === form.modelId)?.name,
+                year: form.year,
+                plate: form.plate,
+                vin: form.vin,
+                colour: form.colour === 'Custom' ? form.colourCustom : form.colour,
+                city: form.city,
+                transmission: form.transmission,
+                bodyType: form.bodyType,
+                mileage: form.mileage.replace(/,/g, '') || undefined,
+              },
+            });
+          }
+        } catch {
+          /* still open inspection */
+        }
         router.push(`/inspector-app/inspect/${newCarId}/overview`);
         return;
       }

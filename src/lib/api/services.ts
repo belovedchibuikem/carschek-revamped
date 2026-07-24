@@ -622,26 +622,55 @@ export const appointmentsApi = {
       : apiRequest<{ matches: Record<string, unknown[]> }>({ method: 'GET', url: `/appointments/${id}/duplicates` }),
   suggestedInspectors: (id: string) =>
     USE_API_MOCK
-      ? mockData({ data: [] })
+      ? mockData({
+          data: [{ id: 'INS-001', name: 'Emeka Okonkwo', reasons: ['Same zone', 'Available'] }],
+        })
       : apiRequest<{ data: Array<Record<string, unknown>> }>({ method: 'GET', url: `/appointments/${id}/suggested-inspectors` }),
   convert: (id: string, data: Record<string, unknown> = {}) =>
     USE_API_MOCK
       ? mockData({ needs_confirmation: false, order_id: 'ORD-DEMO', car_id: 'CK-DEMO' }, 300)
       : apiRequest<Record<string, unknown>>({ method: 'POST', url: `/appointments/${id}/convert`, data }),
-  startInspection: (id: string, data: Record<string, unknown>) =>
-    USE_API_MOCK
-      ? mockData({
-          order_id: 'ORD-DEMO',
-          inspection_id: 'INS-DEMO',
-          car_id: 'CK-DEMO',
-          prefill: { s01_first_name: 'Demo', s03_brand: 'Toyota' },
-        }, 400)
-      : apiRequest<{
-          order_id: string;
-          inspection_id: string;
-          car_id: string;
-          prefill: Record<string, string | null>;
-        }>({ method: 'POST', url: `/appointments/${id}/start-inspection`, data }),
+  startInspection: async (id: string, data: Record<string, unknown>) => {
+    if (USE_API_MOCK) {
+      const { appointmentToInspectionPrefill } = await import('@/lib/inspection/appointmentPrefill');
+      const { findCarIdByVinOrPlate } = await import('@/lib/appointments/lookup');
+      let ap: Appointment | null = null;
+      try {
+        ap = await appointmentsApi.get(id);
+      } catch {
+        ap = null;
+      }
+      const carId =
+        (typeof data.car_id === 'string' && data.car_id) ||
+        ap?.linkedCarId ||
+        (ap ? findCarIdByVinOrPlate(ap.vinNumber, ap.plateNumber) : null) ||
+        'CK-DEMO';
+      let car: (typeof CARS)[0] | undefined;
+      try {
+        car = CARS.find(c => c.id === carId);
+      } catch {
+        car = undefined;
+      }
+      const prefill = ap
+        ? appointmentToInspectionPrefill(ap, car)
+        : { s01_first_name: 'Demo', s03_brand: 'Toyota' };
+      return mockData(
+        {
+          order_id: ap?.linkedOrderId || `ORD-${id}`,
+          inspection_id: ap?.linkedInspectionId || `INS-${id}`,
+          car_id: carId,
+          prefill,
+        },
+        400
+      );
+    }
+    return apiRequest<{
+      order_id: string;
+      inspection_id: string;
+      car_id: string;
+      prefill: Record<string, string | null>;
+    }>({ method: 'POST', url: `/appointments/${id}/start-inspection`, data });
+  },
 };
 
 // ── Finance ─────────────────────────────────────────────────────────────────
