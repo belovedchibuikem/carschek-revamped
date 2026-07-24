@@ -1,33 +1,16 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Car, DollarSign, FileText, Printer, Plus, Trash2, X, CheckCircle, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { captureElementToPdf } from '@/lib/reportPdf';
 import { CARSCHEK_LOGO_PATH } from '@/lib/branding';
+import { valuationsApi, type ValuationRow } from '@/lib/api/services';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface ValuationItem {
-  id: string;
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
-}
+type ValuationData = ValuationRow;
 
-interface ValuationData {
-  id: string;
-  date: string;
-  clientName: string;
-  vehicleDescription: string;
-  marketValue: number;
-  fsv: number;
-  conditionValue: number;
-  notes: string;
-  status: 'draft' | 'final';
-  createdAt: string;
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -51,10 +34,6 @@ function numberToWords(num: number): string {
   }
 
   return convert(Math.round(num)) + ' Naira Only';
-}
-
-function generateId(): string {
-  return `VAL-${Date.now().toString().slice(-6)}`;
 }
 
 /** FSV is 70% of the stated market value. */
@@ -81,35 +60,6 @@ const tdStyle = (stripe: boolean): React.CSSProperties => ({
   verticalAlign: 'middle',
   minHeight: 40,
 });
-
-// ─── Mock saved valuations ────────────────────────────────────────────────────
-
-const MOCK_VALUATIONS: ValuationData[] = [
-  {
-    id: 'VAL-001',
-    date: 'April 20, 2026',
-    clientName: 'KOINS BANK LTD',
-    vehicleDescription: 'TOYOTA CAMRY 2004 4T1BE32K34U365910 SGM632AE',
-    marketValue: 4000000,
-    fsv: 2800000,
-    conditionValue: 2000000,
-    notes: '',
-    status: 'final',
-    createdAt: '2026-04-20',
-  },
-  {
-    id: 'VAL-002',
-    date: 'April 18, 2026',
-    clientName: 'FIRST BANK PLC',
-    vehicleDescription: 'HONDA ACCORD 2018 1HGCV1F30JA012345 LND789KJ',
-    marketValue: 8500000,
-    fsv: 6000000,
-    conditionValue: 5200000,
-    notes: 'Minor scratches on rear bumper',
-    status: 'final',
-    createdAt: '2026-04-18',
-  },
-];
 
 // ─── Valuation Print Report ───────────────────────────────────────────────────
 
@@ -277,10 +227,12 @@ function ValuationFormModal({
   onClose,
   onSave,
   initial,
+  saving,
 }: {
   onClose: () => void;
-  onSave: (data: ValuationData) => void;
+  onSave: (data: Omit<ValuationData, 'id' | 'createdAt'> & { id?: string; createdAt?: string }) => void | Promise<void>;
   initial?: Partial<ValuationData>;
+  saving?: boolean;
 }) {
   const [form, setForm] = useState<Partial<ValuationData>>(() => {
     const base: Partial<ValuationData> = {
@@ -315,12 +267,12 @@ function ValuationFormModal({
 
   const handleSave = () => {
     if (!form.clientName || !form.vehicleDescription || !form.marketValue) {
-      alert('Please fill in Client Name, Vehicle Description, and Market Value');
+      toast.error('Please fill in Client Name, Vehicle Description, and Market Value');
       return;
     }
     const marketValue = Number(form.marketValue) || 0;
-    onSave({
-      id: initial?.id ?? generateId(),
+    void onSave({
+      id: initial?.id,
       date: form.date ?? '',
       clientName: form.clientName ?? '',
       vehicleDescription: form.vehicleDescription ?? '',
@@ -329,7 +281,7 @@ function ValuationFormModal({
       conditionValue: Number(form.conditionValue) || 0,
       notes: form.notes ?? '',
       status: 'final',
-      createdAt: initial?.createdAt ?? new Date().toISOString().split('T')[0] ?? '',
+      createdAt: initial?.createdAt,
     });
   };
 
@@ -442,11 +394,21 @@ function ValuationFormModal({
 
         {/* Footer */}
         <div className="flex gap-3 border-t border-[#E5E7EB] px-6 py-4">
-          <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-[#E5E7EB] py-2.5 text-sm font-semibold text-[#374151] hover:bg-[#F4F6F8]">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="flex-1 rounded-xl border border-[#E5E7EB] py-2.5 text-sm font-semibold text-[#374151] hover:bg-[#F4F6F8] disabled:opacity-60"
+          >
             Cancel
           </button>
-          <button type="button" onClick={handleSave} className="flex-[2] rounded-xl bg-[#ff5722] py-2.5 text-sm font-bold text-white hover:bg-[#e64a19]">
-            Save Valuation
+          <button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={saving}
+            className="flex-[2] rounded-xl bg-[#ff5722] py-2.5 text-sm font-bold text-white hover:bg-[#e64a19] disabled:opacity-60"
+          >
+            {saving ? 'Saving…' : 'Save Valuation'}
           </button>
         </div>
       </div>
@@ -527,42 +489,87 @@ function PrintPreviewModal({ data, onClose }: { data: ValuationData; onClose: ()
 // ─── Main Valuation Module ────────────────────────────────────────────────────
 
 export default function VehicleValuationPage() {
-  const [valuations, setValuations] = useState<ValuationData[]>(MOCK_VALUATIONS);
+  const [valuations, setValuations] = useState<ValuationData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState<ValuationData | undefined>();
   const [printData, setPrintData] = useState<ValuationData | undefined>();
   const [search, setSearch] = useState('');
 
-  const filtered = valuations.filter(v =>
-    v.clientName.toLowerCase().includes(search.toLowerCase()) ||
-    v.vehicleDescription.toLowerCase().includes(search.toLowerCase()) ||
-    v.id.toLowerCase().includes(search.toLowerCase())
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const rows = await valuationsApi.list();
+      setValuations(Array.isArray(rows) ? rows : []);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not load valuations');
+      setValuations([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const filtered = valuations.filter(
+    v =>
+      v.clientName.toLowerCase().includes(search.toLowerCase()) ||
+      v.vehicleDescription.toLowerCase().includes(search.toLowerCase()) ||
+      v.id.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleSave = (data: ValuationData) => {
-    setValuations(prev => {
-      const idx = prev.findIndex(v => v.id === data.id);
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = data;
-        return updated;
+  const handleSave = async (
+    data: Omit<ValuationData, 'id' | 'createdAt'> & { id?: string; createdAt?: string }
+  ) => {
+    setSaving(true);
+    try {
+      const payload = {
+        date: data.date,
+        clientName: data.clientName,
+        vehicleDescription: data.vehicleDescription,
+        marketValue: data.marketValue,
+        fsv: data.fsv,
+        conditionValue: data.conditionValue,
+        notes: data.notes,
+        status: data.status,
+      };
+      if (data.id) {
+        await valuationsApi.update(data.id, payload);
+        toast.success(`Valuation ${data.id} updated`);
+      } else {
+        const created = await valuationsApi.create(payload);
+        toast.success(`Valuation ${created.id} saved`);
       }
-      return [data, ...prev];
-    });
-    setShowForm(false);
-    setEditData(undefined);
+      setShowForm(false);
+      setEditData(undefined);
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not save valuation');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this valuation?')) return;
-    setValuations(prev => prev.filter(v => v.id !== id));
+    try {
+      await valuationsApi.remove(id);
+      toast.success(`Deleted ${id}`);
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not delete valuation');
+    }
   };
 
-  const totalMarketValue = valuations.reduce((a, v) => a + v.marketValue, 0);
+  const now = new Date();
+  const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const totalMarketValue = valuations.reduce((a, v) => a + (Number(v.marketValue) || 0), 0);
 
   return (
     <div className="min-h-screen bg-[#F4F6F8]">
-      {/* Page Header */}
       <div className="border-b border-[#E5E7EB] bg-white px-6 py-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -571,7 +578,10 @@ export default function VehicleValuationPage() {
           </div>
           <button
             type="button"
-            onClick={() => { setEditData(undefined); setShowForm(true); }}
+            onClick={() => {
+              setEditData(undefined);
+              setShowForm(true);
+            }}
             className="flex items-center gap-2 rounded-xl bg-[#ff5722] px-4 py-2.5 text-sm font-bold text-white shadow hover:bg-[#e64a19]"
           >
             <Plus size={16} /> New Valuation
@@ -580,18 +590,30 @@ export default function VehicleValuationPage() {
       </div>
 
       <div className="p-6">
-        {/* KPI Cards */}
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
             { label: 'Total Valuations', value: String(valuations.length), icon: FileText, color: '#ff5722' },
             { label: 'Total Market Value', value: formatNaira(totalMarketValue), icon: DollarSign, color: '#1A7A4A' },
-            { label: 'This Month', value: String(valuations.filter(v => v.createdAt.startsWith('2026-04')).length), icon: Car, color: '#2563EB' },
-            { label: 'Final Reports', value: String(valuations.filter(v => v.status === 'final').length), icon: CheckCircle, color: '#7C3AED' },
+            {
+              label: 'This Month',
+              value: String(valuations.filter(v => (v.createdAt || '').startsWith(monthPrefix)).length),
+              icon: Car,
+              color: '#2563EB',
+            },
+            {
+              label: 'Final Reports',
+              value: String(valuations.filter(v => v.status === 'final').length),
+              icon: CheckCircle,
+              color: '#7C3AED',
+            },
           ].map(kpi => (
             <div key={kpi.label} className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-[#6B7280]">{kpi.label}</p>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: `${kpi.color}15` }}>
+                <div
+                  className="flex h-8 w-8 items-center justify-center rounded-lg"
+                  style={{ backgroundColor: `${kpi.color}15` }}
+                >
                   <kpi.icon size={15} style={{ color: kpi.color }} />
                 </div>
               </div>
@@ -600,8 +622,7 @@ export default function VehicleValuationPage() {
           ))}
         </div>
 
-        {/* Search */}
-        <div className="mb-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <input
             type="text"
             value={search}
@@ -609,9 +630,9 @@ export default function VehicleValuationPage() {
             placeholder="Search by client, vehicle, or ID..."
             className="w-full max-w-md rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
           />
+          {loading ? <span className="text-xs text-[#6B7280]">Loading…</span> : null}
         </div>
 
-        {/* Valuations Table */}
         <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
           <div className="border-b border-[#E5E7EB] px-5 py-4">
             <h2 className="font-bold text-[#1F2937]">Valuation Records</h2>
@@ -632,78 +653,87 @@ export default function VehicleValuationPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F4F6F8]">
-                {filtered.length === 0 && (
+                {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#9CA3AF]">
-                      No valuations found. Create your first valuation.
+                      {loading ? 'Loading valuations…' : 'No valuations found. Create your first valuation.'}
                     </td>
                   </tr>
+                ) : (
+                  filtered.map(v => (
+                    <tr key={v.id} className="hover:bg-[#FAFAFA]">
+                      <td className="px-4 py-3 font-mono text-xs font-bold text-[#ff5722]">{v.id}</td>
+                      <td className="px-4 py-3 text-xs text-[#374151]">{v.date}</td>
+                      <td className="px-4 py-3 font-semibold text-[#1F2937]">{v.clientName}</td>
+                      <td className="max-w-[200px] px-4 py-3 text-xs text-[#374151]">
+                        <span className="line-clamp-2">{v.vehicleDescription}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-[#1A7A4A]">{formatNaira(v.marketValue)}</td>
+                      <td className="px-4 py-3 text-right text-xs text-[#374151]">{formatNaira(v.fsv)}</td>
+                      <td className="px-4 py-3 text-right text-xs text-[#374151]">{formatNaira(v.conditionValue)}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            v.status === 'final' ? 'bg-green-100 text-[#1A7A4A]' : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {v.status === 'final' ? 'Final' : 'Draft'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setPrintData(v)}
+                            className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[#F4F6F8]"
+                            title="View / Print Report"
+                          >
+                            <Printer size={12} /> Report
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditData(v);
+                              setShowForm(true);
+                            }}
+                            className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[#F4F6F8]"
+                            title="Edit"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleDelete(v.id)}
+                            className="rounded-lg border border-red-100 p-1.5 text-[#C0392B] hover:bg-red-50"
+                            title="Delete"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
-                {filtered.map(v => (
-                  <tr key={v.id} className="hover:bg-[#FAFAFA]">
-                    <td className="px-4 py-3 font-mono text-xs font-bold text-[#ff5722]">{v.id}</td>
-                    <td className="px-4 py-3 text-xs text-[#374151]">{v.date}</td>
-                    <td className="px-4 py-3 font-semibold text-[#1F2937]">{v.clientName}</td>
-                    <td className="max-w-[200px] px-4 py-3 text-xs text-[#374151]">
-                      <span className="line-clamp-2">{v.vehicleDescription}</span>
-                    </td>
-                    <td className="px-4 py-3 text-right font-bold text-[#1A7A4A]">{formatNaira(v.marketValue)}</td>
-                    <td className="px-4 py-3 text-right text-xs text-[#374151]">{formatNaira(v.fsv)}</td>
-                    <td className="px-4 py-3 text-right text-xs text-[#374151]">{formatNaira(v.conditionValue)}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${v.status === 'final' ? 'bg-green-100 text-[#1A7A4A]' : 'bg-amber-100 text-amber-700'}`}>
-                        {v.status === 'final' ? 'Final' : 'Draft'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setPrintData(v)}
-                          className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[#F4F6F8]"
-                          title="View / Print Report"
-                        >
-                          <Printer size={12} /> Report
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setEditData(v); setShowForm(true); }}
-                          className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[#F4F6F8]"
-                          title="Edit"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(v.id)}
-                          className="rounded-lg border border-red-100 p-1.5 text-[#C0392B] hover:bg-red-50"
-                          title="Delete"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      {/* Form Modal */}
       {showForm && (
         <ValuationFormModal
-          onClose={() => { setShowForm(false); setEditData(undefined); }}
-          onSave={handleSave}
+          key={editData?.id ?? 'new'}
           initial={editData}
+          saving={saving}
+          onClose={() => {
+            if (saving) return;
+            setShowForm(false);
+            setEditData(undefined);
+          }}
+          onSave={handleSave}
         />
       )}
-
-      {/* Print Preview */}
-      {printData && (
-        <PrintPreviewModal data={printData} onClose={() => setPrintData(undefined)} />
-      )}
+      {printData && <PrintPreviewModal data={printData} onClose={() => setPrintData(undefined)} />}
     </div>
   );
 }

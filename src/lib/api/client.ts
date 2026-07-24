@@ -7,7 +7,8 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { clearCarschekSessionCookies } from '@/lib/auth/session';
 
 /** Set to false when pointing at a real Laravel API. */
-export const USE_API_MOCK = process.env.NEXT_PUBLIC_USE_API_MOCK !== 'false';
+export const USE_API_MOCK =
+  (process.env.NEXT_PUBLIC_USE_API_MOCK ?? 'true').trim().toLowerCase() !== 'false';
 
 export const ACCESS_TOKEN_KEY = 'carschek-access-token';
 

@@ -88,8 +88,6 @@ export default function FinancePage() {
   const [markPaidTarget, setMarkPaidTarget] = useState<PayoutRow | null>(null);
   const [markPaidRef, setMarkPaidRef] = useState('');
 
-  const refreshInvoices = () => setInvoices(getAllFinanceInvoiceRows());
-
   const downloadInvoicePdf = async (row: FinanceInvoiceListRow) => {
     setRenderPdfInvoice(row.printable);
     await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
@@ -160,7 +158,7 @@ export default function FinancePage() {
         onClose={() => setCreateInvoiceOpen(false)}
         onCreated={row => {
           upsertFinanceInvoiceRow(row);
-          refreshInvoices();
+          void refreshApiInvoices();
         }}
       />
       {markPaidTarget && (

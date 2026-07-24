@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
-import { crmApi } from '@/lib/api/services';
+import { crmApi, financeApi } from '@/lib/api/services';
 import { useApiList } from '@/hooks/useApiResource';
 import type {
   ClientType,
@@ -111,6 +111,7 @@ export function CreateInvoiceModal({ open, onClose, onCreated }: CreateInvoiceMo
   const [discountValue, setDiscountValue] = useState(0);
   const [notes, setNotes] = useState('Payment due within 30 days from invoice date.');
   const [paymentAccount, setPaymentAccount] = useState(DEFAULT_PAYMENT);
+  const [submitting, setSubmitting] = useState(false);
   const descRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -214,19 +215,19 @@ export function CreateInvoiceModal({ open, onClose, onCreated }: CreateInvoiceMo
     }
   };
 
-  const handleDraft = () => {
-    const err = validateDraft();
+  const persistInvoice = async (status: 'Draft' | 'Sent') => {
+    const err = status === 'Draft' ? validateDraft() : validateFull();
     if (err) {
       toast.error(err);
       return;
     }
     const printable = formToPrintable(
       invoiceNumber,
-      'Draft',
+      status,
       clientType,
-      clientName || '—',
+      clientName || (status === 'Draft' ? '—' : clientName),
       company,
-      email || '—',
+      email || (status === 'Draft' ? '—' : email),
       phone,
       billingAddress,
       invoiceDate,
@@ -238,54 +239,63 @@ export function CreateInvoiceModal({ open, onClose, onCreated }: CreateInvoiceMo
       notes,
       paymentAccount
     );
-    onCreated({
-      id: printable.invoiceNumber,
-      customer: printable.clientName,
-      amount: printable.total,
-      date: printable.invoiceDate,
-      dueDate: printable.dueDate,
-      status: 'Draft',
-      printable: { ...printable, status: 'Draft' },
-    });
-    toast.success(`Draft saved — ${printable.invoiceNumber}`);
-    onClose();
+    setSubmitting(true);
+    try {
+      const created = await financeApi.createInvoice({
+        clientType: printable.clientType,
+        clientName: printable.clientName,
+        company: printable.company || null,
+        email: printable.email !== '—' ? printable.email : null,
+        phone: printable.phone || null,
+        billingAddress: printable.billingAddress || null,
+        invoiceDate: printable.invoiceDate,
+        dueDate: printable.dueDate || null,
+        invoiceFor: printable.invoiceFor,
+        discountType: printable.discountType === '%' ? 'percent' : printable.discountType === '₦' ? 'fixed' : 'none',
+        discountValue: printable.discountValue ?? 0,
+        vatRate: 7.5,
+        notes: printable.notes || null,
+        paymentAccount: printable.paymentAccount || null,
+        status: printable.status,
+        lines: printable.lines.map(l => ({
+          description: l.description,
+          quantity: l.qty,
+          unitPrice: l.unitPrice,
+        })),
+      });
+      const id = String(created.id ?? created.invoiceNumber ?? printable.invoiceNumber);
+      onCreated({
+        id,
+        customer: printable.clientName,
+        amount: Number(created.total ?? printable.total),
+        date: printable.invoiceDate,
+        dueDate: printable.dueDate,
+        status: String(created.status ?? status) as FinanceInvoiceListRow['status'],
+        printable: {
+          ...printable,
+          invoiceNumber: String(created.invoiceNumber ?? printable.invoiceNumber),
+          status: String(created.status ?? status),
+        },
+      });
+      toast.success(
+        status === 'Draft'
+          ? `Draft saved — ${created.invoiceNumber ?? id}`
+          : `Invoice ${created.invoiceNumber ?? id} saved${printable.email ? ` (send to ${printable.email} simulated)` : ''}`
+      );
+      onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not save invoice');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDraft = () => {
+    void persistInvoice('Draft');
   };
 
   const handleSend = () => {
-    const err = validateFull();
-    if (err) {
-      toast.error(err);
-      return;
-    }
-    const printable = formToPrintable(
-      invoiceNumber,
-      'Sent',
-      clientType,
-      clientName,
-      company,
-      email,
-      phone,
-      billingAddress,
-      invoiceDate,
-      dueDate,
-      invoiceFor,
-      lines,
-      discountType,
-      discountValue,
-      notes,
-      paymentAccount
-    );
-    toast.success(`Invoice ${printable.invoiceNumber} sent to ${printable.email} (simulated)`);
-    onCreated({
-      id: printable.invoiceNumber,
-      customer: printable.clientName,
-      amount: printable.total,
-      date: printable.invoiceDate,
-      dueDate: printable.dueDate,
-      status: 'Sent',
-      printable,
-    });
-    onClose();
+    void persistInvoice('Sent');
   };
 
   if (!open) return null;
@@ -553,14 +563,14 @@ export function CreateInvoiceModal({ open, onClose, onCreated }: CreateInvoiceMo
           <button type="button" onClick={onClose} className="rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-semibold text-[#6B7280]">
             Cancel
           </button>
-          <button type="button" onClick={handleDraft} className="rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-semibold text-[#374151]">
-            Save as Draft
+          <button type="button" onClick={handleDraft} disabled={submitting} className="rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-semibold text-[#374151] disabled:opacity-60">
+            {submitting ? 'Saving…' : 'Save as Draft'}
           </button>
-          <button type="button" onClick={handlePreview} className="rounded-xl border border-[#ff8a65] bg-white px-4 py-2.5 text-sm font-semibold text-[#ff8a65]">
+          <button type="button" onClick={handlePreview} disabled={submitting} className="rounded-xl border border-[#ff8a65] bg-white px-4 py-2.5 text-sm font-semibold text-[#ff8a65] disabled:opacity-60">
             Preview Invoice
           </button>
-          <button type="button" onClick={handleSend} className="rounded-xl bg-[#ff5722] px-4 py-2.5 text-sm font-bold text-white">
-            Send &amp; Save
+          <button type="button" onClick={handleSend} disabled={submitting} className="rounded-xl bg-[#ff5722] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">
+            {submitting ? 'Saving…' : 'Send & Save'}
           </button>
         </div>
       </div>

@@ -721,6 +721,91 @@ export const financeApi = {
       : apiRequest<unknown>({ method: 'POST', url: `/invoices/${id}/mark-paid` }),
 };
 
+// ── Vehicle valuations ───────────────────────────────────────────────────────
+
+export type ValuationRow = {
+  id: string;
+  date: string;
+  clientName: string;
+  vehicleDescription: string;
+  marketValue: number;
+  fsv: number;
+  conditionValue: number;
+  notes: string;
+  status: 'draft' | 'final';
+  createdAt: string;
+};
+
+export const valuationsApi = {
+  list: async (): Promise<ValuationRow[]> => {
+    if (USE_API_MOCK) {
+      const { listLocalValuations } = await import('@/lib/valuations/localStore');
+      return mockData(listLocalValuations());
+    }
+    return apiRequest<ValuationRow[]>({ method: 'GET', url: '/valuations' });
+  },
+  get: async (id: string): Promise<ValuationRow> => {
+    if (USE_API_MOCK) {
+      const { getLocalValuation } = await import('@/lib/valuations/localStore');
+      const row = getLocalValuation(id);
+      if (!row) throw new Error('Valuation not found');
+      return mockData(row);
+    }
+    return apiRequest<ValuationRow>({ method: 'GET', url: `/valuations/${id}` });
+  },
+  create: async (data: Record<string, unknown>): Promise<ValuationRow> => {
+    if (USE_API_MOCK) {
+      const { nextLocalValuationId, upsertLocalValuation } = await import('@/lib/valuations/localStore');
+      const marketValue = Number(data.marketValue) || 0;
+      const row = {
+        id: nextLocalValuationId(),
+        date: String(data.date ?? ''),
+        clientName: String(data.clientName ?? ''),
+        vehicleDescription: String(data.vehicleDescription ?? ''),
+        marketValue,
+        fsv: data.fsv != null ? Number(data.fsv) : Math.round(marketValue * 0.7),
+        conditionValue: Number(data.conditionValue) || 0,
+        notes: String(data.notes ?? ''),
+        status: (data.status as 'draft' | 'final') || 'final',
+        createdAt: new Date().toISOString().slice(0, 10),
+      };
+      return mockData(upsertLocalValuation(row), 300);
+    }
+    return apiRequest<ValuationRow>({ method: 'POST', url: '/valuations', data });
+  },
+  update: async (id: string, data: Record<string, unknown>): Promise<ValuationRow> => {
+    if (USE_API_MOCK) {
+      const { getLocalValuation, upsertLocalValuation } = await import('@/lib/valuations/localStore');
+      const prev = getLocalValuation(id);
+      if (!prev) throw new Error('Valuation not found');
+      const marketValue = data.marketValue != null ? Number(data.marketValue) : prev.marketValue;
+      const row = {
+        ...prev,
+        date: data.date != null ? String(data.date) : prev.date,
+        clientName: data.clientName != null ? String(data.clientName) : prev.clientName,
+        vehicleDescription:
+          data.vehicleDescription != null ? String(data.vehicleDescription) : prev.vehicleDescription,
+        marketValue,
+        fsv: data.fsv != null ? Number(data.fsv) : Math.round(marketValue * 0.7),
+        conditionValue: data.conditionValue != null ? Number(data.conditionValue) : prev.conditionValue,
+        notes: data.notes != null ? String(data.notes) : prev.notes,
+        status: (data.status as 'draft' | 'final') || prev.status,
+      };
+      return mockData(upsertLocalValuation(row), 300);
+    }
+    return apiRequest<ValuationRow>({ method: 'PATCH', url: `/valuations/${id}`, data });
+  },
+  remove: async (id: string): Promise<void> => {
+    if (USE_API_MOCK) {
+      const { deleteLocalValuation } = await import('@/lib/valuations/localStore');
+      deleteLocalValuation(id);
+      await mockData({ ok: true }, 200);
+      return;
+    }
+    await apiRequest<unknown>({ method: 'DELETE', url: `/valuations/${id}` });
+  },
+};
+
 // ── Platform ────────────────────────────────────────────────────────────────
 
 export const notificationsApi = {
