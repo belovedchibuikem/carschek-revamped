@@ -122,13 +122,13 @@ function SettingsPageContent() {
     try {
       const [settings, mailCfg, smsCfg, sb, tpls, rules, auditRows, sig] = await Promise.all([
         settingsApi.get(),
-        settingsApi.getMail().catch(() => ({})),
-        settingsApi.getSms().catch(() => ({})),
-        settingsApi.getSimplybook().catch(() => ({})),
-        settingsApi.listTemplates().catch(() => ({ data: [] })),
-        settingsApi.getChecklistRules().catch(() => ({ rules: {} })),
-        settingsApi.audits().catch(() => ({ data: [] })),
-        settingsApi.inspectionSignals().catch(() => null),
+        settingsApi.getMail().catch((): Record<string, unknown> => ({})),
+        settingsApi.getSms().catch((): Record<string, unknown> => ({})),
+        settingsApi.getSimplybook().catch((): Record<string, unknown> => ({})),
+        settingsApi.listTemplates().catch((): { data: Array<Record<string, unknown>> } => ({ data: [] })),
+        settingsApi.getChecklistRules().catch((): { rules: Record<string, unknown> } => ({ rules: {} })),
+        settingsApi.audits().catch((): { data: Array<Record<string, unknown>> } => ({ data: [] })),
+        settingsApi.inspectionSignals().catch((): Record<string, unknown> | null => null),
       ]);
 
       const company = (settings.company ?? {}) as Record<string, unknown>;

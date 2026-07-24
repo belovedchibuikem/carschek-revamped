@@ -30,7 +30,7 @@ export default function EmailHtmlEditor({ value, onChange, placeholder }: Props)
     if (!editor) return;
     const current = editor.getHTML();
     if (value && value !== current) {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value, { emitUpdate: false });
     }
   }, [value, editor]);
 
