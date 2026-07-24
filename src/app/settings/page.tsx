@@ -10,22 +10,16 @@ import {
 import { toast } from 'sonner';
 import { settingsApi, usersApi, activityApi } from '@/lib/api/services';
 import { useApiList } from '@/hooks/useApiResource';
-import dynamic from 'next/dynamic';
-
-const EmailHtmlEditor = dynamic(() => import('@/components/settings/EmailHtmlEditor'), {
-  ssr: false,
-  loading: () => (
-    <div className="border border-[#E5E7EB] rounded-lg min-h-[280px] bg-white px-3 py-2 text-sm text-[#9CA3AF]">
-      Loading editor…
-    </div>
-  ),
-});
+import EmailTemplatesPanel from '@/components/settings/EmailTemplatesPanel';
+import SmsTemplatesPanel from '@/components/settings/SmsTemplatesPanel';
+import SettingsAuditPanel from '@/components/settings/SettingsAuditPanel';
 
 const SETTINGS_NAV = [
   { id: 'general', label: 'General', icon: Settings },
   { id: 'smtp', label: 'Email / SMTP', icon: Server },
   { id: 'email', label: 'Email Templates', icon: Mail },
   { id: 'sms', label: 'SMS Settings', icon: MessageSquare },
+  { id: 'sms-templates', label: 'SMS Templates', icon: MessageSquare },
   { id: 'notifications', label: 'Notifications', icon: Activity },
   { id: 'simplybook', label: 'Simplybook', icon: BookOpen },
   { id: 'operations', label: 'Operations', icon: Settings },
@@ -116,9 +110,6 @@ function SettingsPageContent() {
     api_key_set: false,
   });
   const [templates, setTemplates] = useState<Array<Record<string, unknown>>>([]);
-  const [activeTemplateSlug, setActiveTemplateSlug] = useState<string | null>(null);
-  const [templateDraft, setTemplateDraft] = useState({ subject: '', html_body: '', variables: [] as string[] });
-  const [previewHtml, setPreviewHtml] = useState('');
   const [checklistRules, setChecklistRules] = useState<Record<string, { mode?: string }>>({});
   const [opsMeta, setOpsMeta] = useState({ stalled_hours: 4, sla_hours: 8 });
   const [audits, setAudits] = useState<Array<Record<string, unknown>>>([]);
@@ -216,22 +207,6 @@ function SettingsPageContent() {
       toast.error(e instanceof Error ? e.message : 'Could not save settings');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const openTemplate = async (slug: string) => {
-    setActiveTemplateSlug(slug);
-    try {
-      const t = await settingsApi.getTemplate(slug);
-      setTemplateDraft({
-        subject: String(t.subject ?? ''),
-        html_body: String(t.html_body ?? ''),
-        variables: Array.isArray(t.variables) ? (t.variables as string[]) : [],
-      });
-      const preview = await settingsApi.previewTemplate(slug, {});
-      setPreviewHtml(preview.html);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Could not load template');
     }
   };
 
@@ -413,94 +388,22 @@ function SettingsPageContent() {
               </div>
             )}
 
-            {activeSection === 'email' && (
-              <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4">
-                <h2 className="text-base font-heading font-semibold text-[#1F2937]">Email templates</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {templates.map(t => (
-                    <button
-                      key={String(t.slug)}
-                      type="button"
-                      onClick={() => void openTemplate(String(t.slug))}
-                      className={`text-left p-3 rounded-lg border ${activeTemplateSlug === t.slug ? 'border-[#ff5722] bg-orange-50' : 'border-[#E5E7EB]'}`}
-                    >
-                      <p className="text-sm font-semibold text-[#1F2937]">{String(t.name)}</p>
-                      <p className="text-xs text-[#6B7280] truncate">{String(t.subject)}</p>
-                    </button>
-                  ))}
-                </div>
-                {activeTemplateSlug && (
-                  <div className="space-y-3 border-t border-[#F4F6F8] pt-4">
-                    <label className="block text-xs font-semibold">Subject</label>
-                    <input
-                      className={inputClass}
-                      value={templateDraft.subject}
-                      onChange={e => setTemplateDraft(p => ({ ...p, subject: e.target.value }))}
-                    />
-                    <div className="flex flex-wrap gap-1">
-                      {templateDraft.variables.map(v => (
-                        <button
-                          key={v}
-                          type="button"
-                          className="text-[10px] px-2 py-1 rounded-full bg-[#F4F6F8] border border-[#E5E7EB]"
-                          onClick={() =>
-                            setTemplateDraft(p => ({
-                              ...p,
-                              html_body: `${p.html_body}<span>{{${v}}}</span>`,
-                            }))
-                          }
-                        >
-                          {`{{${v}}}`}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                      <EmailHtmlEditor
-                        value={templateDraft.html_body}
-                        onChange={html => setTemplateDraft(p => ({ ...p, html_body: html }))}
-                      />
-                      <div className="border border-[#E5E7EB] rounded-lg overflow-hidden bg-[#F9FAFB]">
-                        <div className="px-3 py-2 text-xs font-semibold border-b border-[#E5E7EB]">Live preview</div>
-                        <iframe title="preview" className="w-full h-[280px] bg-white" srcDoc={previewHtml} />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void settingsApi
-                            .updateTemplate(activeTemplateSlug, {
-                              subject: templateDraft.subject,
-                              html_body: templateDraft.html_body,
-                            })
-                            .then(() => toast.success('Template saved'))
-                            .catch(e => toast.error(e instanceof Error ? e.message : 'Save failed'));
-                        }}
-                        className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg"
-                      >
-                        Save template
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void settingsApi
-                            .previewTemplate(activeTemplateSlug, {})
-                            .then(r => setPreviewHtml(r.html))
-                            .catch(e => toast.error(e instanceof Error ? e.message : 'Preview failed'));
-                        }}
-                        className="px-4 py-2.5 border border-[#E5E7EB] text-sm font-semibold rounded-lg"
-                      >
-                        Refresh preview
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            {activeSection === 'email' && <EmailTemplatesPanel initialTemplates={templates} />}
 
             {activeSection === 'sms' && (
               <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4 max-w-xl">
-                <h2 className="text-base font-heading font-semibold">SMS provider</h2>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-base font-heading font-semibold">SMS provider</h2>
+                    <p className="text-sm text-[#6B7280] mt-1">
+                      Connect Termii or Twilio. Edit message copy under{' '}
+                      <button type="button" className="text-[#ff5722] font-semibold" onClick={() => goSection('sms-templates')}>
+                        SMS Templates
+                      </button>
+                      .
+                    </p>
+                  </div>
+                </div>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={sms.enabled} onChange={e => setSms(p => ({ ...p, enabled: e.target.checked }))} />
                   Enable SMS
@@ -560,6 +463,8 @@ function SettingsPageContent() {
                 </div>
               </div>
             )}
+
+            {activeSection === 'sms-templates' && <SmsTemplatesPanel initialTemplates={templates} />}
 
             {activeSection === 'notifications' && (
               <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-3 max-w-xl">
@@ -837,33 +742,18 @@ function SettingsPageContent() {
             )}
 
             {activeSection === 'audit' && (
-              <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-heading font-semibold">Settings audit</h2>
-                  <Link href="/activity" className="text-sm font-semibold text-[#ff5722] hover:underline">
-                    Full activity →
-                  </Link>
-                </div>
-                <ul className="space-y-2 max-h-96 overflow-y-auto">
-                  {audits.map(a => (
-                    <li key={String(a.id)} className="text-sm border border-[#F4F6F8] rounded-lg px-3 py-2">
-                      <p className="font-medium text-[#1F2937]">{String(a.key)}</p>
-                      <p className="text-xs text-[#6B7280]">
-                        {(a.actor as { name?: string } | undefined)?.name || 'System'} · {String(a.created_at || '')}
-                      </p>
-                    </li>
-                  ))}
-                  {audits.length === 0 &&
-                    activity.slice(0, 20).map(a => (
-                      <li key={a.id} className="text-sm border border-[#F4F6F8] rounded-lg px-3 py-2">
-                        <p className="font-medium">{a.action}</p>
-                        <p className="text-xs text-[#6B7280]">
-                          {a.actor} · {a.target} · {a.timestamp}
-                        </p>
-                      </li>
-                    ))}
-                </ul>
-              </div>
+              <SettingsAuditPanel
+                audits={audits}
+                activityFallback={activity.map(a => ({
+                  id: a.id,
+                  actor: a.actor,
+                  action: a.action,
+                  target: a.target,
+                  timestamp: a.timestamp,
+                  ip: a.ip,
+                  role: a.role,
+                }))}
+              />
             )}
 
             {activeSection === 'migration' && (

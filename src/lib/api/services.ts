@@ -27,6 +27,14 @@ import {
 } from '@/lib/mockData';
 import type { Appointment } from '@/lib/appointments/types';
 import { APPOINTMENTS_SEED } from '@/lib/appointments/seed';
+import {
+  listTemplateSummaries,
+  loadLocalTemplates,
+  mergeTemplateVars,
+  sampleVariablesFor,
+  saveLocalTemplate,
+} from '@/lib/settings/templatesCatalog';
+import { MOCK_SETTINGS_AUDITS } from '@/lib/settings/auditFormat';
 
 async function mockData<T>(data: T, delayMs = 0): Promise<T> {
   if (delayMs > 0) await new Promise(r => setTimeout(r, delayMs));
@@ -806,7 +814,6 @@ export const dashboardApi = {
       : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/dashboard/kpis' }),
 };
 
-/** Platform settings payload used by `/settings` (tabs: general, security, notifications, operations). */
 export type PlatformSettings = {
   company?: Record<string, unknown>;
   permissions?: unknown[];
@@ -873,34 +880,97 @@ export const settingsApi = {
     USE_API_MOCK
       ? mockData({ ok: true, message: 'Test SMS sent.' }, 400)
       : apiRequest<{ ok: boolean; message: string }>({ method: 'POST', url: '/settings/sms/test', data: { to } }),
-  listTemplates: () =>
-    USE_API_MOCK
-      ? mockData<{ data: Array<Record<string, unknown>> }>({
-          data: [{ slug: 'login_otp', name: 'Login OTP', subject: 'Your code', variables: ['code'] }],
-        })
-      : apiRequest<{ data: Array<Record<string, unknown>> }>({ method: 'GET', url: '/settings/email-templates' }),
-  getTemplate: (slug: string) =>
-    USE_API_MOCK
-      ? mockData<Record<string, unknown>>({
-          slug,
-          name: slug,
-          subject: 'Subject',
-          html_body: '<p>Hello</p>',
-          variables: [],
-        })
-      : apiRequest<Record<string, unknown>>({ method: 'GET', url: `/settings/email-templates/${slug}` }),
-  updateTemplate: (slug: string, data: Record<string, unknown>) =>
-    USE_API_MOCK
-      ? mockData({ slug, ...data }, 300)
-      : apiRequest<Record<string, unknown>>({ method: 'PUT', url: `/settings/email-templates/${slug}`, data }),
-  previewTemplate: (slug: string, variables: Record<string, string> = {}) =>
-    USE_API_MOCK
-      ? mockData({ subject: 'Preview', html: '<p>Preview</p>' }, 200)
-      : apiRequest<{ subject: string; html: string; text?: string }>({
-          method: 'POST',
-          url: `/settings/email-templates/${slug}/preview`,
-          data: { variables },
-        }),
+  listTemplates: async () => {
+    if (USE_API_MOCK) {
+      return mockData<{ data: Array<Record<string, unknown>> }>({
+        data: listTemplateSummaries(loadLocalTemplates()) as unknown as Array<Record<string, unknown>>,
+      });
+    }
+    try {
+      const res = await apiRequest<{ data: Array<Record<string, unknown>> }>({
+        method: 'GET',
+        url: '/settings/email-templates',
+      });
+      if (!res.data?.length) {
+        return { data: listTemplateSummaries(loadLocalTemplates()) as unknown as Array<Record<string, unknown>> };
+      }
+      return res;
+    } catch {
+      return { data: listTemplateSummaries(loadLocalTemplates()) as unknown as Array<Record<string, unknown>> };
+    }
+  },
+  getTemplate: async (slug: string) => {
+    if (USE_API_MOCK) {
+      const t = loadLocalTemplates().find(x => x.slug === slug) ?? loadLocalTemplates()[0];
+      return mockData<Record<string, unknown>>({ ...t });
+    }
+    try {
+      return await apiRequest<Record<string, unknown>>({ method: 'GET', url: `/settings/email-templates/${slug}` });
+    } catch {
+      const t = loadLocalTemplates().find(x => x.slug === slug);
+      if (!t) throw new Error('Template not found');
+      return { ...t };
+    }
+  },
+  updateTemplate: async (slug: string, data: Record<string, unknown>) => {
+    if (USE_API_MOCK) {
+      const saved = saveLocalTemplate(slug, {
+        subject: data.subject != null ? String(data.subject) : undefined,
+        html_body: data.html_body != null ? String(data.html_body) : undefined,
+        text_body: data.text_body != null ? String(data.text_body) : undefined,
+        is_active: typeof data.is_active === 'boolean' ? data.is_active : undefined,
+        name: data.name != null ? String(data.name) : undefined,
+        description: data.description != null ? String(data.description) : undefined,
+      });
+      return mockData({ ...saved }, 300);
+    }
+    try {
+      return await apiRequest<Record<string, unknown>>({
+        method: 'PUT',
+        url: `/settings/email-templates/${slug}`,
+        data,
+      });
+    } catch {
+      const saved = saveLocalTemplate(slug, {
+        subject: data.subject != null ? String(data.subject) : undefined,
+        html_body: data.html_body != null ? String(data.html_body) : undefined,
+        text_body: data.text_body != null ? String(data.text_body) : undefined,
+        is_active: typeof data.is_active === 'boolean' ? data.is_active : undefined,
+      });
+      return { ...saved };
+    }
+  },
+  previewTemplate: async (slug: string, variables: Record<string, string> = {}) => {
+    if (USE_API_MOCK) {
+      const t = loadLocalTemplates().find(x => x.slug === slug);
+      if (!t) return mockData({ subject: 'Preview', html: '<p>Preview</p>' }, 200);
+      const vars = { ...sampleVariablesFor(t), ...variables };
+      return mockData(
+        {
+          subject: mergeTemplateVars(t.subject, vars),
+          html: mergeTemplateVars(t.html_body, vars),
+          text: mergeTemplateVars(t.text_body, vars),
+        },
+        200
+      );
+    }
+    try {
+      return await apiRequest<{ subject: string; html: string; text?: string }>({
+        method: 'POST',
+        url: `/settings/email-templates/${slug}/preview`,
+        data: { variables },
+      });
+    } catch {
+      const t = loadLocalTemplates().find(x => x.slug === slug);
+      if (!t) return { subject: 'Preview', html: '<p>Preview</p>' };
+      const vars = { ...sampleVariablesFor(t), ...variables };
+      return {
+        subject: mergeTemplateVars(t.subject, vars),
+        html: mergeTemplateVars(t.html_body, vars),
+        text: mergeTemplateVars(t.text_body, vars),
+      };
+    }
+  },
   getSimplybook: () =>
     USE_API_MOCK
       ? mockData<Record<string, unknown>>({
@@ -925,14 +995,29 @@ export const settingsApi = {
     USE_API_MOCK
       ? mockData({ rules }, 300)
       : apiRequest<{ rules: Record<string, unknown> }>({ method: 'PUT', url: '/settings/checklist-rules', data: { rules } }),
-  audits: (key?: string) =>
-    USE_API_MOCK
-      ? mockData<{ data: Array<Record<string, unknown>> }>({ data: [] })
-      : apiRequest<{ data: Array<Record<string, unknown>> }>({
-          method: 'GET',
-          url: '/settings/audits',
-          params: key ? { key } : undefined,
-        }),
+  audits: async (key?: string) => {
+    if (USE_API_MOCK) {
+      const data = key
+        ? MOCK_SETTINGS_AUDITS.filter(a => a.key.toLowerCase().includes(key.toLowerCase()))
+        : MOCK_SETTINGS_AUDITS;
+      return mockData<{ data: Array<Record<string, unknown>> }>({
+        data: data as unknown as Array<Record<string, unknown>>,
+      });
+    }
+    try {
+      const res = await apiRequest<{ data: Array<Record<string, unknown>> }>({
+        method: 'GET',
+        url: '/settings/audits',
+        params: key ? { key } : undefined,
+      });
+      if (!res.data?.length) {
+        return { data: MOCK_SETTINGS_AUDITS as unknown as Array<Record<string, unknown>> };
+      }
+      return res;
+    } catch {
+      return { data: MOCK_SETTINGS_AUDITS as unknown as Array<Record<string, unknown>> };
+    }
+  },
   inspectionSignals: () =>
     USE_API_MOCK
       ? mockData<Record<string, unknown>>({
