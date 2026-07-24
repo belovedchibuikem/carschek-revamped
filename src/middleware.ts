@@ -1,3 +1,12 @@
+/**
+ * Edge middleware — role redirects + optional auth guard.
+ *
+ * Production defaults (set in host env / .env.production):
+ *   NEXT_PUBLIC_ENABLE_AUTH_GUARD=true
+ *   NEXT_PUBLIC_DISABLE_MIDDLEWARE=false
+ *
+ * Local WAMP: keep the same unless you need to bypass while wiring auth.
+ */
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 

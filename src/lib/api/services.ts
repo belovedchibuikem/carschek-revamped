@@ -69,18 +69,67 @@ const DEMO_AUTH = [
 
 // ── Auth ────────────────────────────────────────────────────────────────────
 
+export type LoginOtpResponse = {
+  requires_otp: true;
+  otp_token: string;
+  otp_sent_via?: 'email';
+  otp_destination?: string;
+  expires_in_seconds?: number;
+};
+
+export type ResendOtpResponse = {
+  message: string;
+  otp_token: string;
+  otp_sent_via?: 'email';
+  otp_destination?: string;
+  expires_in_seconds?: number;
+  retry_after_seconds?: number;
+};
+
+function maskEmailLocal(email: string): string {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return '***';
+  return `${local[0]}***@${domain}`;
+}
+
 export const authApi = {
   login: async (email: string, password: string) => {
     if (USE_API_MOCK) {
       await mockData(null, 400);
       const match = DEMO_AUTH.find(a => a.email === email && a.password === password);
       if (!match) throw new Error('Invalid credentials.');
-      return { requires_otp: true as const, otp_token: `mock-otp:${match.email}` };
+      return {
+        requires_otp: true as const,
+        otp_token: `mock-otp:${match.email}`,
+        otp_sent_via: 'email' as const,
+        otp_destination: maskEmailLocal(match.email),
+        expires_in_seconds: 600,
+      } satisfies LoginOtpResponse;
     }
-    return apiRequest<{ requires_otp: boolean; otp_token: string }>({
+    return apiRequest<LoginOtpResponse>({
       method: 'POST',
       url: '/auth/login',
       data: { email, password },
+    });
+  },
+
+  resendOtp: async (otp_token: string) => {
+    if (USE_API_MOCK) {
+      await mockData(null, 400);
+      const email = otp_token.replace(/^mock-otp:/, '');
+      return {
+        message: 'A new verification code has been sent.',
+        otp_token,
+        otp_sent_via: 'email' as const,
+        otp_destination: maskEmailLocal(email || 'user@carschek.com'),
+        expires_in_seconds: 600,
+        retry_after_seconds: 60,
+      } satisfies ResendOtpResponse;
+    }
+    return apiRequest<ResendOtpResponse>({
+      method: 'POST',
+      url: '/auth/resend-otp',
+      data: { otp_token },
     });
   },
 

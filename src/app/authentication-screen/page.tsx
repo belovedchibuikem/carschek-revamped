@@ -28,6 +28,11 @@ const DEMO_ACCOUNTS = [
   { role: 'inspector' as const, email: 'emeka.inspector@carschek.com', password: 'Inspector@2026', name: 'Emeka Okonkwo' },
 ];
 
+/** Production builds hide demo shortcuts unless NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=true. */
+const SHOW_DEMO_ACCOUNTS =
+  process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === 'true' ||
+  (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS !== 'false');
+
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
     { label: 'At least 8 characters', pass: password.length >= 8 },
@@ -96,14 +101,28 @@ function OTPInput({ onComplete }: { onComplete: (code: string) => void }) {
 
 function CountdownTimer({ seconds, onExpire }: { seconds: number; onExpire: () => void }) {
   const [remaining, setRemaining] = useState(seconds);
+  const expiredRef = useRef(false);
+
   useEffect(() => {
-    if (remaining <= 0) { onExpire(); return; }
+    setRemaining(seconds);
+    expiredRef.current = false;
+  }, [seconds]);
+
+  useEffect(() => {
+    if (remaining <= 0) {
+      if (!expiredRef.current) {
+        expiredRef.current = true;
+        onExpire();
+      }
+      return;
+    }
     const t = setTimeout(() => setRemaining(r => r - 1), 1000);
     return () => clearTimeout(t);
   }, [remaining, onExpire]);
+
   const m = Math.floor(remaining / 60);
   const s = remaining % 60;
-  const pct = (remaining / seconds) * 100;
+  const pct = seconds > 0 ? (remaining / seconds) * 100 : 0;
   const r = 20;
   const circ = 2 * Math.PI * r;
   return (
@@ -134,11 +153,24 @@ export default function AuthenticationScreen() {
   const [forgotEmail, setForgotEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [otpToken, setOtpToken] = useState<string | null>(null);
+  const [otpDestination, setOtpDestination] = useState<string>('');
+  const [otpTtlSeconds, setOtpTtlSeconds] = useState(600);
+  const [otpTimerKey, setOtpTimerKey] = useState(0);
+  const [otpInputKey, setOtpInputKey] = useState(0);
+  const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
 
   const loginForm = useForm<LoginForm>({ defaultValues: { email: '', password: '', remember: false } });
   const forgotForm = useForm<ForgotForm>();
   const newPassForm = useForm<NewPasswordForm>();
   const newPassword = newPassForm.watch('password', '');
+
+  const startResendCooldown = (seconds = 60) => {
+    const until = Date.now() + seconds * 1000;
+    setResendAvailableAt(until);
+    setResendCountdown(seconds);
+  };
 
   useEffect(() => {
     if (lockedUntil) {
@@ -151,12 +183,33 @@ export default function AuthenticationScreen() {
     }
   }, [lockedUntil]);
 
+  useEffect(() => {
+    if (!resendAvailableAt) {
+      setResendCountdown(0);
+      return;
+    }
+    const tick = () => {
+      const rem = Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1000));
+      setResendCountdown(rem);
+      if (rem === 0) setResendAvailableAt(null);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [resendAvailableAt]);
+
   const handleLogin = async (data: LoginForm) => {
     if (lockedUntil) return;
     setIsSubmitting(true);
     try {
       const res = await authApi.login(data.email, data.password);
       setOtpToken(res.otp_token);
+      setOtpDestination(res.otp_destination || maskEmail(data.email));
+      setOtpTtlSeconds(res.expires_in_seconds ?? 600);
+      setOtpExpired(false);
+      setOtpTimerKey(k => k + 1);
+      setOtpInputKey(k => k + 1);
+      startResendCooldown(60);
       const demoHint = DEMO_ACCOUNTS.find(a => a.email === data.email);
       if (demoHint) {
         setWelcomeRole(demoHint.role);
@@ -165,6 +218,7 @@ export default function AuthenticationScreen() {
         setWelcomeName(data.email.split('@')[0] || 'User');
       }
       setFailedAttempts(0);
+      toast.success(`Verification code sent to ${res.otp_destination || maskEmail(data.email)}`);
       setStep('2fa');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Invalid credentials';
@@ -177,7 +231,9 @@ export default function AuthenticationScreen() {
       loginForm.setError('password', {
         message: /locked/i.test(message)
           ? message
-          : 'Invalid credentials — use the demo accounts below to sign in',
+                  : SHOW_DEMO_ACCOUNTS
+                    ? 'Invalid credentials — use the demo accounts below to sign in'
+                    : 'Invalid credentials',
       });
     } finally {
       setIsSubmitting(false);
@@ -185,7 +241,7 @@ export default function AuthenticationScreen() {
   };
 
   const handle2FA = async (code: string) => {
-    if (!otpToken || code.length !== 6) return;
+    if (!otpToken || code.length !== 6 || isSubmitting) return;
     setIsSubmitting(true);
     try {
       const res = await authApi.verifyOtp(otpToken, code);
@@ -198,8 +254,32 @@ export default function AuthenticationScreen() {
       setStep('welcome');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Verification failed');
+      setOtpInputKey(k => k + 1);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!otpToken || isResending || resendCountdown > 0) return;
+    setIsResending(true);
+    try {
+      const res = await authApi.resendOtp(otpToken);
+      setOtpToken(res.otp_token);
+      if (res.otp_destination) setOtpDestination(res.otp_destination);
+      setOtpTtlSeconds(res.expires_in_seconds ?? 600);
+      setOtpExpired(false);
+      setOtpTimerKey(k => k + 1);
+      setOtpInputKey(k => k + 1);
+      startResendCooldown(res.retry_after_seconds ?? 60);
+      toast.success(res.message || 'A new verification code has been sent.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not resend code';
+      const waitMatch = message.match(/(\d+)\s*second/i);
+      if (waitMatch) startResendCooldown(Number(waitMatch[1]));
+      toast.error(message);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -379,7 +459,8 @@ export default function AuthenticationScreen() {
                 </button>
               </form>
 
-              {/* Demo accounts */}
+              {/* Demo accounts — hidden in production builds unless NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=true */}
+              {SHOW_DEMO_ACCOUNTS && (
               <div className="mt-6 p-4 bg-[#F4F6F8] rounded-xl border border-[#E5E7EB]">
                 <p className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Demo Accounts</p>
                 <div className="space-y-2">
@@ -400,6 +481,7 @@ export default function AuthenticationScreen() {
                   ))}
                 </div>
               </div>
+              )}
 
               <p className="mt-4 text-center text-xs text-[#6B7280]">
                 Having trouble?{' '}
@@ -411,38 +493,68 @@ export default function AuthenticationScreen() {
           {/* 2FA */}
           {step === '2fa' && (
             <div className="animate-fade-in text-center">
-              <button onClick={() => setStep('login')} className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] mb-8 transition-colors">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('login');
+                  setOtpToken(null);
+                  setOtpExpired(false);
+                }}
+                className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] mb-8 transition-colors"
+              >
                 <ArrowLeft size={14} /> Back to login
               </button>
               <div className="w-14 h-14 bg-[#ff5722]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield size={28} className="text-[#ff5722]" />
+                <Mail size={28} className="text-[#ff5722]" />
               </div>
-              <h2 className="text-2xl font-heading font-bold text-[#1F2937] mb-2">Two-Factor Authentication</h2>
-              <p className="text-[#6B7280] text-sm mb-8">Enter the 6-digit code from your authenticator app</p>
+              <h2 className="text-2xl font-heading font-bold text-[#1F2937] mb-2">Check your email</h2>
+              <p className="text-[#6B7280] text-sm mb-1">We sent a 6-digit verification code to</p>
+              <p className="font-mono text-sm font-semibold text-[#1F2937] mb-8">{otpDestination || 'your email'}</p>
 
-              <OTPInput onComplete={handle2FA} />
+              <OTPInput key={otpInputKey} onComplete={handle2FA} />
+
+              {isSubmitting && (
+                <p className="mt-4 text-xs text-[#6B7280] flex items-center justify-center gap-1">
+                  <RefreshCw size={12} className="animate-spin" /> Verifying…
+                </p>
+              )}
 
               <div className="mt-6 flex justify-center">
                 {!otpExpired ? (
-                  <CountdownTimer seconds={272} onExpire={() => setOtpExpired(true)} />
+                  <CountdownTimer
+                    key={otpTimerKey}
+                    seconds={otpTtlSeconds}
+                    onExpire={() => setOtpExpired(true)}
+                  />
                 ) : (
-                  <p className="text-xs text-[#C0392B] font-medium">Code expired</p>
+                  <p className="text-xs text-[#C0392B] font-medium">Code expired — request a new one</p>
                 )}
               </div>
 
               <div className="mt-4 flex flex-col items-center gap-3">
                 <button
-                  disabled={!otpExpired}
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={isResending || resendCountdown > 0}
                   className="text-sm text-[#ff8a65] hover:underline disabled:opacity-40 disabled:no-underline flex items-center gap-1"
                 >
-                  <RefreshCw size={14} /> Resend code
+                  <RefreshCw size={14} className={isResending ? 'animate-spin' : ''} />
+                  {isResending
+                    ? 'Sending…'
+                    : resendCountdown > 0
+                      ? `Resend code in ${resendCountdown}s`
+                      : 'Resend code'}
                 </button>
-                <button className="text-xs text-[#6B7280] hover:text-[#1F2937]">Use backup code instead</button>
+                <p className="text-[10px] text-[#6B7280]">Didn&apos;t get it? Check spam, then resend.</p>
               </div>
 
+              {SHOW_DEMO_ACCOUNTS && (
               <div className="mt-6 p-3 bg-[#F4F6F8] rounded-lg border border-[#E5E7EB]">
-                <p className="text-[10px] text-[#6B7280]">For demo: enter any 6 digits to proceed</p>
+                <p className="text-[10px] text-[#6B7280]">
+                  Local demo: with AUTH_DEMO_OTP any 6 digits work. With MAIL_MAILER=log, the real code is in the API log.
+                </p>
               </div>
+              )}
             </div>
           )}
 

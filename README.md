@@ -67,11 +67,21 @@ This project uses Tailwind CSS for styling with the following features:
 
 ## 📱 Deployment
 
-Build the application for production:
+See **[docs/PRODUCTION.md](docs/PRODUCTION.md)** for production env, auth guards, CORS, and build/serve.
 
-  ```bash
-  npm run build
-  ```
+```bash
+npm run build
+npm run serve
+```
+
+Local API pairing (WAMP): set in `.env.local`:
+
+```
+NEXT_PUBLIC_USE_API_MOCK=false
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_ENABLE_AUTH_GUARD=true
+NEXT_PUBLIC_DISABLE_MIDDLEWARE=false
+```
 
 ## 📚 Learn More
 

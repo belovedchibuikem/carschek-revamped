@@ -35,7 +35,11 @@ jest-test-results.json
 
 # Optional: if using TurboRepo or monorepo
 turbo/
-# Local env (API flags / secrets — never commit)
+# Local env (API flags / secrets ï¿½ never commit)
+.env
 .env.local
 .env*.local
+.env.production
+!.env.example
+!.env.production.example
 
