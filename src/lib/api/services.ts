@@ -616,6 +616,32 @@ export const appointmentsApi = {
     }
     await apiRequest<unknown>({ method: 'DELETE', url: `/appointments/${id}` });
   },
+  duplicates: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ matches: { customers: [], cars: [], crm_contacts: [] } })
+      : apiRequest<{ matches: Record<string, unknown[]> }>({ method: 'GET', url: `/appointments/${id}/duplicates` }),
+  suggestedInspectors: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ data: [] })
+      : apiRequest<{ data: Array<Record<string, unknown>> }>({ method: 'GET', url: `/appointments/${id}/suggested-inspectors` }),
+  convert: (id: string, data: Record<string, unknown> = {}) =>
+    USE_API_MOCK
+      ? mockData({ needs_confirmation: false, order_id: 'ORD-DEMO', car_id: 'CK-DEMO' }, 300)
+      : apiRequest<Record<string, unknown>>({ method: 'POST', url: `/appointments/${id}/convert`, data }),
+  startInspection: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({
+          order_id: 'ORD-DEMO',
+          inspection_id: 'INS-DEMO',
+          car_id: 'CK-DEMO',
+          prefill: { s01_first_name: 'Demo', s03_brand: 'Toyota' },
+        }, 400)
+      : apiRequest<{
+          order_id: string;
+          inspection_id: string;
+          car_id: string;
+          prefill: Record<string, string | null>;
+        }>({ method: 'POST', url: `/appointments/${id}/start-inspection`, data }),
 };
 
 // ── Finance ─────────────────────────────────────────────────────────────────
@@ -754,12 +780,88 @@ export const dashboardApi = {
 export const settingsApi = {
   get: () =>
     USE_API_MOCK
-      ? mockData({ company: 'Carschek', timezone: 'Africa/Lagos' })
+      ? mockData({ company: { name: 'Carschek', timezone: 'Africa/Lagos' }, permissions: [], notifications: {} })
       : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/settings' }),
   update: (data: Record<string, unknown>) =>
     USE_API_MOCK
       ? mockData({ ...data }, 300)
       : apiRequest<Record<string, unknown>>({ method: 'PATCH', url: '/settings', data }),
+  getMail: () =>
+    USE_API_MOCK
+      ? mockData({ host: '', port: 587, encryption: 'tls', enabled: false, password_set: false })
+      : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/settings/mail' }),
+  updateMail: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...data }, 300)
+      : apiRequest<Record<string, unknown>>({ method: 'PUT', url: '/settings/mail', data }),
+  testMail: (to: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, message: `Test email sent to ${to}` }, 400)
+      : apiRequest<{ ok: boolean; message: string }>({ method: 'POST', url: '/settings/mail/test', data: { to } }),
+  getSms: () =>
+    USE_API_MOCK
+      ? mockData({ provider: 'termii', sender_id: 'Carschek', enabled: false, api_key_set: false })
+      : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/settings/sms' }),
+  updateSms: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...data }, 300)
+      : apiRequest<Record<string, unknown>>({ method: 'PUT', url: '/settings/sms', data }),
+  testSms: (to: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, message: 'Test SMS sent.' }, 400)
+      : apiRequest<{ ok: boolean; message: string }>({ method: 'POST', url: '/settings/sms/test', data: { to } }),
+  listTemplates: () =>
+    USE_API_MOCK
+      ? mockData({ data: [{ slug: 'login_otp', name: 'Login OTP', subject: 'Your code', variables: ['code'] }] })
+      : apiRequest<{ data: Array<Record<string, unknown>> }>({ method: 'GET', url: '/settings/email-templates' }),
+  getTemplate: (slug: string) =>
+    USE_API_MOCK
+      ? mockData({ slug, name: slug, subject: 'Subject', html_body: '<p>Hello</p>', variables: [] })
+      : apiRequest<Record<string, unknown>>({ method: 'GET', url: `/settings/email-templates/${slug}` }),
+  updateTemplate: (slug: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ slug, ...data }, 300)
+      : apiRequest<Record<string, unknown>>({ method: 'PUT', url: `/settings/email-templates/${slug}`, data }),
+  previewTemplate: (slug: string, variables: Record<string, string> = {}) =>
+    USE_API_MOCK
+      ? mockData({ subject: 'Preview', html: '<p>Preview</p>' }, 200)
+      : apiRequest<{ subject: string; html: string; text?: string }>({
+          method: 'POST',
+          url: `/settings/email-templates/${slug}/preview`,
+          data: { variables },
+        }),
+  getSimplybook: () =>
+    USE_API_MOCK
+      ? mockData({ enabled: false, company_login: '', webhook_url: '/api/v1/webhooks/simplybook' })
+      : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/settings/simplybook' }),
+  updateSimplybook: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ ...data }, 300)
+      : apiRequest<Record<string, unknown>>({ method: 'PUT', url: '/settings/simplybook', data }),
+  syncSimplybook: () =>
+    USE_API_MOCK
+      ? mockData({ ok: true, message: 'Synced 0 booking(s).', count: 0 }, 500)
+      : apiRequest<{ ok: boolean; message: string; count: number }>({ method: 'POST', url: '/settings/simplybook/sync' }),
+  getChecklistRules: () =>
+    USE_API_MOCK
+      ? mockData({ rules: {} })
+      : apiRequest<{ rules: Record<string, unknown> }>({ method: 'GET', url: '/settings/checklist-rules' }),
+  updateChecklistRules: (rules: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData({ rules }, 300)
+      : apiRequest<{ rules: Record<string, unknown> }>({ method: 'PUT', url: '/settings/checklist-rules', data: { rules } }),
+  audits: (key?: string) =>
+    USE_API_MOCK
+      ? mockData({ data: [] })
+      : apiRequest<{ data: Array<Record<string, unknown>> }>({
+          method: 'GET',
+          url: '/settings/audits',
+          params: key ? { key } : undefined,
+        }),
+  inspectionSignals: () =>
+    USE_API_MOCK
+      ? mockData({ signals: [], counts: { stalled: 0, sla_risk: 0, incomplete_required: 0, photos_missing: 0 } })
+      : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/ops/inspection-signals' }),
 };
 
 export const usersApi = {
@@ -809,6 +911,18 @@ export const syncApi = {
     USE_API_MOCK
       ? mockData({ ok: true }, 100)
       : apiRequest<unknown>({ method: 'POST', url: `/inspections/${inspectionId}/submit`, data }),
+  hints: (params?: { body_type?: string; section?: string }) =>
+    USE_API_MOCK
+      ? mockData({ data: [] })
+      : apiRequest<{ data: Array<Record<string, unknown>> }>({ method: 'GET', url: '/inspections/hints', params }),
+  resolveChecklist: (data: { service_type?: string; body_type?: string }) =>
+    USE_API_MOCK
+      ? mockData({ sections: {} })
+      : apiRequest<{ sections: Record<string, { applicable: boolean; required: boolean; auto_na: boolean }> }>({
+          method: 'POST',
+          url: '/inspection/checklist/resolve',
+          data,
+        }),
   presigned: async (key: string) => {
     if (USE_API_MOCK) {
       return {

@@ -23,6 +23,8 @@ import { VehiclePhotos } from '@/components/inspection/VehiclePhotos';
 import { DamagePhotosHubScreen } from '@/components/inspection/screens/DamagePhotosHubScreen';
 import { loadDamagePhotosForOrder } from '@/lib/inspection/dexieDamagePhotos';
 import type { VehiclePhotosProgress } from '@/components/inspection/VehiclePhotos';
+import { loadInspectionPrefill } from '@/lib/inspection/prefillStore';
+import { syncApi } from '@/lib/api/services';
 
 type ToggleValue = 'yes' | 'no' | 'na' | null;
 
@@ -144,11 +146,13 @@ function FormSection({
   formValues,
   setFormValues,
   showErrors,
+  prefillKeys = {},
 }: {
   def: SectionDef;
   formValues: Record<string, string>;
   setFormValues: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   showErrors: boolean;
+  prefillKeys?: Record<string, string>;
 }) {
   const fields = def.fields ?? [];
 
@@ -168,6 +172,20 @@ function FormSection({
   const clearField = (id: string) => {
     setFormValues(prev => ({ ...prev, [id]: '' }));
   };
+
+  const labelFor = (field: { id: string; label: string; required?: boolean }) => (
+    <label htmlFor={`checklist-dd-${field.id}`} className="mb-1 flex items-center gap-2 text-xs font-semibold text-[#374151]">
+      <span>
+        {field.label}
+        {field.required && <span className="ml-0.5 text-red-500">*</span>}
+      </span>
+      {prefillKeys[field.id] != null && (
+        <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#ff5722] border border-sky-100">
+          Prefill
+        </span>
+      )}
+    </label>
+  );
 
   /** Reference-driven options for the S03 cascade; schema options otherwise. */
   const resolveDropdown = (field: { id: string; options: string[] }) => {
@@ -195,10 +213,7 @@ function FormSection({
             (field.id === 's03_year' && !formValues['s03_model']);
           return (
             <div key={field.id}>
-              <label htmlFor={`checklist-dd-${field.id}`} className="mb-1 block text-xs font-semibold text-[#374151]">
-                {field.label}
-                {field.required && <span className="ml-0.5 text-red-500">*</span>}
-              </label>
+              {labelFor(field)}
               <div className="relative">
                 <SearchableSelect
                   id={`checklist-dd-${field.id}`}
@@ -243,9 +258,16 @@ function FormSection({
         if (field.type === 'text' || field.type === 'number') {
           return (
             <div key={field.id}>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
-                {field.label}
-                {field.required && <span className="ml-0.5 text-red-500">*</span>}
+              <label className="mb-1 flex items-center gap-2 text-xs font-semibold text-[#374151]">
+                <span>
+                  {field.label}
+                  {field.required && <span className="ml-0.5 text-red-500">*</span>}
+                </span>
+                {prefillKeys[field.id] != null && (
+                  <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#ff5722] border border-sky-100">
+                    Prefill
+                  </span>
+                )}
               </label>
               <input
                 type={field.type === 'number' ? 'number' : 'text'}
@@ -479,6 +501,9 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
   const { saveStatus, scheduleSave, flush, lastSavedAt } = useInspectionChecklistPersistence(jobId, sectionId);
   const [online, setOnline] = useState(true);
   const [tick, setTick] = useState(0);
+  const [prefillKeys, setPrefillKeys] = useState<Record<string, string>>({});
+  const [hints, setHints] = useState<Array<Record<string, unknown>>>([]);
+  const [sectionRules, setSectionRules] = useState<{ applicable?: boolean; required?: boolean; auto_na?: boolean } | null>(null);
 
   const sectionMeta = useMemo(() => INSPECTION_SECTIONS.find(s => s.id === sectionId), [sectionId]);
   const sectionIndex = useMemo(() => INSPECTION_SECTIONS.findIndex(s => s.id === sectionId), [sectionId]);
@@ -504,6 +529,8 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
 
   useEffect(() => {
     hydrating.current = true;
+    const prefill = loadInspectionPrefill(jobId);
+    setPrefillKeys(prefill);
     void loadChecklistState(jobId, sectionId)
       .then(data => {
         if (data?.results) {
@@ -523,10 +550,15 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
             if (k.startsWith('form_')) fv[k.replace('form_', '')] = note;
             else if (k.startsWith('comment_')) cv[k.replace('comment_', '')] = note;
           }
-          if (Object.keys(fv).length) setFormValues(prev => ({ ...fv, ...prev }));
+          // Prefill fills empty form fields only
+          const mergedForm = { ...prefill, ...fv };
+          if (Object.keys(mergedForm).length) setFormValues(prev => ({ ...mergedForm, ...prev }));
           if (Object.keys(cv).length) setCommentValues(prev => ({ ...cv, ...prev }));
         } else {
           storedDefectsRef.current = {};
+          if (Object.keys(prefill).length) {
+            setFormValues(prev => ({ ...prefill, ...prev }));
+          }
         }
       })
       .finally(() => {
@@ -536,6 +568,25 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
         }, 0);
       });
   }, [jobId, sectionId]);
+
+  useEffect(() => {
+    const body = formValues.s03_body_type || prefillKeys.s03_body_type;
+    const service = formValues.s01_service_type || prefillKeys.s01_service_type;
+    void syncApi
+      .resolveChecklist({ body_type: body, service_type: service })
+      .then(r => setSectionRules(r.sections?.[sectionId] ?? null))
+      .catch(() => setSectionRules(null));
+
+    const sectionNum = Number(sectionId.replace(/\D/g, ''));
+    if (sectionNum >= 5 && sectionNum <= 27) {
+      void syncApi
+        .hints({ body_type: body, section: sectionId })
+        .then(r => setHints(r.data ?? []))
+        .catch(() => setHints([]));
+    } else {
+      setHints([]);
+    }
+  }, [jobId, sectionId, formValues.s03_body_type, formValues.s01_service_type, prefillKeys]);
 
   // Load damage photos count when on S25
   useEffect(() => {
@@ -704,6 +755,33 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
         </div>
       </div>
 
+      {sectionRules?.auto_na && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          This section is marked N/A for the current body type / service configuration.
+        </div>
+      )}
+      {sectionRules && !sectionRules.auto_na && (
+        <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-[11px] text-[#6B7280]">
+          Checklist adjusted for service / body type — {sectionRules.required ? 'required' : 'optional'} section.
+        </div>
+      )}
+      {hints.length > 0 && (
+        <div className="rounded-lg border border-[#ff8a65]/30 bg-orange-50 px-3 py-2">
+          <p className="text-[11px] font-semibold text-[#7c2d12] mb-1">Common issues for similar vehicles</p>
+          <div className="flex flex-wrap gap-1.5">
+            {hints.slice(0, 8).map(h => (
+              <span
+                key={`${h.item_key}`}
+                className="rounded-full bg-white border border-orange-100 px-2 py-0.5 text-[10px] text-[#9a3412]"
+                title={String(h.label ?? '')}
+              >
+                {String(h.item_key)} · {Math.round(Number(h.rate ?? 0) * 100)}%
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Progress bar (only for sections with items) */}
       {total > 0 && (
         <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
@@ -728,6 +806,7 @@ export function SectionChecklistScreen({ layout, jobId, sectionId }: Props) {
             formValues={formValues}
             setFormValues={setFormValues}
             showErrors={showErrors}
+            prefillKeys={prefillKeys}
           />
         )}
         {def?.layout === 'toggle-grid' && (

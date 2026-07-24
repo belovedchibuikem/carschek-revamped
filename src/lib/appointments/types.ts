@@ -37,6 +37,8 @@ export interface Appointment {
   notes?: string;
   linkedCarId?: string;
   linkedInspectionId?: string;
+  linkedOrderId?: string;
+  syncSource?: string;
   createdAt: string;
   updatedAt: string;
   createdBy: string;

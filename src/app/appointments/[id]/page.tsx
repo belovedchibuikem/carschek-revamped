@@ -18,33 +18,76 @@ import { appointmentsApi } from '@/lib/api/services';
 
 function ServiceNextBanner({ a }: { a: Appointment }) {
   const router = useRouter();
+  const [starting, setStarting] = useState(false);
+  const [suggestions, setSuggestions] = useState<Array<Record<string, unknown>>>([]);
+
+  useEffect(() => {
+    if (!isAppointmentConfirmed(a)) return;
+    void appointmentsApi
+      .suggestedInspectors(a.id)
+      .then(r => setSuggestions(r.data ?? []))
+      .catch(() => setSuggestions([]));
+  }, [a.id, a.status]);
+
   if (!isAppointmentConfirmed(a)) return null;
   const carId = a.linkedCarId || findCarIdByVinOrPlate(a.vinNumber, a.plateNumber);
-  if (a.serviceType === 'Inspection') {
+
+  const startFromBooking = async () => {
+    const inspectorId = String(suggestions[0]?.id || '');
+    if (!inspectorId) {
+      toast.message('No inspector suggestion available — assign an inspector first');
+      return;
+    }
+    setStarting(true);
+    try {
+      const res = await appointmentsApi.startInspection(a.id, {
+        inspector_id: inspectorId,
+        car_id: a.linkedCarId || undefined,
+      });
+      const { storeInspectionPrefill } = await import('@/lib/inspection/prefillStore');
+      storeInspectionPrefill(res.order_id, res.prefill);
+      storeInspectionPrefill(res.car_id, res.prefill);
+      toast.success('Inspection started with booking details prefilled');
+      router.push(`/inspector-app/inspect/${res.order_id}/overview`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not start inspection');
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  if (a.serviceType === 'Inspection' || String(a.serviceType).toLowerCase().includes('inspection')) {
     return (
-      <div className="rounded-xl border border-[#1A7A4A]/30 bg-green-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-[#14532d]">
-          This appointment is for an inspection. Ready to inspect this vehicle?
-        </p>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => router.push(`/cars/new?from=appointment&appointmentId=${encodeURIComponent(a.id)}`)}
-            className="text-xs font-semibold px-3 py-2 rounded-lg border border-[#1A7A4A] text-[#14532d] hover:bg-white"
-          >
-            Create car record first
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (carId) router.push(`/inspector-app/inspect/${carId}/overview`);
-              else toast.message('Link or create a car record first');
-            }}
-            className="text-xs font-semibold px-3 py-2 rounded-lg bg-[#1A7A4A] text-white hover:bg-[#158f43]"
-          >
-            Start inspection
-          </button>
+      <div className="rounded-xl border border-[#1A7A4A]/30 bg-green-50 px-4 py-3 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-[#14532d]">
+            Ready to inspect this vehicle? Customer and car details will be prefilled from the booking.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => router.push(`/cars/new?from=appointment&appointmentId=${encodeURIComponent(a.id)}`)}
+              className="text-xs font-semibold px-3 py-2 rounded-lg border border-[#1A7A4A] text-[#14532d] hover:bg-white"
+            >
+              Create car record first
+            </button>
+            <button
+              type="button"
+              disabled={starting}
+              onClick={() => void startFromBooking()}
+              className="text-xs font-semibold px-3 py-2 rounded-lg bg-[#1A7A4A] text-white hover:bg-[#158f43] disabled:opacity-60"
+            >
+              {starting ? 'Starting…' : 'Start inspection'}
+            </button>
+          </div>
         </div>
+        {suggestions.length > 0 && (
+          <div className="text-[11px] text-[#14532d]">
+            Suggested inspector: <strong>{String(suggestions[0].name)}</strong>
+            {Array.isArray(suggestions[0].reasons) ? ` (${(suggestions[0].reasons as string[]).join(', ')})` : ''}
+            {carId ? ` · linked car ${carId}` : ''}
+          </div>
+        )}
       </div>
     );
   }
