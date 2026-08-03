@@ -357,8 +357,11 @@ export const reportsApi = {
   list: () => (USE_API_MOCK ? mockData([...REPORTS]) : apiRequest<typeof REPORTS>({ method: 'GET', url: '/reports' })),
   get: (id: string) =>
     USE_API_MOCK
-      ? mockData(REPORTS.find(r => r.id === id) ?? REPORTS[0])
-      : apiRequest<(typeof REPORTS)[0]>({ method: 'GET', url: `/reports/${id}` }),
+      ? mockData({ ...(REPORTS.find(r => r.id === id) ?? REPORTS[0]), payload: null })
+      : apiRequest<(typeof REPORTS)[0] & { payload?: Record<string, unknown> | null; inspectionId?: string | null }>({
+          method: 'GET',
+          url: `/reports/${id}`,
+        }),
   versions: (id: string) =>
     USE_API_MOCK
       ? mockData(

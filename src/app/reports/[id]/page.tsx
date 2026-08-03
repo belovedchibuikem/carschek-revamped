@@ -16,6 +16,7 @@ import {
 import ReportVersionCompareOverlay from '@/components/reports/ReportVersionCompareOverlay';
 import { ReportDocumentBody } from '@/components/inspection/ReportDocumentBody';
 import { buildReportData } from '@/lib/inspection/buildReportData';
+import { buildFallbackReportData } from '@/lib/inspection/buildFallbackReportData';
 import type { InspectionReportData, ReportVariant } from '@/lib/inspection/reportTypes';
 import { loadDexieVehiclePhotoObjectUrls } from '@/lib/inspection/dexieVehiclePhotos';
 import type { VehicleAngleId } from '@/lib/inspection/vehiclePhotoAngles';
@@ -39,13 +40,15 @@ export default function ReportViewPage() {
   const [viewMode, setViewMode] = useState<ReportVariant>('modern');
   const [shareAccess, setShareAccess] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
 
-  const orderId = report?.orderId ?? '';
+  const orderId = (report?.orderId || '').trim();
+  const buildKey = orderId || report?.id || '';
   const versionMeta = report ? getReportVersionMeta(report.id, report) : [];
   void versionsReady;
 
   // Same data pipeline as the inspector report screen (Dexie checklist + photos)
-  const storePhotoUrls = useVehiclePhotoStore(s => s.urlsByOrder[orderId] ?? EMPTY_VEHICLE_PHOTO_MAP);
+  const storePhotoUrls = useVehiclePhotoStore(s => s.urlsByOrder[buildKey] ?? EMPTY_VEHICLE_PHOTO_MAP);
   const [dexiePhotoMap, setDexiePhotoMap] = useState<Partial<Record<VehicleAngleId, string>>>({});
   const [reportData, setReportData] = useState<InspectionReportData | null>(null);
 
@@ -72,10 +75,10 @@ export default function ReportViewPage() {
   }, [reportId]);
 
   useEffect(() => {
-    if (!orderId) return;
+    if (!buildKey) return;
     let cancelled = false;
     let revokeDexie: (() => void) | undefined;
-    void loadDexieVehiclePhotoObjectUrls(orderId).then(({ map, revoke }) => {
+    void loadDexieVehiclePhotoObjectUrls(buildKey).then(({ map, revoke }) => {
       if (cancelled) {
         revoke();
         return;
@@ -87,18 +90,80 @@ export default function ReportViewPage() {
       cancelled = true;
       revokeDexie?.();
     };
-  }, [orderId]);
+  }, [buildKey]);
 
   const mergedPhotoUrls = useMemo(() => ({ ...dexiePhotoMap, ...storePhotoUrls }), [dexiePhotoMap, storePhotoUrls]);
 
   useEffect(() => {
-    if (!report || !orderId) return;
-    void buildReportData(orderId, {
+    if (!report) return;
+    let cancelled = false;
+    setGenerateError(null);
+    setReportData(null);
+
+    const payload =
+      report && typeof report === 'object' && 'payload' in report
+        ? ((report as { payload?: Record<string, unknown> | null }).payload ?? null)
+        : null;
+    const hasPayloadItems = Array.isArray(payload?.items) && (payload.items as unknown[]).length > 0;
+
+    const applyFallback = (reason?: string) => {
+      if (cancelled) return;
+      setReportData(
+        buildFallbackReportData({
+          id: report.id,
+          orderId: report.orderId,
+          carName: report.carName,
+          inspectorName: report.inspectorName,
+          score: report.score,
+          version: report.version,
+          submittedAt: report.submittedAt,
+          defects: report.defects,
+          criticalDefects: report.criticalDefects,
+          payload,
+        })
+      );
+      if (reason) setGenerateError(reason);
+    };
+
+    // Migrated/orphan reports: prefer payload checklist over empty local Dexie.
+    if (!orderId && hasPayloadItems) {
+      applyFallback();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (!buildKey) {
+      applyFallback('Report has no linked order; showing available details.');
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void buildReportData(buildKey, {
       photoUrls: mergedPhotoUrls,
       fallbackScore: report.score,
       inspectorName: report.inspectorName,
-    }).then(setReportData);
-  }, [orderId, mergedPhotoUrls, report]);
+    })
+      .then(data => {
+        if (cancelled) return;
+        // If checklist was empty but API payload has items, prefer the richer payload view.
+        const answered = data.items.some(i => i.result != null) || data.sectionBreakdowns.some(s => s.lines.length > 0);
+        if (!answered && hasPayloadItems) {
+          applyFallback();
+          return;
+        }
+        setReportData(data);
+      })
+      .catch(err => {
+        console.error(err);
+        applyFallback(err instanceof Error ? err.message : 'Could not build live checklist; showing summary.');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [buildKey, orderId, mergedPhotoUrls, report]);
 
   if (loading) {
     return (
@@ -222,7 +287,13 @@ export default function ReportViewPage() {
             <div>
               <h1 className="text-xl font-heading font-bold text-[#1F2937]">{report.id}</h1>
               <p className="text-sm text-[#6B7280]">
-                {report.carName} · Order <span className="font-mono text-xs">{orderId}</span>
+                {report.carName || 'Vehicle report'}
+                {orderId ? (
+                  <>
+                    {' '}
+                    · Order <span className="font-mono text-xs">{orderId}</span>
+                  </>
+                ) : null}
               </p>
             </div>
           </div>
@@ -247,6 +318,11 @@ export default function ReportViewPage() {
         </div>
 
         {/* Full report document — same shared renderer as the inspector app */}
+        {generateError ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            {generateError}
+          </div>
+        ) : null}
         {reportData ? (
           <div
             id="report-content"
