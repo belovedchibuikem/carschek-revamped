@@ -1008,10 +1008,14 @@ export const settingsApi = {
     USE_API_MOCK
       ? mockData({ ...data }, 300)
       : apiRequest<Record<string, unknown>>({ method: 'PUT', url: '/settings/mail', data }),
-  testMail: (to: string) =>
+  testMail: (to: string, smtp?: Record<string, unknown>) =>
     USE_API_MOCK
       ? mockData({ ok: true, message: `Test email sent to ${to}` }, 400)
-      : apiRequest<{ ok: boolean; message: string }>({ method: 'POST', url: '/settings/mail/test', data: { to } }),
+      : apiRequest<{ ok: boolean; message: string }>({
+          method: 'POST',
+          url: '/settings/mail/test',
+          data: { to, ...(smtp ?? {}) },
+        }),
   getSms: () =>
     USE_API_MOCK
       ? mockData<Record<string, unknown>>({

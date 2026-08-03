@@ -302,9 +302,10 @@ function SettingsPageContent() {
               <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4 max-w-2xl">
                 <h2 className="text-base font-heading font-semibold text-[#1F2937]">SMTP</h2>
                 <p className="text-xs text-[#6B7280] leading-relaxed">
-                  Login OTP and password-reset emails require a real SMTP provider. If this is disabled and the API
-                  <code className="mx-1 rounded bg-[#F4F6F8] px-1">MAIL_MAILER</code> is <code className="rounded bg-[#F4F6F8] px-1">log</code>,
-                  codes are written to the server log and never reach an inbox. Enable SMTP below, save, then use Test connection.
+                  Login OTP emails need a real SMTP provider. These settings are saved in the database and override the API
+                  <code className="mx-1 rounded bg-[#F4F6F8] px-1">.env</code> at runtime — the
+                  <code className="mx-1 rounded bg-[#F4F6F8] px-1">.env</code> file itself is not rewritten.
+                  Enable SMTP, enter your password once, click Save SMTP, then Test connection.
                 </p>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={mail.enabled} onChange={e => setMail(p => ({ ...p, enabled: e.target.checked }))} />
@@ -380,9 +381,38 @@ function SettingsPageContent() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (!mailTestTo.trim()) {
+                        toast.error('Enter a test recipient email');
+                        return;
+                      }
+                      if (!mail.enabled) {
+                        toast.error('Enable SMTP and save before testing');
+                        return;
+                      }
+                      if (!mail.host.trim()) {
+                        toast.error('SMTP host is required');
+                        return;
+                      }
+                      if (!mail.password && !mail.password_set) {
+                        toast.error('Enter the SMTP password, then Save / Test');
+                        return;
+                      }
                       void settingsApi
-                        .testMail(mailTestTo)
-                        .then(r => toast.success(r.message))
+                        .testMail(mailTestTo, {
+                          save: true,
+                          enabled: mail.enabled,
+                          host: mail.host,
+                          port: mail.port,
+                          encryption: mail.encryption,
+                          username: mail.username,
+                          password: mail.password || undefined,
+                          from_address: mail.from_address,
+                          from_name: mail.from_name,
+                        })
+                        .then(r => {
+                          toast.success(r.message);
+                          if (mail.password) setMail(p => ({ ...p, password: '', password_set: true }));
+                        })
                         .catch(e => toast.error(e instanceof Error ? e.message : 'SMTP test failed'));
                     }}
                     className="px-4 py-2.5 border border-[#ff5722] text-[#ff5722] text-sm font-semibold rounded-lg"
