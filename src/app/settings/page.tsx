@@ -302,10 +302,11 @@ function SettingsPageContent() {
               <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4 max-w-2xl">
                 <h2 className="text-base font-heading font-semibold text-[#1F2937]">SMTP</h2>
                 <p className="text-xs text-[#6B7280] leading-relaxed">
-                  Login OTP emails need a real SMTP provider. These settings are saved in the database and override the API
-                  <code className="mx-1 rounded bg-[#F4F6F8] px-1">.env</code> at runtime — the
-                  <code className="mx-1 rounded bg-[#F4F6F8] px-1">.env</code> file itself is not rewritten.
-                  Enable SMTP, enter your password once, click Save SMTP, then Test connection.
+                  Login OTP emails need a real SMTP provider. Settings are saved in the database (they do not rewrite
+                  <code className="mx-1 rounded bg-[#F4F6F8] px-1">.env</code>).
+                  For Brevo use host <code className="rounded bg-[#F4F6F8] px-1">smtp-relay.brevo.com</code>, port
+                  <code className="mx-1 rounded bg-[#F4F6F8] px-1">587</code>, encryption TLS, username = Brevo login,
+                  password = SMTP key. Enable, Save, then Test connection.
                 </p>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={mail.enabled} onChange={e => setMail(p => ({ ...p, enabled: e.target.checked }))} />
