@@ -37,89 +37,105 @@ type Hit = {
   icon: typeof Car;
 };
 
+function str(v: unknown): string {
+  return v == null ? '' : String(v);
+}
+
 function collectHits(q: string, idx: SearchIndex): Hit[] {
-  const d = q.toLowerCase();
-  const cars = idx.cars.filter(
-    c =>
-      c.id.toLowerCase().includes(d) ||
-      c.vin.toLowerCase().includes(d) ||
-      c.plate.toLowerCase().includes(d) ||
-      `${c.brand} ${c.model}`.toLowerCase().includes(d)
-  )
+  const d = q.trim().toLowerCase();
+  if (!d) return [];
+
+  const cars = idx.cars
+    .filter(c => {
+      const id = str(c.id).toLowerCase();
+      const vin = str(c.vin).toLowerCase();
+      const plate = str(c.plate).toLowerCase();
+      const label = `${str(c.brand)} ${str(c.model)}`.toLowerCase();
+      return id.includes(d) || vin.includes(d) || plate.includes(d) || label.includes(d);
+    })
     .slice(0, 3)
     .map(
       c =>
         ({
           cat: 'CARS',
-          label: `${c.id} — ${c.brand} ${c.model} ${c.year}`,
-          sub: `${c.plate} · ${c.vin.slice(0, 12)}…`,
+          label: `${str(c.id)} — ${str(c.brand)} ${str(c.model)} ${str(c.year)}`,
+          sub: `${str(c.plate) || '—'} · ${str(c.vin).slice(0, 12) || '—'}${str(c.vin).length > 12 ? '…' : ''}`,
           href: `/cars/${c.id}`,
           icon: Car,
         }) satisfies Hit
     );
 
-  const customers = idx.customers.filter(
-    cu => cu.name.toLowerCase().includes(d) || cu.email.toLowerCase().includes(d) || cu.phone.includes(d)
-  )
+  const customers = idx.customers
+    .filter(cu => {
+      const name = str(cu.name).toLowerCase();
+      const email = str(cu.email).toLowerCase();
+      const phone = str(cu.phone);
+      return name.includes(d) || email.includes(d) || phone.includes(d);
+    })
     .slice(0, 3)
     .map(
       cu =>
         ({
           cat: 'CUSTOMERS',
-          label: cu.name,
-          sub: cu.email,
+          label: str(cu.name) || 'Customer',
+          sub: str(cu.email),
           href: `/customers/${cu.id}`,
           icon: UserCircle,
         }) satisfies Hit
     );
 
-  const orders = idx.orders.filter(
-    o =>
-      o.id.toLowerCase().includes(d) ||
-      o.vehicle.toLowerCase().includes(d) ||
-      o.customerName.toLowerCase().includes(d) ||
-      o.plate?.toLowerCase().includes(d)
-  )
+  const orders = idx.orders
+    .filter(o => {
+      const id = str(o.id).toLowerCase();
+      const vehicle = str(o.vehicle).toLowerCase();
+      const customer = str(o.customerName).toLowerCase();
+      const plate = str(o.plate).toLowerCase();
+      return id.includes(d) || vehicle.includes(d) || customer.includes(d) || plate.includes(d);
+    })
     .slice(0, 3)
     .map(
       o =>
         ({
           cat: 'ORDERS',
-          label: `${o.id} — ${o.vehicle}`,
-          sub: o.status,
+          label: `${str(o.id)} — ${str(o.vehicle)}`,
+          sub: str(o.status),
           href: `/orders/${o.id}`,
           icon: ClipboardList,
         }) satisfies Hit
     );
 
-  const inspectors = idx.inspectors.filter(
-    i => i.name.toLowerCase().includes(d) || i.zone.some(z => z.toLowerCase().includes(d))
-  )
+  const inspectors = idx.inspectors
+    .filter(i => {
+      const name = str(i.name).toLowerCase();
+      const zones = Array.isArray(i.zone) ? i.zone : [];
+      return name.includes(d) || zones.some(z => str(z).toLowerCase().includes(d));
+    })
     .slice(0, 3)
-    .map(
-      i =>
-        ({
-          cat: 'INSPECTORS',
-          label: i.name,
-          sub: i.zone.join(', '),
-          href: `/inspectors/${i.id}`,
-          icon: Users,
-        }) satisfies Hit
-    );
+    .map(i => {
+      const zones = Array.isArray(i.zone) ? i.zone.map(str).filter(Boolean) : [];
+      return {
+        cat: 'INSPECTORS' as const,
+        label: str(i.name) || 'Inspector',
+        sub: zones.join(', ') || '—',
+        href: `/inspectors/${i.id}`,
+        icon: Users,
+      } satisfies Hit;
+    });
 
-  const reports = idx.reports.filter(
-    r =>
-      r.id.toLowerCase().includes(d) ||
-      r.carName.toLowerCase().includes(d) ||
-      r.inspectorName.toLowerCase().includes(d)
-  )
+  const reports = idx.reports
+    .filter(r => {
+      const id = str(r.id).toLowerCase();
+      const carName = str(r.carName).toLowerCase();
+      const inspectorName = str(r.inspectorName).toLowerCase();
+      return id.includes(d) || carName.includes(d) || inspectorName.includes(d);
+    })
     .slice(0, 3)
     .map(
       r =>
         ({
           cat: 'REPORTS',
-          label: `${r.id} — ${r.carName}`,
-          sub: `${r.status} · Score ${r.score}`,
+          label: `${str(r.id)} — ${str(r.carName)}`,
+          sub: `${str(r.status)} · Score ${r.score ?? '—'}`,
           href: `/reports/${r.id}`,
           icon: FileText,
         }) satisfies Hit
@@ -154,15 +170,26 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
   const [idx, setIdx] = useState<SearchIndex>({ cars: [], customers: [], orders: [], inspectors: [], reports: [] });
 
   useEffect(() => {
+    let cancelled = false;
     void Promise.all([
-      carsApi.list(),
-      customersApi.list(),
-      ordersApi.list(),
-      inspectorsApi.list(),
-      reportsApi.list(),
+      carsApi.list().catch(() => []),
+      customersApi.list().catch(() => []),
+      ordersApi.list().catch(() => []),
+      inspectorsApi.list().catch(() => []),
+      reportsApi.list().catch(() => []),
     ]).then(([cars, customers, orders, inspectors, reports]) => {
-      setIdx({ cars, customers, orders, inspectors, reports });
+      if (cancelled) return;
+      setIdx({
+        cars: Array.isArray(cars) ? cars : [],
+        customers: Array.isArray(customers) ? customers : [],
+        orders: Array.isArray(orders) ? orders : [],
+        inspectors: Array.isArray(inspectors) ? inspectors : [],
+        reports: Array.isArray(reports) ? reports : [],
+      });
     });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {

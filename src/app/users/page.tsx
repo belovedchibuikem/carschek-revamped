@@ -441,7 +441,7 @@ export default function UsersPage() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ff5722] text-xs font-bold text-white">
-                              {user.avatar || user.name.slice(0, 2).toUpperCase()}
+                              {user.avatar || (user.name || user.email || 'U').slice(0, 2).toUpperCase()}
                             </div>
                             <div>
                               <Link href={`/users/${user.id}`} className="font-medium text-[#1F2937] hover:text-[#ff5722]">
