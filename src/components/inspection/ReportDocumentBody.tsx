@@ -219,9 +219,12 @@ function ModernSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; defe
   const statusBg = sec.pct >= 80 ? 'bg-green-50 border-green-200' : sec.pct >= 60 ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200';
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-sm" style={{ pageBreakInside: 'avoid' }}>
+    <div
+      className="section-card overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-sm"
+      style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+    >
       {/* Section Header */}
-      <div className="flex items-center justify-between gap-3 border-b border-[#F4F6F8] bg-[#F9FAFB] px-4 py-3">
+      <div className="pdf-avoid-break flex items-center justify-between gap-3 border-b border-[#F4F6F8] bg-[#F9FAFB] px-4 py-3" data-pdf-atomic>
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#ff5722] text-[10px] font-bold text-white">
             {sec.sectionId}
@@ -272,7 +275,11 @@ function ModernSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; defe
             // Form/comment lines carry a recorded value instead of an OK/NOT OK tick
             if (line.value !== undefined) {
               return (
-                <div key={`${line.label}-${idx}`} className="flex items-baseline justify-between gap-3 py-2">
+                <div
+                  key={`${line.label}-${idx}`}
+                  className="pdf-avoid-break flex items-baseline justify-between gap-3 py-2"
+                  data-pdf-atomic
+                >
                   <span className="text-xs text-[#6B7280]">{line.label}</span>
                   <span className="min-w-0 text-right text-xs font-semibold text-[#1F2937]">{line.value}</span>
                 </div>
@@ -281,7 +288,11 @@ function ModernSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; defe
             const isFail = line.result === 'fail';
             const defect = isFail ? findDefectForLine(defects, sec.sectionId, line) : undefined;
             return (
-              <div key={`${line.label}-${idx}`} className={`py-2.5 ${isFail ? 'bg-red-50/30' : ''}`}>
+              <div
+                key={`${line.label}-${idx}`}
+                className={`pdf-avoid-break py-2.5 ${isFail ? 'bg-red-50/30' : ''}`}
+                data-pdf-atomic
+              >
                 <div className="flex items-start gap-2">
                   {resultIcon(line.result, false)}
                   <div className="min-w-0 flex-1">
@@ -300,7 +311,7 @@ function ModernSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; defe
                     {defect && defect.damagePhotoUrls.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {defect.damagePhotoUrls.map((u, pi) => (
-                          <div key={pi} className="h-12 w-16 overflow-hidden rounded-lg border border-[#E5E7EB]">
+                          <div key={pi} className="photo-tile h-12 w-16 overflow-hidden rounded-lg border border-[#E5E7EB]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={u} alt="" className="h-full w-full object-cover" crossOrigin="anonymous" />
                           </div>
@@ -328,9 +339,12 @@ function ClassicSectionCard({ sec, defects }: { sec: ReportSectionBreakdown; def
   const failLines = sec.lines.filter(l => l.result === 'fail');
 
   return (
-    <div className="border border-[#D1D5DB] bg-white" style={{ pageBreakInside: 'avoid' }}>
+    <div
+      className="section-card border border-[#D1D5DB] bg-white"
+      style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#D1D5DB] bg-[#F4F6F8] px-3 py-2">
+      <div className="pdf-avoid-break flex items-center justify-between border-b border-[#D1D5DB] bg-[#F4F6F8] px-3 py-2" data-pdf-atomic>
         <div className="flex items-center gap-2">
           <span className="font-mono text-[10px] font-black text-[#ff5722]">{sec.sectionId}</span>
           <span className="text-[11px] font-black uppercase tracking-wide text-[#1F2937]">{sec.name}</span>
@@ -395,7 +409,7 @@ function AllSectionsBreakdown({ data, variant }: { data: InspectionReportData; v
 
   // Group sections by category for better readability
   const sectionGroups = [
-    { label: 'Customer Information', ids: ['S01', 'S02'] },
+    { label: 'Customer Information', ids: ['S01', 'S02', 'S03'] },
     { label: 'Exterior & Body', ids: ['S05', 'S06', 'S07', 'S08'] },
     { label: 'Mechanical Systems', ids: ['S09', 'S10', 'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17'] },
     { label: 'Interior & Comfort', ids: ['S18', 'S19', 'S20', 'S21', 'S22'] },
@@ -501,8 +515,9 @@ function InspectorCommentsSection({
         {comments.map(c => (
           <div
             key={c.label}
-            className={`${classic ? 'border border-[#D1D5DB] px-3 py-2' : 'rounded-xl border border-[#E5E7EB] bg-white px-4 py-3'}`}
-            style={{ pageBreakInside: 'avoid' }}
+            className={`pdf-avoid-break ${classic ? 'border border-[#D1D5DB] px-3 py-2' : 'rounded-xl border border-[#E5E7EB] bg-white px-4 py-3'}`}
+            data-pdf-atomic
+            style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
           >
             <p className={`font-bold text-[#1F2937] ${classic ? 'text-[10px] uppercase' : 'text-sm'}`}>{c.label}</p>
             <p className={`mt-1 text-[#374151] ${classic ? 'text-[10px]' : 'text-sm'} ${!c.value ? 'text-[#9CA3AF]' : ''}`}>

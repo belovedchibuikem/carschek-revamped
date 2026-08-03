@@ -35,6 +35,29 @@ type PayloadItem = {
   value?: string | null;
 };
 
+/** Legacy migration stored documentations under S01; current schema uses S02. */
+const LEGACY_DOC_SUFFIXES = new Set([
+  'vehicle_license',
+  'ecmr',
+  'proof_of_ownership',
+  'proof_ownership',
+  'road_worthiness',
+  'insurance_clearance',
+  'custom_clearance',
+  'purchase_receipt',
+  'tinted_permit',
+  'plate_number',
+  'number_plate',
+  'means_of_id',
+  'plate_allocation',
+]);
+
+const DOC_SUFFIX_MAP: Record<string, string> = {
+  proof_of_ownership: 'proof_ownership',
+  number_plate: 'plate_number',
+  plate_allocation: 'tinted_permit',
+};
+
 function parseCarName(carName: string | null | undefined): {
   make: string;
   model: string;
@@ -43,7 +66,16 @@ function parseCarName(carName: string | null | undefined): {
   const raw = (carName || '').trim();
   if (!raw) return { make: '—', model: '—', year: new Date().getFullYear() };
   const tokens = raw.split(/\s+/);
+  const first = tokens[0] ?? '';
   const last = tokens[tokens.length - 1] ?? '';
+  // "2026 Toyota RAV4" or "Toyota RAV4 2010"
+  if (/^\d{4}$/.test(first) && tokens.length >= 2) {
+    return {
+      year: Number(first),
+      make: tokens[1] ?? '—',
+      model: tokens.slice(2).join(' ') || '—',
+    };
+  }
   const year = /^\d{4}$/.test(last) ? Number(last) : new Date().getFullYear();
   const nameTokens = /^\d{4}$/.test(last) ? tokens.slice(0, -1) : tokens;
   return {
@@ -56,9 +88,9 @@ function parseCarName(carName: string | null | undefined): {
 function mapResult(raw: string | null | undefined): 'pass' | 'fail' | 'na' | null {
   if (raw == null || raw === '') return null;
   const v = String(raw).trim().toLowerCase();
-  if (['yes', 'pass', 'ok', 'good', 'true', '1'].includes(v)) return 'pass';
-  if (['no', 'fail', 'bad', 'false', '0'].includes(v)) return 'fail';
-  if (['na', 'n/a', 'n.a', 'not applicable'].includes(v)) return 'na';
+  if (['yes', 'pass', 'ok', 'good', 'true', '1', 'original', 'present', 'available'].includes(v)) return 'pass';
+  if (['no', 'fail', 'bad', 'false', '0', 'not ok', 'not_ok', 'missing', 'absent'].includes(v)) return 'fail';
+  if (['na', 'n/a', 'n.a', 'not applicable', 'nil', 'none'].includes(v)) return 'na';
   // Form values are free text — treat as answered pass for display
   return null;
 }
@@ -94,9 +126,73 @@ function allToggleItems(sectionId: string): ToggleItem[] {
   return out;
 }
 
+/** Remap legacy documentation items that landed under S01 into S02. */
+function normalizePayloadItems(rawItems: PayloadItem[]): PayloadItem[] {
+  return rawItems.map(item => {
+    const sectionId = String(item.section_key ?? item.sectionKey ?? '').toUpperCase();
+    const key = String(item.item_key ?? item.itemKey ?? '').toLowerCase();
+    const suffix = key.replace(/^s\d+_/, '');
+    if (sectionId === 'S01' && LEGACY_DOC_SUFFIXES.has(suffix)) {
+      const mapped = DOC_SUFFIX_MAP[suffix] ?? suffix;
+      return {
+        ...item,
+        section_key: 'S02',
+        item_key: `s02_${mapped}`,
+      };
+    }
+    return {
+      ...item,
+      section_key: sectionId || String(item.section_key ?? item.sectionKey ?? ''),
+      item_key: key || String(item.item_key ?? item.itemKey ?? ''),
+    };
+  });
+}
+
+function readPayloadVehicle(payload: Record<string, unknown>): Partial<{
+  make: string;
+  model: string;
+  year: number;
+  plate: string;
+  vin: string;
+  colour: string;
+  mileage: string;
+  transmission: string;
+  city: string;
+  engineCapacity: string;
+}> {
+  const v = payload.vehicle;
+  if (!v || typeof v !== 'object') return {};
+  const o = v as Record<string, unknown>;
+  const yearRaw = o.year;
+  const year =
+    typeof yearRaw === 'number'
+      ? yearRaw
+      : typeof yearRaw === 'string' && /^\d{4}$/.test(yearRaw)
+        ? Number(yearRaw)
+        : undefined;
+  return {
+    make: typeof o.make === 'string' ? o.make : undefined,
+    model: typeof o.model === 'string' ? o.model : undefined,
+    year,
+    plate: typeof o.plate === 'string' ? o.plate : undefined,
+    vin: typeof o.vin === 'string' ? o.vin : undefined,
+    colour: typeof o.colour === 'string' ? o.colour : undefined,
+    mileage:
+      o.mileage != null
+        ? `${o.mileage}${typeof o.mileageUnit === 'string' ? ` ${o.mileageUnit}` : ''}`
+        : undefined,
+    transmission: typeof o.transmission === 'string' ? o.transmission : undefined,
+    city: typeof o.city === 'string' ? o.city : undefined,
+    engineCapacity: typeof o.engineCapacity === 'string' ? o.engineCapacity : undefined,
+  };
+}
+
 export function buildFallbackReportData(report: ReportMetaForFallback): InspectionReportData {
   const payload = report.payload && typeof report.payload === 'object' ? report.payload : {};
-  const rawItems = Array.isArray(payload.items) ? (payload.items as PayloadItem[]) : [];
+  const rawItems = normalizePayloadItems(
+    Array.isArray(payload.items) ? (payload.items as PayloadItem[]) : []
+  );
+  const payloadVehicle = readPayloadVehicle(payload);
 
   const bySection = new Map<string, PayloadItem[]>();
   for (const item of rawItems) {
@@ -112,15 +208,16 @@ export function buildFallbackReportData(report: ReportMetaForFallback): Inspecti
   const sectionBreakdowns: ReportSectionBreakdown[] = [];
   const carDetailFields: { label: string; value: string }[] = [];
   const inspectorComments: { label: string; value: string }[] = [];
-  let vehicleMake = '';
-  let vehicleModel = '';
-  let vehicleYear = 0;
-  let vehiclePlate = '';
-  let vehicleVin = '';
-  let vehicleColour = '';
-  let vehicleMileage = '';
-  let vehicleTransmission = '';
-  let vehicleCity = '';
+  let vehicleMake = payloadVehicle.make || '';
+  let vehicleModel = payloadVehicle.model || '';
+  let vehicleYear = payloadVehicle.year || 0;
+  let vehiclePlate = payloadVehicle.plate || '';
+  let vehicleVin = payloadVehicle.vin || '';
+  let vehicleColour = payloadVehicle.colour || '';
+  let vehicleMileage = payloadVehicle.mileage || '';
+  let vehicleTransmission = payloadVehicle.transmission || '';
+  let vehicleCity = payloadVehicle.city || '';
+  let vehicleEngine = payloadVehicle.engineCapacity || '';
 
   for (const sec of INSPECTION_SECTIONS) {
     const def = getSectionDef(sec.id);
@@ -131,14 +228,16 @@ export function buildFallbackReportData(report: ReportMetaForFallback): Inspecti
 
     if (def?.layout === 'toggle-grid') {
       const toggles = allToggleItems(sec.id);
-      const byKey = new Map(items.map(i => [String(i.item_key ?? i.itemKey ?? ''), i]));
-      for (const t of toggles.length ? toggles : items.map(i => ({
-        id: String(i.item_key ?? i.itemKey ?? ''),
-        label: labelForItem(sec.id, String(i.item_key ?? i.itemKey ?? '')),
-        toggleType: 'yes-no-na' as const,
-        required: false,
-      }))) {
-        const row = byKey.get(t.id);
+      const byKey = new Map(items.map(i => [String(i.item_key ?? i.itemKey ?? '').toLowerCase(), i]));
+      for (const t of toggles.length
+        ? toggles
+        : items.map(i => ({
+            id: String(i.item_key ?? i.itemKey ?? ''),
+            label: labelForItem(sec.id, String(i.item_key ?? i.itemKey ?? '')),
+            toggleType: 'yes-no-na' as const,
+            required: false,
+          }))) {
+        const row = byKey.get(t.id.toLowerCase());
         const mapped = mapResult(row?.result ?? null);
         if (!mapped) continue;
         answered++;
@@ -164,9 +263,11 @@ export function buildFallbackReportData(report: ReportMetaForFallback): Inspecti
       }
     } else if (def?.layout === 'form' || def?.layout === 'comments') {
       for (const row of items) {
-        const key = String(row.item_key ?? row.itemKey ?? '');
+        const key = String(row.item_key ?? row.itemKey ?? '').toLowerCase();
         const value = String(row.value ?? row.result ?? '').trim();
-        if (!value || mapResult(value) === 'na') continue;
+        if (!value || value.toUpperCase() === 'NULL') continue;
+        // Skip toggle-like answers that accidentally land in form sections
+        if (mapResult(value) === 'na' && !value.match(/[a-zA-Z]{3,}/)) continue;
         const label = labelForItem(sec.id, key);
         answered++;
         passN++;
@@ -180,8 +281,12 @@ export function buildFallbackReportData(report: ReportMetaForFallback): Inspecti
           if (key === 's03_chasis_number') vehicleVin = value;
           if (key === 's03_exterior_colour') vehicleColour = value;
           if (key === 's03_mileage') vehicleMileage = value;
+          if (key === 's03_mileage_unit' && vehicleMileage && !vehicleMileage.includes(value)) {
+            vehicleMileage = `${vehicleMileage} ${value}`;
+          }
           if (key === 's03_transmission') vehicleTransmission = value;
           if (key === 's03_city_location') vehicleCity = value;
+          if (key === 's03_engine_capacity') vehicleEngine = value;
         }
         if (sec.id === 'S26') {
           inspectorComments.push({ label, value });
@@ -206,7 +311,11 @@ export function buildFallbackReportData(report: ReportMetaForFallback): Inspecti
     const anyFailure = lines.some(l => l.result === 'fail');
     let status = 'not-started';
     if (answered > 0) {
-      status = anyFailure ? 'complete-fail' : answered >= (def?.layout === 'toggle-grid' ? allToggleItems(sec.id).length || answered : answered) ? 'complete-pass' : 'in-progress';
+      status = anyFailure
+        ? 'complete-fail'
+        : answered >= (def?.layout === 'toggle-grid' ? allToggleItems(sec.id).length || answered : answered)
+          ? 'complete-pass'
+          : 'in-progress';
     }
 
     sections.push({
@@ -260,11 +369,17 @@ export function buildFallbackReportData(report: ReportMetaForFallback): Inspecti
     typeof payload.band === 'string' ? payload.band : getGaugeConditionLabel(scoreNum || 50);
   const criticalDefects = defects.filter(d => d.severity === 'Critical');
 
+  const make = vehicleMake || (fromName.make !== '—' ? fromName.make : '') || '—';
+  const model = vehicleModel || (fromName.model !== '—' ? fromName.model : '') || '—';
+  const year = vehicleYear || fromName.year;
+
   if (!carDetailFields.length) {
     carDetailFields.push(
-      { label: 'Make', value: vehicleMake || fromName.make },
-      { label: 'Model', value: vehicleModel || fromName.model },
-      { label: 'Year', value: String(vehicleYear || fromName.year) },
+      { label: 'Make', value: make },
+      { label: 'Model', value: model },
+      { label: 'Year', value: String(year) },
+      { label: 'Plate', value: vehiclePlate || '—' },
+      { label: 'VIN', value: vehicleVin || '—' },
       { label: 'Report', value: report.id }
     );
   }
@@ -293,16 +408,16 @@ export function buildFallbackReportData(report: ReportMetaForFallback): Inspecti
       qrVerifyUrl: `https://carschek.com/verify/${encodeURIComponent(reportNumber)}`,
     },
     vehicle: {
-      make: vehicleMake || fromName.make,
-      model: vehicleModel || fromName.model,
+      make,
+      model,
       trim: '',
-      year: vehicleYear || fromName.year,
+      year,
       plate: vehiclePlate || '—',
       vin: vehicleVin || '—',
       mileage: vehicleMileage || '—',
       colour: vehicleColour || '—',
       transmission: vehicleTransmission || '—',
-      engineNumber: '—',
+      engineNumber: vehicleEngine || '—',
       city: vehicleCity || '—',
     },
     carDetailFields,

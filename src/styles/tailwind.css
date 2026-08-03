@@ -218,7 +218,9 @@
     box-shadow: none !important;
   }
   html.ck-report-print #report-content .photo-tile,
-  html.ck-report-print #report-content img {
+  html.ck-report-print #report-content img,
+  html.ck-report-print #report-content .pdf-avoid-break,
+  html.ck-report-print #report-content [data-pdf-atomic] {
     page-break-inside: avoid;
     break-inside: avoid;
   }
