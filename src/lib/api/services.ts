@@ -1168,7 +1168,14 @@ export const settingsApi = {
       : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/ops/inspection-signals' }),
 };
 
-export type StaffUserRow = (typeof USERS)[0] & {
+export type StaffUserRow = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  lastLogin?: string | null;
+  avatar?: string | null;
   phone?: string | null;
   inspectorId?: string | null;
   temporaryPassword?: string;
@@ -1199,19 +1206,23 @@ export const usersApi = {
     USE_API_MOCK
       ? mockData((USERS.find(u => u.id === id) ?? USERS[0]) as StaffUserRow)
       : apiRequest<StaffUserRow>({ method: 'GET', url: `/users/${id}` }),
-  create: (data: Record<string, unknown>) =>
-    USE_API_MOCK
-      ? mockData(
-          {
-            ...USERS[0],
-            ...data,
-            id: `USR-${Date.now()}`,
-            lastLogin: null,
-            inspectorId: data.role === 'inspector' ? `INS-${Date.now()}` : null,
-          } as StaffUserRow,
-          300
-        )
-      : apiRequest<StaffUserRow>({ method: 'POST', url: '/users', data }),
+  create: (data: Record<string, unknown>) => {
+    if (USE_API_MOCK) {
+      const row: StaffUserRow = {
+        id: `USR-${Date.now()}`,
+        name: String(data.name ?? USERS[0].name),
+        email: String(data.email ?? USERS[0].email),
+        role: String(data.role ?? USERS[0].role),
+        status: String(data.status ?? 'Active'),
+        lastLogin: null,
+        avatar: typeof data.avatar === 'string' ? data.avatar : USERS[0].avatar,
+        phone: typeof data.phone === 'string' ? data.phone : null,
+        inspectorId: data.role === 'inspector' ? `INS-${Date.now()}` : null,
+      };
+      return mockData(row, 300);
+    }
+    return apiRequest<StaffUserRow>({ method: 'POST', url: '/users', data });
+  },
   update: (id: string, data: Record<string, unknown>) =>
     USE_API_MOCK
       ? mockData({ ...(USERS.find(u => u.id === id) ?? USERS[0]), ...data, id } as StaffUserRow, 300)
