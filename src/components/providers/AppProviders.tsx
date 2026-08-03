@@ -12,7 +12,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={client}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
         <NetworkProvider>
           <GlobalNavigationHotkeys />
           <CommandPaletteMount />

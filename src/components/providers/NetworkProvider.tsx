@@ -104,7 +104,8 @@ function SyncToastManager() {
 }
 
 export function NetworkProvider({ children }: { children: React.ReactNode }) {
-  const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  // Always start as online so SSR HTML matches the first client paint; sync in useEffect.
+  const [online, setOnline] = useState(true);
   const [syncState, setSyncState] = useState<SyncState>('idle');
   const [syncProgress, setSyncProgress] = useState({ processed: 0, total: 0 });
   const [lastSyncMessage, setLastSyncMessage] = useState<string | null>(null);

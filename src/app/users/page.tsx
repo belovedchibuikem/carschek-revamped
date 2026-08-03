@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -44,7 +44,7 @@ const emptyForm = (): FormState => ({
 
 export default function UsersPage() {
   const pathname = usePathname();
-  const actorRole = getCarschekRole();
+  const [actorRole, setActorRole] = useState<string | null>(null);
   const roles = assignableRoles(actorRole);
   const { data: users, loading, error, refresh } = useApiList(() => usersApi.list());
   const [search, setSearch] = useState('');
@@ -56,6 +56,10 @@ export default function UsersPage() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [createdCreds, setCreatedCreds] = useState<{ email: string; password: string } | null>(null);
+
+  useEffect(() => {
+    setActorRole(getCarschekRole());
+  }, []);
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.toLowerCase().trim();

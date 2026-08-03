@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { useOnlineStatus } from '@/components/providers/NetworkProvider';
 
@@ -10,6 +11,20 @@ type Props = {
 
 export function NetworkStatusChip({ compact }: Props) {
   const { online, syncState, syncProgress, syncFailedCount, retrySync } = useOnlineStatus();
+  const [ready, setReady] = React.useState(false);
+
+  React.useEffect(() => {
+    setReady(true);
+  }, []);
+
+  // Avoid SSR/client mismatch for offline state (navigator only exists in the browser).
+  if (!ready) {
+    return (
+      <div className="flex items-center gap-1.5" title="Online">
+        <span className="h-2 w-2 flex-shrink-0 rounded-full bg-green-500" aria-hidden />
+      </div>
+    );
+  }
 
   if (!online) {
     return (

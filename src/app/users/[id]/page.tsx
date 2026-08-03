@@ -16,7 +16,7 @@ export default function UserDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  const actorRole = getCarschekRole();
+  const [actorRole, setActorRole] = useState<string | null>(null);
   const roles = assignableRoles(actorRole);
   const { data: user, loading, error, refresh } = useApiResource(() => usersApi.get(id), [id]);
   const [name, setName] = useState('');
@@ -24,6 +24,10 @@ export default function UserDetailPage() {
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<StaffRole>('support');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setActorRole(getCarschekRole());
+  }, []);
 
   useEffect(() => {
     if (!user) return;
