@@ -18,7 +18,22 @@ export default function InspectorDetailClient() {
   const searchParams = useSearchParams();
   const params = useParams();
   const inspectorId = params.id as string;
-  const { data: inspector, loading, error } = useApiResource(() => inspectorsApi.get(inspectorId), [inspectorId]);
+  const { data: inspector, loading, error, refresh } = useApiResource(() => inspectorsApi.get(inspectorId), [inspectorId]);
+  const [acctName, setAcctName] = useState('');
+  const [acctEmail, setAcctEmail] = useState('');
+  const [acctPhone, setAcctPhone] = useState('');
+  const [acctZones, setAcctZones] = useState('');
+  const [acctCert, setAcctCert] = useState('Standard');
+  const [savingAcct, setSavingAcct] = useState(false);
+
+  useEffect(() => {
+    if (!inspector) return;
+    setAcctName(inspector.name);
+    setAcctEmail(inspector.email);
+    setAcctPhone(inspector.phone || '');
+    setAcctZones((inspector.zone || []).join(', '));
+    setAcctCert(inspector.certBadge || 'Standard');
+  }, [inspector]);
   const { data: jobs } = useApiResource(
     async () => (inspectorId ? ((await inspectorsApi.jobs(inspectorId)) as unknown[]) : []),
     [inspectorId]
@@ -196,27 +211,142 @@ export default function InspectorDetailClient() {
 
         {activeTab === 3 && (
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-            <h3 className="text-sm font-heading font-semibold text-[#1F2937] mb-4">Account Settings</h3>
-            <div className="space-y-4 max-w-md">
-              {[
-                { label: 'Full Name', value: inspector.name },
-                { label: 'Email', value: inspector.email },
-                { label: 'Phone', value: inspector.phone },
-              ].map(f => (
-                <div key={f.label}>
-                  <label className="block text-xs font-semibold text-[#374151] mb-1.5">{f.label}</label>
-                  <input defaultValue={f.value} className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
-                </div>
-              ))}
-              <button onClick={() => toast.success('Profile updated')} className="px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all">
-                Save Changes
+            <h3 className="mb-1 text-sm font-heading font-semibold text-[#1F2937]">Account Settings</h3>
+            <p className="mb-4 text-xs text-[#6B7280]">
+              Login access:{' '}
+              <span className={inspector.accountStatus === 'Inactive' ? 'font-semibold text-[#C0392B]' : 'font-semibold text-[#1A7A4A]'}>
+                {inspector.accountStatus === 'Inactive' ? 'Blocked' : 'Active'}
+              </span>
+              {inspector.userId ? (
+                <>
+                  {' '}
+                  ·{' '}
+                  <Link href={`/users/${inspector.userId}`} className="font-mono text-[#ff5722] hover:underline">
+                    {inspector.userId}
+                  </Link>
+                </>
+              ) : (
+                ' · no login linked'
+              )}
+            </p>
+            <div className="max-w-md space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Full Name</label>
+                <input
+                  value={acctName}
+                  onChange={e => setAcctName(e.target.value)}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Email</label>
+                <input
+                  value={acctEmail}
+                  onChange={e => setAcctEmail(e.target.value)}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Phone</label>
+                <input
+                  value={acctPhone}
+                  onChange={e => setAcctPhone(e.target.value)}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Zones</label>
+                <input
+                  value={acctZones}
+                  onChange={e => setAcctZones(e.target.value)}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Cert badge</label>
+                <select
+                  value={acctCert}
+                  onChange={e => setAcctCert(e.target.value)}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm"
+                >
+                  <option>Standard</option>
+                  <option>Senior</option>
+                  <option>Lead</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                disabled={savingAcct}
+                onClick={() => {
+                  void (async () => {
+                    setSavingAcct(true);
+                    try {
+                      await inspectorsApi.update(inspector.id, {
+                        name: acctName.trim(),
+                        email: acctEmail.trim().toLowerCase(),
+                        phone: acctPhone.trim() || null,
+                        zones: acctZones.split(',').map(z => z.trim()).filter(Boolean),
+                        certBadge: acctCert,
+                        createLogin: !inspector.userId,
+                      });
+                      toast.success('Inspector updated');
+                      refresh();
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : 'Could not save');
+                    } finally {
+                      setSavingAcct(false);
+                    }
+                  })();
+                }}
+                className="rounded-lg bg-[#ff5722] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e64a19] disabled:opacity-60"
+              >
+                {savingAcct ? 'Saving…' : 'Save Changes'}
               </button>
             </div>
-            <div className="mt-8 pt-6 border-t border-[#E5E7EB]">
-              <h4 className="text-sm font-semibold text-[#C0392B] mb-3">Danger Zone</h4>
-              <div className="flex gap-3">
-                <button onClick={() => toast.error('Inspector suspended')} className="px-4 py-2.5 border border-[#C0392B] text-[#C0392B] text-sm font-medium rounded-lg hover:bg-red-50 transition-colors">Suspend</button>
-                <button onClick={() => toast.error('Inspector deactivated')} className="px-4 py-2.5 bg-[#C0392B] text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">Deactivate</button>
+            <div className="mt-8 border-t border-[#E5E7EB] pt-6">
+              <h4 className="mb-3 text-sm font-semibold text-[#C0392B]">Danger Zone</h4>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void (async () => {
+                      try {
+                        if (inspector.accountStatus === 'Inactive') {
+                          await inspectorsApi.unblock(inspector.id);
+                          toast.success('Inspector access restored');
+                        } else {
+                          if (!confirm(`Suspend login for ${inspector.name}?`)) return;
+                          await inspectorsApi.block(inspector.id);
+                          toast.success('Inspector suspended');
+                        }
+                        refresh();
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : 'Could not update access');
+                      }
+                    })();
+                  }}
+                  className="rounded-lg border border-[#C0392B] px-4 py-2.5 text-sm font-medium text-[#C0392B] hover:bg-red-50"
+                >
+                  {inspector.accountStatus === 'Inactive' ? 'Restore access' : 'Suspend'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void (async () => {
+                      if (!confirm(`Deactivate ${inspector.name}? Linked jobs keep history.`)) return;
+                      try {
+                        await inspectorsApi.remove(inspector.id);
+                        toast.success('Inspector deactivated');
+                        router.push('/inspectors');
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : 'Could not deactivate');
+                      }
+                    })();
+                  }}
+                  className="rounded-lg bg-[#C0392B] px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700"
+                >
+                  Deactivate
+                </button>
               </div>
             </div>
           </div>

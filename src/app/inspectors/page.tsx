@@ -17,7 +17,14 @@ export default function InspectorsPage() {
   const debouncedSearch = useDebouncedValue(search, 300);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [inviteModal, setInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteForm, setInviteForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    zones: 'Lagos Island',
+    certBadge: 'Standard',
+  });
+  const [inviting, setInviting] = useState(false);
   const { data: inspectors, loading, error, refresh } = useApiList(() => inspectorsApi.list());
 
   const filtered = useMemo(() => {
@@ -38,26 +45,112 @@ export default function InspectorsPage() {
     <AppLayout currentPath={pathname}>
       {inviteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setInviteModal(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full animate-fade-in">
-            <h3 className="text-base font-heading font-semibold text-[#1F2937] mb-4">Invite Inspector</h3>
+          <div className="absolute inset-0 bg-black/50" onClick={() => !inviting && setInviteModal(false)} />
+          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-fade-in">
+            <h3 className="mb-4 text-base font-heading font-semibold text-[#1F2937]">Add inspector</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-[#374151] mb-1.5">Email Address</label>
-                <input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="inspector@example.com"
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30" />
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Full name *</label>
+                <input
+                  value={inviteForm.name}
+                  onChange={e => setInviteForm(p => ({ ...p, name: e.target.value }))}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#374151] mb-1.5">Role</label>
-                <select className="w-full px-3 py-2.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30">
-                  <option>Inspector</option>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Email *</label>
+                <input
+                  type="email"
+                  value={inviteForm.email}
+                  onChange={e => setInviteForm(p => ({ ...p, email: e.target.value }))}
+                  placeholder="inspector@example.com"
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Phone</label>
+                <input
+                  value={inviteForm.phone}
+                  onChange={e => setInviteForm(p => ({ ...p, phone: e.target.value }))}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Zones (comma-separated)</label>
+                <input
+                  value={inviteForm.zones}
+                  onChange={e => setInviteForm(p => ({ ...p, zones: e.target.value }))}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[#374151]">Cert badge</label>
+                <select
+                  value={inviteForm.certBadge}
+                  onChange={e => setInviteForm(p => ({ ...p, certBadge: e.target.value }))}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-sm"
+                >
+                  <option>Standard</option>
+                  <option>Senior</option>
+                  <option>Lead</option>
                 </select>
               </div>
+              <p className="text-[11px] text-[#6B7280]">Creates inspector profile + login (role: Inspector) with a temporary password.</p>
             </div>
-            <div className="flex gap-3 mt-5">
-              <button onClick={() => setInviteModal(false)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F4F6F8]">Cancel</button>
-              <button onClick={() => { toast.success(`Invite sent to ${inviteEmail}`); setInviteModal(false); setInviteEmail(''); }}
-                className="flex-1 px-4 py-2.5 bg-[#ff5722] text-white rounded-lg text-sm font-semibold hover:bg-[#e64a19]">Send Invite</button>
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                disabled={inviting}
+                onClick={() => setInviteModal(false)}
+                className="flex-1 rounded-lg border border-[#E5E7EB] px-4 py-2.5 text-sm font-medium hover:bg-[#F4F6F8] disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={inviting}
+                onClick={() => {
+                  void (async () => {
+                    if (!inviteForm.email.trim() || !inviteForm.name.trim()) {
+                      toast.error('Name and email are required');
+                      return;
+                    }
+                    setInviting(true);
+                    try {
+                      const created = await inspectorsApi.create({
+                        name: inviteForm.name.trim(),
+                        email: inviteForm.email.trim().toLowerCase(),
+                        phone: inviteForm.phone.trim() || null,
+                        zones: inviteForm.zones.split(',').map(z => z.trim()).filter(Boolean),
+                        certBadge: inviteForm.certBadge,
+                        createLogin: true,
+                      });
+                      if (created.temporaryPassword) {
+                        try {
+                          await navigator.clipboard.writeText(
+                            `${created.email}\n${created.temporaryPassword}`
+                          );
+                          toast.success(`Inspector created — temp password copied`);
+                        } catch {
+                          toast.success(`Inspector created — password: ${created.temporaryPassword}`);
+                        }
+                      } else {
+                        toast.success(`Inspector ${created.id} created`);
+                      }
+                      setInviteModal(false);
+                      setInviteForm({ name: '', email: '', phone: '', zones: 'Lagos Island', certBadge: 'Standard' });
+                      refresh();
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : 'Could not create inspector');
+                    } finally {
+                      setInviting(false);
+                    }
+                  })();
+                }}
+                className="flex-1 rounded-lg bg-[#ff5722] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#e64a19] disabled:opacity-60"
+              >
+                {inviting ? 'Creating…' : 'Create inspector'}
+              </button>
             </div>
           </div>
         </div>
@@ -75,7 +168,7 @@ export default function InspectorsPage() {
               <button onClick={() => setViewMode('list')} className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-[#6B7280]'}`}><List size={15} /></button>
             </div>
             <button onClick={() => setInviteModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
-              <Plus size={16} /> Invite Inspector
+              <Plus size={16} /> Add Inspector
             </button>
           </div>
         </div>

@@ -15,3 +15,9 @@ export function clearCarschekSessionCookies(): void {
   document.cookie = `carschek-auth=; ${base}`;
   document.cookie = `carschek-role=; ${base}`;
 }
+
+export function getCarschekRole(): string | null {
+  if (typeof document === 'undefined') return null;
+  const m = document.cookie.match(/(?:^|; )carschek-role=([^;]*)/);
+  return m?.[1] ? decodeURIComponent(m[1]) : null;
+}

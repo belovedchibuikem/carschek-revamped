@@ -561,17 +561,73 @@ export const auctionsApi = {
 
 // ── Inspectors ──────────────────────────────────────────────────────────────
 
+export type InspectorRow = (typeof INSPECTORS)[0] & {
+  userId?: string | null;
+  accountStatus?: string;
+  temporaryPassword?: string;
+};
+
 export const inspectorsApi = {
   list: () =>
-    USE_API_MOCK ? mockData([...INSPECTORS]) : apiRequest<typeof INSPECTORS>({ method: 'GET', url: '/inspectors' }),
+    USE_API_MOCK
+      ? mockData(
+          INSPECTORS.map(i => ({
+            ...i,
+            userId: i.id === 'INS-001' ? 'USR-003' : null,
+            accountStatus: 'Active',
+          })) as InspectorRow[]
+        )
+      : apiRequest<InspectorRow[]>({ method: 'GET', url: '/inspectors' }),
   get: (id: string) =>
     USE_API_MOCK
-      ? mockData(INSPECTORS.find(i => i.id === id) ?? INSPECTORS[0])
-      : apiRequest<(typeof INSPECTORS)[0]>({ method: 'GET', url: `/inspectors/${id}` }),
+      ? mockData({
+          ...(INSPECTORS.find(i => i.id === id) ?? INSPECTORS[0]),
+          userId: id === 'INS-001' ? 'USR-003' : null,
+          accountStatus: 'Active',
+        } as InspectorRow)
+      : apiRequest<InspectorRow>({ method: 'GET', url: `/inspectors/${id}` }),
   jobs: (id: string) =>
     USE_API_MOCK
       ? mockData([...ORDERS].filter(o => (o as { inspectorId?: string }).inspectorId === id).slice(0, 5))
       : apiRequest<unknown[]>({ method: 'GET', url: `/inspectors/${id}/jobs` }),
+  create: (data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData(
+          {
+            ...INSPECTORS[0],
+            ...data,
+            id: `INS-${Date.now()}`,
+            zone: (data.zones as string[]) ?? (data.zone as string[]) ?? [],
+            accountStatus: (data.accountStatus as string) || 'Active',
+            temporaryPassword: data.password ? undefined : 'Ck@TempPass1',
+          } as InspectorRow,
+          300
+        )
+      : apiRequest<InspectorRow>({ method: 'POST', url: '/inspectors', data }),
+  update: (id: string, data: Record<string, unknown>) =>
+    USE_API_MOCK
+      ? mockData(
+          {
+            ...(INSPECTORS.find(i => i.id === id) ?? INSPECTORS[0]),
+            ...data,
+            id,
+            zone: (data.zones as string[]) ?? (data.zone as string[]) ?? INSPECTORS.find(i => i.id === id)?.zone ?? [],
+          } as InspectorRow,
+          300
+        )
+      : apiRequest<InspectorRow>({ method: 'PATCH', url: `/inspectors/${id}`, data }),
+  block: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ...(INSPECTORS.find(i => i.id === id) ?? INSPECTORS[0]), id, accountStatus: 'Inactive', status: 'offline' } as InspectorRow, 200)
+      : apiRequest<InspectorRow>({ method: 'POST', url: `/inspectors/${id}/block` }),
+  unblock: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ...(INSPECTORS.find(i => i.id === id) ?? INSPECTORS[0]), id, accountStatus: 'Active' } as InspectorRow, 200)
+      : apiRequest<InspectorRow>({ method: 'POST', url: `/inspectors/${id}/unblock` }),
+  remove: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ok: true, id }, 200)
+      : apiRequest<unknown>({ method: 'DELETE', url: `/inspectors/${id}` }),
 };
 
 // ── Appointments ────────────────────────────────────────────────────────────
@@ -1112,20 +1168,70 @@ export const settingsApi = {
       : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/ops/inspection-signals' }),
 };
 
+export type StaffUserRow = (typeof USERS)[0] & {
+  phone?: string | null;
+  inspectorId?: string | null;
+  temporaryPassword?: string;
+};
+
 export const usersApi = {
-  list: () => (USE_API_MOCK ? mockData([...USERS]) : apiRequest<typeof USERS>({ method: 'GET', url: '/users' })),
+  list: (params?: { role?: string; status?: string; search?: string }) => {
+    if (USE_API_MOCK) {
+      let rows = [...USERS] as StaffUserRow[];
+      if (params?.role) rows = rows.filter(u => u.role === params.role);
+      if (params?.status) rows = rows.filter(u => u.status === params.status);
+      if (params?.search) {
+        const q = params.search.toLowerCase();
+        rows = rows.filter(
+          u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q)
+        );
+      }
+      return mockData(rows);
+    }
+    const qs = new URLSearchParams();
+    if (params?.role) qs.set('role', params.role);
+    if (params?.status) qs.set('status', params.status);
+    if (params?.search) qs.set('search', params.search);
+    const suffix = qs.toString() ? `?${qs}` : '';
+    return apiRequest<StaffUserRow[]>({ method: 'GET', url: `/users${suffix}` });
+  },
   get: (id: string) =>
     USE_API_MOCK
-      ? mockData(USERS.find(u => u.id === id) ?? USERS[0])
-      : apiRequest<(typeof USERS)[0]>({ method: 'GET', url: `/users/${id}` }),
+      ? mockData((USERS.find(u => u.id === id) ?? USERS[0]) as StaffUserRow)
+      : apiRequest<StaffUserRow>({ method: 'GET', url: `/users/${id}` }),
   create: (data: Record<string, unknown>) =>
     USE_API_MOCK
-      ? mockData({ ...USERS[0], ...data, id: `USR-${Date.now()}` } as (typeof USERS)[0], 300)
-      : apiRequest<(typeof USERS)[0]>({ method: 'POST', url: '/users', data }),
+      ? mockData(
+          {
+            ...USERS[0],
+            ...data,
+            id: `USR-${Date.now()}`,
+            lastLogin: null,
+            inspectorId: data.role === 'inspector' ? `INS-${Date.now()}` : null,
+          } as StaffUserRow,
+          300
+        )
+      : apiRequest<StaffUserRow>({ method: 'POST', url: '/users', data }),
   update: (id: string, data: Record<string, unknown>) =>
     USE_API_MOCK
-      ? mockData({ ...(USERS.find(u => u.id === id) ?? USERS[0]), ...data } as (typeof USERS)[0], 300)
-      : apiRequest<(typeof USERS)[0]>({ method: 'PATCH', url: `/users/${id}`, data }),
+      ? mockData({ ...(USERS.find(u => u.id === id) ?? USERS[0]), ...data, id } as StaffUserRow, 300)
+      : apiRequest<StaffUserRow>({ method: 'PATCH', url: `/users/${id}`, data }),
+  block: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ...(USERS.find(u => u.id === id) ?? USERS[0]), id, status: 'Inactive' } as StaffUserRow, 200)
+      : apiRequest<StaffUserRow>({ method: 'POST', url: `/users/${id}/block` }),
+  unblock: (id: string) =>
+    USE_API_MOCK
+      ? mockData({ ...(USERS.find(u => u.id === id) ?? USERS[0]), id, status: 'Active' } as StaffUserRow, 200)
+      : apiRequest<StaffUserRow>({ method: 'POST', url: `/users/${id}/unblock` }),
+  resetPassword: (id: string, password?: string) =>
+    USE_API_MOCK
+      ? mockData({ message: 'Password reset.', id, temporaryPassword: password || 'Ck@TempPass1' }, 200)
+      : apiRequest<{ message: string; id: string; temporaryPassword: string }>({
+          method: 'POST',
+          url: `/users/${id}/reset-password`,
+          data: password ? { password } : {},
+        }),
   remove: (id: string) =>
     USE_API_MOCK
       ? mockData({ ok: true, id }, 200)

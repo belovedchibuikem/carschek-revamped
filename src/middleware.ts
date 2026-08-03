@@ -35,8 +35,43 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get('carschek-role')?.value;
   const authed = request.cookies.get('carschek-auth')?.value === '1' || role;
 
-  const adminPrefixes = ['/dashboard', '/cars', '/orders', '/finance', '/settings', '/customers', '/reports', '/listings', '/deals', '/auctions', '/crm', '/offers', '/activity', '/notifications', '/reference', '/vehicle-listings', '/inspector-management', '/inspection-orders-management', '/inspection-reports-qa', '/admin-dashboard', '/app-navigation'];
+  const adminPrefixes = [
+    '/dashboard',
+    '/cars',
+    '/orders',
+    '/finance',
+    '/settings',
+    '/customers',
+    '/reports',
+    '/listings',
+    '/deals',
+    '/auctions',
+    '/crm',
+    '/offers',
+    '/activity',
+    '/notifications',
+    '/reference',
+    '/users',
+    '/inspectors',
+    '/vehicle-valuation',
+    '/vehicle-listings',
+    '/inspector-management',
+    '/inspection-orders-management',
+    '/inspection-reports-qa',
+    '/admin-dashboard',
+    '/app-navigation',
+  ];
   const isAdminArea = adminPrefixes.some(p => pathname === p || pathname.startsWith(`${p}/`));
+  const staffOnly =
+    pathname === '/users' ||
+    pathname.startsWith('/users/') ||
+    pathname === '/settings' ||
+    pathname.startsWith('/settings/');
+
+  // Staff management: super-admin + ops-manager only
+  if (staffOnly && role && role !== 'super-admin' && role !== 'ops-manager') {
+    return NextResponse.redirect(new URL(role === 'inspector' ? '/inspector/jobs' : '/403', request.url));
+  }
 
   // Inspector role: keep on PWA / inspector flows; redirect core admin away
   if (
