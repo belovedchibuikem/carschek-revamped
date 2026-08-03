@@ -361,10 +361,31 @@ function SettingsPageContent() {
                     type="button"
                     disabled={saving}
                     onClick={() => {
+                      if (mail.enabled && !mail.password && !mail.password_set) {
+                        toast.error('Enter the SMTP password before saving');
+                        return;
+                      }
                       setSaving(true);
                       settingsApi
-                        .updateMail(mail)
-                        .then(() => toast.success('SMTP saved'))
+                        .updateMail({
+                          enabled: mail.enabled,
+                          host: mail.host,
+                          port: mail.port,
+                          encryption: mail.encryption,
+                          username: mail.username,
+                          password: mail.password || undefined,
+                          from_address: mail.from_address,
+                          from_name: mail.from_name,
+                        })
+                        .then(saved => {
+                          toast.success('SMTP saved');
+                          setMail(p => ({
+                            ...p,
+                            password: '',
+                            password_set: Boolean(saved.password_set ?? true),
+                            enabled: Boolean(saved.enabled ?? p.enabled),
+                          }));
+                        })
                         .catch(e => toast.error(e instanceof Error ? e.message : 'Save failed'))
                         .finally(() => setSaving(false));
                     }}
