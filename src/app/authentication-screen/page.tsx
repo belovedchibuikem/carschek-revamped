@@ -222,6 +222,12 @@ export default function AuthenticationScreen() {
       setStep('2fa');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Invalid credentials';
+      const mailFailure = /verification email|smtp|could not send/i.test(message);
+      if (mailFailure) {
+        toast.error(message);
+        loginForm.setError('password', { message });
+        return;
+      }
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
       if (newAttempts >= 5 || /locked/i.test(message)) {

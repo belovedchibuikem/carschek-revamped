@@ -301,9 +301,14 @@ function SettingsPageContent() {
             {activeSection === 'smtp' && (
               <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4 max-w-2xl">
                 <h2 className="text-base font-heading font-semibold text-[#1F2937]">SMTP</h2>
+                <p className="text-xs text-[#6B7280] leading-relaxed">
+                  Login OTP and password-reset emails require a real SMTP provider. If this is disabled and the API
+                  <code className="mx-1 rounded bg-[#F4F6F8] px-1">MAIL_MAILER</code> is <code className="rounded bg-[#F4F6F8] px-1">log</code>,
+                  codes are written to the server log and never reach an inbox. Enable SMTP below, save, then use Test connection.
+                </p>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={mail.enabled} onChange={e => setMail(p => ({ ...p, enabled: e.target.checked }))} />
-                  Enable DB SMTP (overrides .env when enabled)
+                  Enable SMTP (required for login emails)
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
