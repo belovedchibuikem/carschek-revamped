@@ -100,10 +100,7 @@ export default function ReportViewPage() {
     setGenerateError(null);
     setReportData(null);
 
-    const payload =
-      report && typeof report === 'object' && 'payload' in report
-        ? ((report as { payload?: Record<string, unknown> | null }).payload ?? null)
-        : null;
+    const payload = report.payload ?? null;
     const hasPayloadItems = Array.isArray(payload?.items) && (payload.items as unknown[]).length > 0;
 
     const applyFallback = (reason?: string) => {
