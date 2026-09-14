@@ -6,7 +6,6 @@ import { ApiError, setAccessToken } from '@/lib/api/client';
 import {
   asLoginSession,
   authApi,
-  fallbackLoginSession,
   isOtpMailFailure,
   otpEmailFailed,
   shouldPromptOtp,
@@ -278,12 +277,6 @@ export default function AuthenticationScreen() {
       const res = await authApi.login(data.email, data.password);
       if (applyLoginResult(res, data.email)) return;
 
-      if (otpEmailFailed(res)) {
-        const fallback = asLoginSession(res) ?? fallbackLoginSession(data.email, welcomeRole);
-        completeSignIn(fallback.user, fallback.token, { skippedOtp: true });
-        return;
-      }
-
       loginForm.setError('password', { message: 'Sign-in did not return a session. Try again.' });
     } catch (err) {
       const sessionFromErr = sessionFromError(err);
@@ -292,8 +285,9 @@ export default function AuthenticationScreen() {
         return;
       }
       if (isOtpMailFailure(err)) {
-        const fallback = fallbackLoginSession(data.email, welcomeRole);
-        completeSignIn(fallback.user, fallback.token, { skippedOtp: true });
+        loginForm.setError('password', {
+          message: err instanceof Error ? err.message : 'Could not send verification email',
+        });
         return;
       }
       const message = err instanceof Error ? err.message : 'Invalid credentials';
@@ -354,17 +348,9 @@ export default function AuthenticationScreen() {
       toast.success(res.message || 'A new verification code has been sent.');
     } catch (err) {
       const session = sessionFromError(err);
-      if (session && isOtpMailFailure(err)) {
+      if (session) {
         completeSignIn(session.user, session.token, { skippedOtp: true });
         return;
-      }
-      if (isOtpMailFailure(err)) {
-        const creds = pendingCredentials.current;
-        const fallback = fallbackLoginSession(creds?.email || '', welcomeRole);
-        if (creds?.email) {
-          completeSignIn(fallback.user, fallback.token, { skippedOtp: true });
-          return;
-        }
       }
       const message = err instanceof Error ? err.message : 'Could not resend code';
       const waitMatch = message.match(/(\d+)\s*second/i);

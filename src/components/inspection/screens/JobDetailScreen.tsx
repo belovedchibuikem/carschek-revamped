@@ -16,7 +16,7 @@ import {
 } from '@/lib/inspection/sessionDexie';
 import { useInspectionSessionTimer } from '@/lib/inspection/useInspectionSessionTimer';
 import { ordersApi, reportsApi } from '@/lib/api/services';
-import { USE_API_MOCK } from '@/lib/api/client';
+import { isApiMock } from '@/lib/api/client';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
 
 const INSPECTOR_ID = 'INS-001';
@@ -38,7 +38,7 @@ export function JobDetailScreen({ layout, jobId }: Props) {
   const router = useRouter();
   const href = useInspectorHref();
   const [job, setJob] = useState<InspectorJobCard | null>(() => findMockJob(jobId) ?? null);
-  const [jobLoading, setJobLoading] = useState(!findMockJob(jobId) && !USE_API_MOCK);
+  const [jobLoading, setJobLoading] = useState(!findMockJob(jobId) && !isApiMock());
   const [prevReports, setPrevReports] = useState<PrevReport[]>([]);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null);
@@ -47,7 +47,7 @@ export function JobDetailScreen({ layout, jobId }: Props) {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      if (!USE_API_MOCK) {
+      if (!isApiMock()) {
         setJobLoading(true);
         try {
           const order = await ordersApi.get(jobId);

@@ -25,6 +25,14 @@ export function isOtpSkipToken(token: string | null | undefined): boolean {
   return Boolean(token && token.startsWith(OTP_SKIP_TOKEN_PREFIX));
 }
 
+if (typeof window !== 'undefined') {
+  const existing = window.localStorage.getItem(ACCESS_TOKEN_KEY);
+  if (isOtpSkipToken(existing)) {
+    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+    clearCarschekSessionCookies();
+  }
+}
+
 export class ApiError extends Error {
   status?: number;
   data?: unknown;
