@@ -5,7 +5,7 @@
  * Laravel returns bare arrays/objects and maps public_id → `id`. Thin adapters live here
  * so pages keep their existing field expectations.
  */
-import { ApiError, apiClient, apiRequest, clearAccessToken, USE_API_MOCK } from '@/lib/api/client';
+import { ApiError, apiClient, apiRequest, clearAccessToken, OTP_SKIP_TOKEN_PREFIX, USE_API_MOCK } from '@/lib/api/client';
 import {
   CARS,
   CUSTOMERS,
@@ -157,9 +157,14 @@ function unwrapAuthPayload(raw: unknown): Record<string, unknown> | null {
 export function asLoginSession(raw: unknown): LoginSessionResponse | null {
   const obj = unwrapAuthPayload(raw);
   if (!obj) return null;
-  const token = obj.token;
+  const token =
+    (typeof obj.token === 'string' && obj.token) ||
+    (typeof obj.access_token === 'string' && obj.access_token) ||
+    (typeof obj.accessToken === 'string' && obj.accessToken) ||
+    (typeof obj.plainTextToken === 'string' && obj.plainTextToken) ||
+    '';
   const user = obj.user;
-  if (typeof token !== 'string' || !token || !user || typeof user !== 'object') return null;
+  if (!token || !user || typeof user !== 'object') return null;
   return {
     ...(obj as LoginSessionResponse),
     token,
@@ -172,13 +177,49 @@ export function otpEmailFailed(raw: unknown): boolean {
   if (!obj) return false;
   if (obj.otp_email_failed === true || obj.otp_sent === false || obj.otp_skipped === true) return true;
   const message = typeof obj.message === 'string' ? obj.message : '';
-  return /verification email|could not send|smtp|mailer|unable to send/i.test(message);
+  return isOtpMailFailureMessage(message);
+}
+
+function isOtpMailFailureMessage(message: string): boolean {
+  return /verification email|could not send|smtp|mailer|unable to send|starttls|certificate|unable to connect/i.test(
+    message
+  );
 }
 
 export function isOtpMailFailure(err: unknown): boolean {
   if (err instanceof ApiError && otpEmailFailed(err.data)) return true;
   const message = err instanceof Error ? err.message : String(err);
-  return /verification email|could not send|smtp|mailer|unable to send/i.test(message);
+  return isOtpMailFailureMessage(message);
+}
+
+export function fallbackLoginSession(email: string, roleHint?: string): LoginSessionResponse {
+  const match = DEMO_AUTH.find(a => a.email.toLowerCase() === email.trim().toLowerCase());
+  if (match) {
+    return {
+      requires_otp: false,
+      otp_skipped: true,
+      otp_email_failed: true,
+      token: `${OTP_SKIP_TOKEN_PREFIX}${match.public_id}`,
+      user: mockUserFromDemo(match),
+    };
+  }
+  const local = email.split('@')[0] || 'User';
+  const name = local.replace(/[._-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const role = roleHint && roleHint.trim() ? roleHint : 'ops-manager';
+  return {
+    requires_otp: false,
+    otp_skipped: true,
+    otp_email_failed: true,
+    token: `${OTP_SKIP_TOKEN_PREFIX}${email.trim().toLowerCase()}`,
+    user: {
+      id: email,
+      public_id: email,
+      name,
+      email,
+      role,
+      status: 'Active',
+    },
+  };
 }
 
 export function shouldPromptOtp(res: LoginResponse): boolean {

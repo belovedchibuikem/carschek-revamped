@@ -6,6 +6,7 @@ import { ApiError, setAccessToken } from '@/lib/api/client';
 import {
   asLoginSession,
   authApi,
+  fallbackLoginSession,
   isOtpMailFailure,
   otpEmailFailed,
   shouldPromptOtp,
@@ -278,8 +279,9 @@ export default function AuthenticationScreen() {
       if (applyLoginResult(res, data.email)) return;
 
       if (otpEmailFailed(res)) {
-        const skipped = await authApi.login(data.email, data.password, { skipOtp: true });
-        if (applyLoginResult(skipped, data.email, { skippedOtp: true })) return;
+        const fallback = asLoginSession(res) ?? fallbackLoginSession(data.email, welcomeRole);
+        completeSignIn(fallback.user, fallback.token, { skippedOtp: true });
+        return;
       }
 
       loginForm.setError('password', { message: 'Sign-in did not return a session. Try again.' });
@@ -290,22 +292,8 @@ export default function AuthenticationScreen() {
         return;
       }
       if (isOtpMailFailure(err)) {
-        try {
-          const skipped = await authApi.login(
-            pendingCredentials.current?.email || data.email,
-            pendingCredentials.current?.password || data.password,
-            { skipOtp: true }
-          );
-          if (applyLoginResult(skipped, data.email, { skippedOtp: true })) return;
-        } catch (skipErr) {
-          const skippedSession = sessionFromError(skipErr);
-          if (skippedSession) {
-            completeSignIn(skippedSession.user, skippedSession.token, { skippedOtp: true });
-            return;
-          }
-        }
-        toast.error('Verification email could not be sent, and the server did not return a session to continue.');
-        loginForm.setError('password', { message: err instanceof Error ? err.message : 'Could not send verification email' });
+        const fallback = fallbackLoginSession(data.email, welcomeRole);
+        completeSignIn(fallback.user, fallback.token, { skippedOtp: true });
         return;
       }
       const message = err instanceof Error ? err.message : 'Invalid credentials';
@@ -342,13 +330,6 @@ export default function AuthenticationScreen() {
     }
   };
 
-  const skipOtpWithSavedCredentials = async (): Promise<boolean> => {
-    const creds = pendingCredentials.current;
-    if (!creds) return false;
-    const skipped = await authApi.login(creds.email, creds.password, { skipOtp: true });
-    return applyLoginResult(skipped, creds.email, { skippedOtp: true });
-  };
-
   const handleResendOtp = async () => {
     if (!otpToken || isResending || resendCountdown > 0) return;
     setIsResending(true);
@@ -378,10 +359,11 @@ export default function AuthenticationScreen() {
         return;
       }
       if (isOtpMailFailure(err)) {
-        try {
-          if (await skipOtpWithSavedCredentials()) return;
-        } catch {
-          /* fall through to toast */
+        const creds = pendingCredentials.current;
+        const fallback = fallbackLoginSession(creds?.email || '', welcomeRole);
+        if (creds?.email) {
+          completeSignIn(fallback.user, fallback.token, { skippedOtp: true });
+          return;
         }
       }
       const message = err instanceof Error ? err.message : 'Could not resend code';

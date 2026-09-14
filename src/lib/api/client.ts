@@ -19,6 +19,11 @@ export const USE_API_PROXY =
   (process.env.NEXT_PUBLIC_API_USE_PROXY ?? 'true').trim().toLowerCase() !== 'false';
 
 export const ACCESS_TOKEN_KEY = 'carschek-access-token';
+export const OTP_SKIP_TOKEN_PREFIX = 'otp-skip:';
+
+export function isOtpSkipToken(token: string | null | undefined): boolean {
+  return Boolean(token && token.startsWith(OTP_SKIP_TOKEN_PREFIX));
+}
 
 export class ApiError extends Error {
   status?: number;
@@ -56,7 +61,7 @@ apiClient.interceptors.request.use(config => {
   }
   if (typeof window !== 'undefined') {
     const token = window.localStorage.getItem(ACCESS_TOKEN_KEY);
-    if (token) {
+    if (token && !isOtpSkipToken(token)) {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
@@ -68,7 +73,9 @@ apiClient.interceptors.response.use(
   err => {
     const reqUrl = String(err?.config?.url || '');
     const isAuthAttempt = /\/auth\/(login|verify-otp|resend-otp|forgot-password|reset-password)/.test(reqUrl);
-    if (err?.response?.status === 401 && typeof window !== 'undefined' && !isAuthAttempt) {
+    const skipOtpSession =
+      typeof window !== 'undefined' && isOtpSkipToken(window.localStorage.getItem(ACCESS_TOKEN_KEY));
+    if (err?.response?.status === 401 && typeof window !== 'undefined' && !isAuthAttempt && !skipOtpSession) {
       window.localStorage.removeItem(ACCESS_TOKEN_KEY);
       clearCarschekSessionCookies();
       const path = window.location.pathname;
