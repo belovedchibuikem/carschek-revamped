@@ -2,9 +2,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { setCarschekSessionCookies } from '@/lib/auth/session';
-import { setAccessToken } from '@/lib/api/client';
-import { authApi } from '@/lib/api/services';
+import { ApiError, setAccessToken } from '@/lib/api/client';
+import {
+  asLoginSession,
+  authApi,
+  isOtpMailFailure,
+  otpEmailFailed,
+  shouldPromptOtp,
+  type AuthUser,
+  type LoginResponse,
+} from '@/lib/api/services';
+import { homePathForRole, setCarschekSessionCookies } from '@/lib/auth/session';
 import AppLogo from '@/components/ui/AppLogo';
 import { Eye, EyeOff, Shield, ArrowLeft, CheckCircle, Mail, Lock, RefreshCw, ChevronRight, AlertTriangle } from 'lucide-react';
 
@@ -32,6 +40,16 @@ const DEMO_ACCOUNTS = [
 const SHOW_DEMO_ACCOUNTS =
   process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === 'true' ||
   (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS !== 'false');
+
+function maskEmail(email: string) {
+  const [user, domain] = email.split('@');
+  if (!user || !domain) return '***';
+  return `${user[0]}***@${domain}`;
+}
+
+function sessionFromError(err: unknown) {
+  return err instanceof ApiError ? asLoginSession(err.data) : null;
+}
 
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
@@ -160,6 +178,7 @@ export default function AuthenticationScreen() {
   const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
   const [resendCountdown, setResendCountdown] = useState(0);
   const [isResending, setIsResending] = useState(false);
+  const pendingCredentials = useRef<{ email: string; password: string } | null>(null);
 
   const loginForm = useForm<LoginForm>({ defaultValues: { email: '', password: '', remember: false } });
   const forgotForm = useForm<ForgotForm>();
@@ -170,6 +189,48 @@ export default function AuthenticationScreen() {
     const until = Date.now() + seconds * 1000;
     setResendAvailableAt(until);
     setResendCountdown(seconds);
+  };
+
+  const asWelcomeRole = (role: string): keyof typeof ROLE_CONFIG =>
+    role in ROLE_CONFIG ? (role as keyof typeof ROLE_CONFIG) : 'super-admin';
+
+  const completeSignIn = (user: AuthUser, token: string, opts?: { skippedOtp?: boolean }) => {
+    setAccessToken(token);
+    const role = asWelcomeRole(user.role || welcomeRole);
+    setWelcomeRole(role);
+    setWelcomeName(user.name || welcomeName);
+    setCarschekSessionCookies(user.role || role);
+    setFailedAttempts(0);
+    pendingCredentials.current = null;
+    if (opts?.skippedOtp) {
+      toast.success('Signed in. Verification email was unavailable, so OTP was skipped.');
+      window.location.assign(homePathForRole(user.role || role));
+      return;
+    }
+    toast.success('Identity verified successfully');
+    setStep('welcome');
+  };
+
+  const applyLoginResult = (res: LoginResponse, email: string, opts?: { skippedOtp?: boolean }): boolean => {
+    const session = asLoginSession(res);
+    const skipped = Boolean(opts?.skippedOtp || otpEmailFailed(res));
+    if (session && (skipped || !shouldPromptOtp(res))) {
+      completeSignIn(session.user, session.token, { skippedOtp: skipped });
+      return true;
+    }
+    if (shouldPromptOtp(res) && 'otp_token' in res && res.otp_token) {
+      setOtpToken(res.otp_token);
+      setOtpDestination(res.otp_destination || maskEmail(email));
+      setOtpTtlSeconds(res.expires_in_seconds ?? 600);
+      setOtpExpired(false);
+      setOtpTimerKey(k => k + 1);
+      setOtpInputKey(k => k + 1);
+      startResendCooldown(60);
+      toast.success(`Verification code sent to ${res.otp_destination || maskEmail(email)}`);
+      setStep('2fa');
+      return true;
+    }
+    return false;
   };
 
   useEffect(() => {
@@ -201,33 +262,54 @@ export default function AuthenticationScreen() {
   const handleLogin = async (data: LoginForm) => {
     if (lockedUntil) return;
     setIsSubmitting(true);
-    try {
-      const res = await authApi.login(data.email, data.password);
-      setOtpToken(res.otp_token);
-      setOtpDestination(res.otp_destination || maskEmail(data.email));
-      setOtpTtlSeconds(res.expires_in_seconds ?? 600);
-      setOtpExpired(false);
-      setOtpTimerKey(k => k + 1);
-      setOtpInputKey(k => k + 1);
-      startResendCooldown(60);
-      const demoHint = DEMO_ACCOUNTS.find(a => a.email === data.email);
+    const rememberDemo = (email: string) => {
+      const demoHint = DEMO_ACCOUNTS.find(a => a.email === email);
       if (demoHint) {
         setWelcomeRole(demoHint.role);
         setWelcomeName(demoHint.name);
       } else {
-        setWelcomeName(data.email.split('@')[0] || 'User');
+        setWelcomeName(email.split('@')[0] || 'User');
       }
-      setFailedAttempts(0);
-      toast.success(`Verification code sent to ${res.otp_destination || maskEmail(data.email)}`);
-      setStep('2fa');
+    };
+    try {
+      rememberDemo(data.email);
+      pendingCredentials.current = { email: data.email, password: data.password };
+      const res = await authApi.login(data.email, data.password);
+      if (applyLoginResult(res, data.email)) return;
+
+      if (otpEmailFailed(res)) {
+        const skipped = await authApi.login(data.email, data.password, { skipOtp: true });
+        if (applyLoginResult(skipped, data.email, { skippedOtp: true })) return;
+      }
+
+      loginForm.setError('password', { message: 'Sign-in did not return a session. Try again.' });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Invalid credentials';
-      const mailFailure = /verification email|smtp|could not send/i.test(message);
-      if (mailFailure) {
-        toast.error(message);
-        loginForm.setError('password', { message });
+      const sessionFromErr = sessionFromError(err);
+      if (sessionFromErr) {
+        completeSignIn(sessionFromErr.user, sessionFromErr.token, { skippedOtp: isOtpMailFailure(err) });
         return;
       }
+      if (isOtpMailFailure(err)) {
+        try {
+          const skipped = await authApi.login(
+            pendingCredentials.current?.email || data.email,
+            pendingCredentials.current?.password || data.password,
+            { skipOtp: true }
+          );
+          if (applyLoginResult(skipped, data.email, { skippedOtp: true })) return;
+        } catch (skipErr) {
+          const skippedSession = sessionFromError(skipErr);
+          if (skippedSession) {
+            completeSignIn(skippedSession.user, skippedSession.token, { skippedOtp: true });
+            return;
+          }
+        }
+        toast.error('Verification email could not be sent, and the server did not return a session to continue.');
+        loginForm.setError('password', { message: err instanceof Error ? err.message : 'Could not send verification email' });
+        return;
+      }
+      const message = err instanceof Error ? err.message : 'Invalid credentials';
+      pendingCredentials.current = null;
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
       if (newAttempts >= 5 || /locked/i.test(message)) {
@@ -251,13 +333,7 @@ export default function AuthenticationScreen() {
     setIsSubmitting(true);
     try {
       const res = await authApi.verifyOtp(otpToken, code);
-      setAccessToken(res.token);
-      const role = (res.user.role || welcomeRole) as keyof typeof ROLE_CONFIG;
-      setWelcomeRole(role in ROLE_CONFIG ? role : 'super-admin');
-      setWelcomeName(res.user.name || welcomeName);
-      setCarschekSessionCookies(res.user.role || role);
-      toast.success('Identity verified successfully');
-      setStep('welcome');
+      completeSignIn(res.user, res.token);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Verification failed');
       setOtpInputKey(k => k + 1);
@@ -266,11 +342,27 @@ export default function AuthenticationScreen() {
     }
   };
 
+  const skipOtpWithSavedCredentials = async (): Promise<boolean> => {
+    const creds = pendingCredentials.current;
+    if (!creds) return false;
+    const skipped = await authApi.login(creds.email, creds.password, { skipOtp: true });
+    return applyLoginResult(skipped, creds.email, { skippedOtp: true });
+  };
+
   const handleResendOtp = async () => {
     if (!otpToken || isResending || resendCountdown > 0) return;
     setIsResending(true);
     try {
       const res = await authApi.resendOtp(otpToken);
+      const session = asLoginSession(res);
+      if (session && (otpEmailFailed(res) || !res.otp_token)) {
+        completeSignIn(session.user, session.token, { skippedOtp: true });
+        return;
+      }
+      if (!res.otp_token) {
+        toast.error(res.message || 'Could not resend code');
+        return;
+      }
       setOtpToken(res.otp_token);
       if (res.otp_destination) setOtpDestination(res.otp_destination);
       setOtpTtlSeconds(res.expires_in_seconds ?? 600);
@@ -280,6 +372,18 @@ export default function AuthenticationScreen() {
       startResendCooldown(res.retry_after_seconds ?? 60);
       toast.success(res.message || 'A new verification code has been sent.');
     } catch (err) {
+      const session = sessionFromError(err);
+      if (session && isOtpMailFailure(err)) {
+        completeSignIn(session.user, session.token, { skippedOtp: true });
+        return;
+      }
+      if (isOtpMailFailure(err)) {
+        try {
+          if (await skipOtpWithSavedCredentials()) return;
+        } catch {
+          /* fall through to toast */
+        }
+      }
       const message = err instanceof Error ? err.message : 'Could not resend code';
       const waitMatch = message.match(/(\d+)\s*second/i);
       if (waitMatch) startResendCooldown(Number(waitMatch[1]));
@@ -322,11 +426,6 @@ export default function AuthenticationScreen() {
   const fillDemo = (account: typeof DEMO_ACCOUNTS[0]) => {
     loginForm.setValue('email', account.email);
     loginForm.setValue('password', account.password);
-  };
-
-  const maskEmail = (email: string) => {
-    const [user, domain] = email.split('@');
-    return `${user[0]}***@${domain}`;
   };
 
   const remainingAttempts = Math.max(0, 5 - failedAttempts);
@@ -502,6 +601,7 @@ export default function AuthenticationScreen() {
               <button
                 type="button"
                 onClick={() => {
+                  pendingCredentials.current = null;
                   setStep('login');
                   setOtpToken(null);
                   setOtpExpired(false);

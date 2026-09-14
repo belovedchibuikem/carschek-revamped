@@ -21,3 +21,8 @@ export function getCarschekRole(): string | null {
   const m = document.cookie.match(/(?:^|; )carschek-role=([^;]*)/);
   return m?.[1] ? decodeURIComponent(m[1]) : null;
 }
+
+/** Post-login landing path. Inspectors are kept on the field app. */
+export function homePathForRole(role: string): string {
+  return role === 'inspector' ? '/inspector/jobs' : '/dashboard';
+}

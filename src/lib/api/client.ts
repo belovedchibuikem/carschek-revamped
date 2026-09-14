@@ -20,6 +20,27 @@ export const USE_API_PROXY =
 
 export const ACCESS_TOKEN_KEY = 'carschek-access-token';
 
+export class ApiError extends Error {
+  status?: number;
+  data?: unknown;
+
+  constructor(message: string, status?: number, data?: unknown) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
+function toErrorMessage(data: unknown, fallback: string): string {
+  if (typeof data === 'string' && data.trim()) return data;
+  if (data && typeof data === 'object') {
+    const rec = data as Record<string, unknown>;
+    if (typeof rec.message === 'string' && rec.message.trim()) return rec.message;
+  }
+  return fallback;
+}
+
 const configuredBaseURL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || 'https://api.yourdomain.com/api/v1';
 
@@ -45,7 +66,9 @@ apiClient.interceptors.request.use(config => {
 apiClient.interceptors.response.use(
   r => r,
   err => {
-    if (err?.response?.status === 401 && typeof window !== 'undefined') {
+    const reqUrl = String(err?.config?.url || '');
+    const isAuthAttempt = /\/auth\/(login|verify-otp|resend-otp|forgot-password|reset-password)/.test(reqUrl);
+    if (err?.response?.status === 401 && typeof window !== 'undefined' && !isAuthAttempt) {
       window.localStorage.removeItem(ACCESS_TOKEN_KEY);
       clearCarschekSessionCookies();
       const path = window.location.pathname;
@@ -57,8 +80,10 @@ apiClient.interceptors.response.use(
         window.location.assign('/authentication-screen');
       }
     }
-    const msg = err?.response?.data?.message || err?.message || 'Request failed';
-    return Promise.reject(new Error(typeof msg === 'string' ? msg : JSON.stringify(msg)));
+    const data = err?.response?.data;
+    const fallback = typeof err?.message === 'string' ? err.message : 'Request failed';
+    const msg = toErrorMessage(data, fallback);
+    return Promise.reject(new ApiError(typeof msg === 'string' ? msg : JSON.stringify(msg), err?.response?.status, data));
   }
 );
 

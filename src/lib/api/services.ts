@@ -5,7 +5,7 @@
  * Laravel returns bare arrays/objects and maps public_id → `id`. Thin adapters live here
  * so pages keep their existing field expectations.
  */
-import { apiClient, apiRequest, clearAccessToken, USE_API_MOCK } from '@/lib/api/client';
+import { ApiError, apiClient, apiRequest, clearAccessToken, USE_API_MOCK } from '@/lib/api/client';
 import {
   CARS,
   CUSTOMERS,
@@ -78,20 +78,45 @@ const DEMO_AUTH = [
 // ── Auth ────────────────────────────────────────────────────────────────────
 
 export type LoginOtpResponse = {
-  requires_otp: true;
+  requires_otp?: true;
   otp_token: string;
+  otp_sent?: boolean;
+  otp_email_failed?: boolean;
   otp_sent_via?: 'email';
   otp_destination?: string;
   expires_in_seconds?: number;
+  token?: string;
+  user?: AuthUser;
 };
 
+export type LoginSessionResponse = {
+  requires_otp?: false;
+  otp_skipped?: boolean;
+  otp_sent?: boolean;
+  otp_email_failed?: boolean;
+  message?: string;
+  token: string;
+  user: AuthUser;
+};
+
+export type LoginResponse = LoginOtpResponse | LoginSessionResponse;
+
 export type ResendOtpResponse = {
-  message: string;
-  otp_token: string;
+  message?: string;
+  otp_token?: string;
+  otp_sent?: boolean;
+  otp_email_failed?: boolean;
   otp_sent_via?: 'email';
   otp_destination?: string;
   expires_in_seconds?: number;
   retry_after_seconds?: number;
+  token?: string;
+  user?: AuthUser;
+};
+
+export type LoginOptions = {
+  /** Ask the API to skip email OTP (used when mail delivery already failed). */
+  skipOtp?: boolean;
 };
 
 function maskEmailLocal(email: string): string {
@@ -100,25 +125,104 @@ function maskEmailLocal(email: string): string {
   return `${local[0]}***@${domain}`;
 }
 
+function mockUserFromDemo(match: (typeof DEMO_AUTH)[number]): AuthUser {
+  return {
+    id: match.public_id,
+    public_id: match.public_id,
+    name: match.name,
+    email: match.email,
+    role: match.role,
+    avatar: match.name
+      .split(' ')
+      .map(p => p[0])
+      .join('')
+      .slice(0, 2),
+    status: 'Active',
+  };
+}
+
+function unwrapAuthPayload(raw: unknown): Record<string, unknown> | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const obj = raw as Record<string, unknown>;
+  const nested = obj.data;
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    const inner = nested as Record<string, unknown>;
+    if ('token' in inner || 'otp_token' in inner || 'user' in inner || 'requires_otp' in inner) {
+      return inner;
+    }
+  }
+  return obj;
+}
+
+export function asLoginSession(raw: unknown): LoginSessionResponse | null {
+  const obj = unwrapAuthPayload(raw);
+  if (!obj) return null;
+  const token = obj.token;
+  const user = obj.user;
+  if (typeof token !== 'string' || !token || !user || typeof user !== 'object') return null;
+  return {
+    ...(obj as LoginSessionResponse),
+    token,
+    user: user as AuthUser,
+  };
+}
+
+export function otpEmailFailed(raw: unknown): boolean {
+  const obj = unwrapAuthPayload(raw);
+  if (!obj) return false;
+  if (obj.otp_email_failed === true || obj.otp_sent === false || obj.otp_skipped === true) return true;
+  const message = typeof obj.message === 'string' ? obj.message : '';
+  return /verification email|could not send|smtp|mailer|unable to send/i.test(message);
+}
+
+export function isOtpMailFailure(err: unknown): boolean {
+  if (err instanceof ApiError && otpEmailFailed(err.data)) return true;
+  const message = err instanceof Error ? err.message : String(err);
+  return /verification email|could not send|smtp|mailer|unable to send/i.test(message);
+}
+
+export function shouldPromptOtp(res: LoginResponse): boolean {
+  if (otpEmailFailed(res)) return false;
+  if (res.requires_otp === false) return false;
+  if (asLoginSession(res) && res.requires_otp !== true) return false;
+  return typeof (res as LoginOtpResponse).otp_token === 'string' && Boolean((res as LoginOtpResponse).otp_token);
+}
+
 export const authApi = {
-  login: async (email: string, password: string) => {
+  login: async (email: string, password: string, options?: LoginOptions): Promise<LoginResponse> => {
     if (USE_API_MOCK) {
       await mockData(null, 400);
       const match = DEMO_AUTH.find(a => a.email === email && a.password === password);
       if (!match) throw new Error('Invalid credentials.');
+      if (options?.skipOtp) {
+        return {
+          requires_otp: false,
+          otp_skipped: true,
+          otp_email_failed: true,
+          token: `mock-token-${match.public_id}`,
+          user: mockUserFromDemo(match),
+        } satisfies LoginSessionResponse;
+      }
       return {
         requires_otp: true as const,
         otp_token: `mock-otp:${match.email}`,
+        otp_sent: true,
         otp_sent_via: 'email' as const,
         otp_destination: maskEmailLocal(match.email),
         expires_in_seconds: 600,
       } satisfies LoginOtpResponse;
     }
-    return apiRequest<LoginOtpResponse>({
+    const raw = await apiRequest<unknown>({
       method: 'POST',
       url: '/auth/login',
-      data: { email, password },
+      data: {
+        email,
+        password,
+        skip_otp: Boolean(options?.skipOtp),
+        skip_otp_if_mail_fails: true,
+      },
     });
+    return (unwrapAuthPayload(raw) ?? raw) as LoginResponse;
   },
 
   resendOtp: async (otp_token: string) => {
@@ -134,11 +238,12 @@ export const authApi = {
         retry_after_seconds: 60,
       } satisfies ResendOtpResponse;
     }
-    return apiRequest<ResendOtpResponse>({
+    const raw = await apiRequest<unknown>({
       method: 'POST',
       url: '/auth/resend-otp',
       data: { otp_token },
     });
+    return (unwrapAuthPayload(raw) ?? raw) as ResendOtpResponse;
   },
 
   verifyOtp: async (otp_token: string, code: string) => {
@@ -149,26 +254,19 @@ export const authApi = {
       const match = DEMO_AUTH.find(a => a.email === email) ?? DEMO_AUTH[0];
       return {
         token: `mock-token-${match.public_id}`,
-        user: {
-          id: match.public_id,
-          public_id: match.public_id,
-          name: match.name,
-          email: match.email,
-          role: match.role,
-          avatar: match.name
-            .split(' ')
-            .map(p => p[0])
-            .join('')
-            .slice(0, 2),
-          status: 'Active',
-        } satisfies AuthUser,
+        user: mockUserFromDemo(match),
       };
     }
-    return apiRequest<{ token: string; user: AuthUser }>({
+    const raw = await apiRequest<unknown>({
       method: 'POST',
       url: '/auth/verify-otp',
       data: { otp_token, code },
     });
+    const payload = (unwrapAuthPayload(raw) ?? raw) as { token: string; user: AuthUser };
+    if (!payload?.token || !payload?.user) {
+      throw new Error('Verification did not return a session.');
+    }
+    return payload;
   },
 
   logout: async () => {
