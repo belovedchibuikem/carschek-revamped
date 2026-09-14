@@ -14,6 +14,7 @@ const PUBLIC_PREFIXES = [
   '/authentication-screen',
   '/login',
   '/auth/',
+  '/api/',
   '/403',
   '/server-error',
   '/_next',

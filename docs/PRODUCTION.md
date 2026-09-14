@@ -14,7 +14,9 @@ Copy-Item .env.example .env.local
 | Variable | Production |
 |----------|------------|
 | `NEXT_PUBLIC_USE_API_MOCK` | `false` |
-| `NEXT_PUBLIC_API_BASE_URL` | `https://api.yourdomain.com/api/v1` |
+| `NEXT_PUBLIC_API_BASE_URL` | Laravel origin, e.g. `https://webapp.carschek.com/api/v1` |
+| `API_UPSTREAM_URL` | Same as Laravel origin (server-only; optional if `NEXT_PUBLIC_API_BASE_URL` is set) |
+| `NEXT_PUBLIC_API_USE_PROXY` | `true` (browser calls same-origin `/api/v1`) |
 | `NEXT_PUBLIC_ENABLE_AUTH_GUARD` | `true` |
 | `NEXT_PUBLIC_DISABLE_MIDDLEWARE` | `false` |
 | `NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS` | `false` (omit; production builds hide the panel) |
@@ -29,7 +31,11 @@ On API `401`, the axios client clears the bearer token + session cookies and red
 
 ### CORS
 
-API `FRONTEND_URL` / `CORS_ALLOWED_ORIGINS` must match this app’s browser origin (e.g. `https://app.yourdomain.com`).
+The browser talks to **same-origin** `/api/v1/*`. Next.js proxies those requests to Laravel (`API_UPSTREAM_URL` or `NEXT_PUBLIC_API_BASE_URL`). That avoids CORS when the UI is on Vercel (`https://carschek.vercel.app`) and the API is on another host.
+
+Keep `NEXT_PUBLIC_API_BASE_URL` as the **Laravel** URL, not the Vercel URL. Pointing it at this Next.js app creates a proxy loop.
+
+If you set `NEXT_PUBLIC_API_USE_PROXY=false` (direct browser → Laravel), API `FRONTEND_URL` / `CORS_ALLOWED_ORIGINS` must include this app’s origin (e.g. `https://carschek.vercel.app`).
 
 ## Build & run
 
@@ -50,7 +56,8 @@ Minimal security headers are set in `next.config.mjs` (`X-Content-Type-Options`,
 
 ## Operator must set
 
-1. `NEXT_PUBLIC_API_BASE_URL` to the real API
-2. Matching CORS on the API
-3. TLS for `app.yourdomain.com`
-4. Production env without demo accounts / middleware bypass
+1. `NEXT_PUBLIC_API_BASE_URL` (and optionally `API_UPSTREAM_URL`) to the real Laravel API
+2. Redeploy after changing `NEXT_PUBLIC_*` vars (they are inlined at build time)
+3. Matching CORS on the API only if the browser calls Laravel directly (`NEXT_PUBLIC_API_USE_PROXY=false`)
+4. TLS for `app.yourdomain.com`
+5. Production env without demo accounts / middleware bypass

@@ -10,18 +10,29 @@ import { clearCarschekSessionCookies } from '@/lib/auth/session';
 export const USE_API_MOCK =
   (process.env.NEXT_PUBLIC_USE_API_MOCK ?? 'true').trim().toLowerCase() !== 'false';
 
+/**
+ * Browser calls go to same-origin `/api/v1` (Next.js proxies to Laravel).
+ * That avoids CORS when the UI is on Vercel and the API is on another host.
+ * Set NEXT_PUBLIC_API_USE_PROXY=false to call Laravel directly from the browser.
+ */
+export const USE_API_PROXY =
+  (process.env.NEXT_PUBLIC_API_USE_PROXY ?? 'true').trim().toLowerCase() !== 'false';
+
 export const ACCESS_TOKEN_KEY = 'carschek-access-token';
 
-const baseURL =
+const configuredBaseURL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || 'https://api.yourdomain.com/api/v1';
 
 export const apiClient: AxiosInstance = axios.create({
-  baseURL,
+  baseURL: configuredBaseURL,
   timeout: 30000,
   headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
 });
 
 apiClient.interceptors.request.use(config => {
+  if (typeof window !== 'undefined' && USE_API_PROXY) {
+    config.baseURL = '/api/v1';
+  }
   if (typeof window !== 'undefined') {
     const token = window.localStorage.getItem(ACCESS_TOKEN_KEY);
     if (token) {
