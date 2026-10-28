@@ -14,7 +14,7 @@ import {
 } from '@/lib/inspection/mockInspectorJobs';
 import { mapOrderToJobCard } from '@/lib/inspection/mapOrderToJobCard';
 import { authApi, inspectorsApi } from '@/lib/api/services';
-import { isApiMock } from '@/lib/api/client';
+import { USE_API_MOCK } from '@/lib/api/client';
 import type { InspectionLayoutMode } from '@/components/inspection/InspectionSession';
 
 const DEFAULT_INSPECTOR_ID = 'INS-001';
@@ -76,7 +76,7 @@ export function JobsScreen({ layout }: Props) {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      if (isApiMock()) {
+      if (USE_API_MOCK) {
         setJobs(MOCK_INSPECTOR_JOBS);
         setInspectorName(MOCK_INSPECTOR_NAME);
         return;
