@@ -28,6 +28,8 @@ import {
   loadDamagePhotosForOrder,
 } from '@/lib/inspection/dexieDamagePhotos';
 import { USE_API_MOCK } from '@/lib/api/client';
+import { PHASE1_OBSERVED_RISKS } from '@/lib/ai/phase1Flags';
+import { buildObservedRisks } from '@/lib/ai/observedRisks';
 import { carsApi, ordersApi, reportsApi } from '@/lib/api/services';
 
 const REPORT_INSPECTOR_NAME = 'Emeka Adeyemi';
@@ -495,5 +497,12 @@ export async function buildReportData(
     },
     scoreCategories,
     repairCosts: repairCosts.length ? repairCosts : null,
+    observedRisks: PHASE1_OBSERVED_RISKS
+      ? buildObservedRisks({
+          score: scoreNum,
+          defects,
+          sectionBreakdowns,
+        })
+      : null,
   };
 }

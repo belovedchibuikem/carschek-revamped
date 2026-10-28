@@ -1,11 +1,17 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { Car, DollarSign, FileText, Printer, Plus, Trash2, X, CheckCircle, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import AppLayout from '@/components/AppLayout';
 import { captureElementToPdf } from '@/lib/reportPdf';
 import { CARSCHEK_LOGO_PATH } from '@/lib/branding';
-import { valuationsApi, type ValuationRow } from '@/lib/api/services';
+import { aiTrainingApi, valuationsApi, type ValuationRow } from '@/lib/api/services';
+import { mergeParsedIntoForm, parseVehicleDescription } from '@/lib/valuations/parseVehicleDescription';
+import { downloadCsv } from '@/lib/ai/exportCsv';
+import { ValuationAssistPanel } from '@/components/valuations/ValuationAssistPanel';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -228,22 +234,34 @@ function ValuationFormModal({
   onSave,
   initial,
   saving,
+  comps = [],
 }: {
   onClose: () => void;
   onSave: (data: Omit<ValuationData, 'id' | 'createdAt'> & { id?: string; createdAt?: string }) => void | Promise<void>;
   initial?: Partial<ValuationData>;
   saving?: boolean;
+  comps?: ValuationData[];
 }) {
   const [form, setForm] = useState<Partial<ValuationData>>(() => {
     const base: Partial<ValuationData> = {
       date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       clientName: '',
       vehicleDescription: '',
+      vin: '',
+      plate: '',
+      carId: '',
+      inspectionId: '',
+      make: '',
+      model: '',
+      year: undefined,
+      mileage: undefined,
       marketValue: 0,
       fsv: 0,
       conditionValue: 0,
       notes: '',
       status: 'draft',
+      trainingConsent: false,
+      featureSnapshot: null,
       ...initial,
     };
     const marketValue = Number(base.marketValue) || 0;
@@ -252,9 +270,34 @@ function ValuationFormModal({
     }
     return base;
   });
+  const [snapshotStatus, setSnapshotStatus] = useState<'idle' | 'loading' | 'attached' | 'missing'>('idle');
 
-  const set = (key: keyof ValuationData, value: string | number) => {
+  const set = (key: keyof ValuationData, value: string | number | boolean | null | Record<string, unknown>) => {
     setForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  const attachSnapshotForInspection = async (inspectionId: string) => {
+    const id = inspectionId.trim();
+    if (!id) {
+      setSnapshotStatus('idle');
+      setForm(prev => ({ ...prev, featureSnapshot: null }));
+      return;
+    }
+    setSnapshotStatus('loading');
+    const res = await aiTrainingApi.featureSnapshot(id);
+    const snap =
+      res && typeof res === 'object' && 'snapshot' in res && res.snapshot && typeof res.snapshot === 'object'
+        ? (res.snapshot as Record<string, unknown>)
+        : res && typeof res === 'object'
+          ? (res as Record<string, unknown>)
+          : null;
+    if (snap) {
+      setForm(prev => ({ ...prev, featureSnapshot: snap }));
+      setSnapshotStatus('attached');
+    } else {
+      setForm(prev => ({ ...prev, featureSnapshot: null }));
+      setSnapshotStatus('missing');
+    }
   };
 
   const setMarketValue = (value: number) => {
@@ -276,11 +319,21 @@ function ValuationFormModal({
       date: form.date ?? '',
       clientName: form.clientName ?? '',
       vehicleDescription: form.vehicleDescription ?? '',
+      vin: form.vin || null,
+      plate: form.plate || null,
+      carId: form.carId || null,
+      inspectionId: form.inspectionId || null,
+      make: form.make || null,
+      model: form.model || null,
+      year: form.year ? Number(form.year) : null,
+      mileage: form.mileage != null && form.mileage !== undefined ? Number(form.mileage) : null,
       marketValue,
       fsv: calculateFsv(marketValue),
       conditionValue: Number(form.conditionValue) || 0,
       notes: form.notes ?? '',
       status: 'final',
+      trainingConsent: Boolean(form.trainingConsent),
+      featureSnapshot: form.featureSnapshot ?? null,
       createdAt: initial?.createdAt,
     });
   };
@@ -332,11 +385,148 @@ function ValuationFormModal({
                 type="text"
                 value={form.vehicleDescription ?? ''}
                 onChange={e => set('vehicleDescription', e.target.value)}
+                onBlur={() => {
+                  const parsed = parseVehicleDescription(String(form.vehicleDescription ?? ''));
+                  setForm(prev => mergeParsedIntoForm(prev, parsed));
+                }}
                 placeholder="e.g. TOYOTA CAMRY 2004 4T1BE32K34U365910 SGM632AE"
                 className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
               />
-              <p className="mt-0.5 text-[10px] text-[#9CA3AF]">Format: MAKE MODEL YEAR VIN PLATE</p>
+              <p className="mt-0.5 text-[10px] text-[#9CA3AF]">
+                Format: MAKE MODEL YEAR VIN PLATE — empty linkage fields auto-fill on blur
+              </p>
             </div>
+
+            <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-[#F9FAFB] p-4">
+              <p className="mb-3 text-xs font-semibold text-[#1E3A5F]">AI training linkage (optional)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">VIN</label>
+                  <input
+                    type="text"
+                    value={form.vin ?? ''}
+                    onChange={e => set('vin', e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Plate</label>
+                  <input
+                    type="text"
+                    value={form.plate ?? ''}
+                    onChange={e => set('plate', e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Car ID</label>
+                  <input
+                    type="text"
+                    value={form.carId ?? ''}
+                    onChange={e => set('carId', e.target.value)}
+                    placeholder="CK-…"
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Inspection ID</label>
+                  <input
+                    type="text"
+                    value={form.inspectionId ?? ''}
+                    onChange={e => {
+                      set('inspectionId', e.target.value);
+                      setSnapshotStatus('idle');
+                    }}
+                    onBlur={e => void attachSnapshotForInspection(e.target.value)}
+                    placeholder="INS-RPT-…"
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  />
+                  <p className="mt-0.5 text-[10px] text-[#6B7280]">
+                    {snapshotStatus === 'loading'
+                      ? 'Fetching feature snapshot…'
+                      : snapshotStatus === 'attached' || form.featureSnapshot
+                        ? 'Feature snapshot attached'
+                        : snapshotStatus === 'missing'
+                          ? 'No snapshot found for this inspection'
+                          : 'Blur to attach inspection feature snapshot'}
+                  </p>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Make</label>
+                  <input
+                    type="text"
+                    value={form.make ?? ''}
+                    onChange={e => set('make', e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Model</label>
+                  <input
+                    type="text"
+                    value={form.model ?? ''}
+                    onChange={e => set('model', e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Year</label>
+                  <input
+                    type="number"
+                    value={form.year ?? ''}
+                    onChange={e => set('year', e.target.value ? Number(e.target.value) : (null as unknown as number))}
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Mileage</label>
+                  <input
+                    type="number"
+                    value={form.mileage ?? ''}
+                    onChange={e => set('mileage', e.target.value ? Number(e.target.value) : (null as unknown as number))}
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  />
+                </div>
+              </div>
+              <label className="mt-3 flex items-start gap-2 text-xs text-[#374151]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.trainingConsent)}
+                  onChange={e => set('trainingConsent', e.target.checked)}
+                  className="mt-0.5 rounded border-[#D1D5DB]"
+                />
+                <span>Allow this valuation to be used for Carschek AI price training (consent).</span>
+              </label>
+            </div>
+
+            <ValuationAssistPanel
+              input={{
+                make: form.make,
+                model: form.model,
+                year: form.year,
+                mileage: form.mileage,
+                score: form.featureSnapshot && typeof (form.featureSnapshot as { inspection?: { score?: number } }).inspection?.score === 'number'
+                  ? (form.featureSnapshot as { inspection: { score: number } }).inspection.score
+                  : null,
+                comps: comps.map(c => ({
+                  make: c.make,
+                  model: c.model,
+                  year: c.year,
+                  mileage: c.mileage,
+                  marketValue: c.marketValue,
+                  conditionValue: c.conditionValue,
+                })),
+              }}
+              onApply={({ marketValue, fsv, conditionValue }) => {
+                setForm(prev => ({
+                  ...prev,
+                  marketValue,
+                  fsv,
+                  conditionValue,
+                }));
+                toast.message('Suggestions applied — review before saving');
+              }}
+            />
 
             <div className="grid grid-cols-3 gap-4">
               <div>
@@ -489,6 +679,7 @@ function PrintPreviewModal({ data, onClose }: { data: ValuationData; onClose: ()
 // ─── Main Valuation Module ────────────────────────────────────────────────────
 
 export default function VehicleValuationPage() {
+  const pathname = usePathname();
   const [valuations, setValuations] = useState<ValuationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -514,12 +705,69 @@ export default function VehicleValuationPage() {
     void load();
   }, [load]);
 
-  const filtered = valuations.filter(
-    v =>
-      v.clientName.toLowerCase().includes(search.toLowerCase()) ||
-      v.vehicleDescription.toLowerCase().includes(search.toLowerCase()) ||
-      v.id.toLowerCase().includes(search.toLowerCase())
-  );
+  const q = search.toLowerCase().trim();
+  const filtered = valuations.filter(v => {
+    if (!q) return true;
+    return (
+      v.clientName.toLowerCase().includes(q) ||
+      v.vehicleDescription.toLowerCase().includes(q) ||
+      v.id.toLowerCase().includes(q) ||
+      (v.vin || '').toLowerCase().includes(q) ||
+      (v.inspectionId || '').toLowerCase().includes(q) ||
+      (v.carId || '').toLowerCase().includes(q) ||
+      (v.plate || '').toLowerCase().includes(q)
+    );
+  });
+
+  const exportTrainingCsv = () => {
+    const rows = valuations.filter(v => v.trainingConsent);
+    downloadCsv(
+      `carschek-valuations-training-${new Date().toISOString().slice(0, 10)}.csv`,
+      [
+        'id',
+        'date',
+        'clientName',
+        'vehicleDescription',
+        'vin',
+        'plate',
+        'carId',
+        'inspectionId',
+        'make',
+        'model',
+        'year',
+        'mileage',
+        'marketValue',
+        'fsv',
+        'conditionValue',
+        'status',
+        'trainingConsent',
+        'hasFeatureSnapshot',
+        'createdAt',
+      ],
+      rows.map(v => [
+        v.id,
+        v.date,
+        v.clientName,
+        v.vehicleDescription,
+        v.vin ?? '',
+        v.plate ?? '',
+        v.carId ?? '',
+        v.inspectionId ?? '',
+        v.make ?? '',
+        v.model ?? '',
+        v.year ?? '',
+        v.mileage ?? '',
+        v.marketValue,
+        v.fsv,
+        v.conditionValue,
+        v.status,
+        v.trainingConsent ? '1' : '0',
+        v.featureSnapshot ? '1' : '0',
+        v.createdAt,
+      ])
+    );
+    toast.success(`Exported ${rows.length} consented valuation(s)`);
+  };
 
   const handleSave = async (
     data: Omit<ValuationData, 'id' | 'createdAt'> & { id?: string; createdAt?: string }
@@ -530,11 +778,21 @@ export default function VehicleValuationPage() {
         date: data.date,
         clientName: data.clientName,
         vehicleDescription: data.vehicleDescription,
+        vin: data.vin ?? null,
+        plate: data.plate ?? null,
+        carId: data.carId ?? null,
+        inspectionId: data.inspectionId ?? null,
+        make: data.make ?? null,
+        model: data.model ?? null,
+        year: data.year ?? null,
+        mileage: data.mileage ?? null,
         marketValue: data.marketValue,
         fsv: data.fsv,
         conditionValue: data.conditionValue,
         notes: data.notes,
         status: data.status,
+        trainingConsent: Boolean(data.trainingConsent),
+        featureSnapshot: data.featureSnapshot ?? null,
       };
       if (data.id) {
         await valuationsApi.update(data.id, payload);
@@ -569,23 +827,42 @@ export default function VehicleValuationPage() {
   const totalMarketValue = valuations.reduce((a, v) => a + (Number(v.marketValue) || 0), 0);
 
   return (
+    <AppLayout currentPath={pathname}>
     <div className="min-h-screen bg-[#F4F6F8]">
       <div className="border-b border-[#E5E7EB] bg-white px-6 py-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-[#1F2937]">Vehicle Valuation</h1>
-            <p className="mt-0.5 text-sm text-[#6B7280]">Professional vehicle valuation price reports</p>
+            <p className="mt-0.5 text-sm text-[#6B7280]">
+              Professional vehicle valuation price reports ·{' '}
+              <Link href="/vehicle-outcomes" className="font-semibold text-[#2E75B6] hover:underline">
+                Log outcomes
+              </Link>
+              {' · '}
+              <Link href="/ai-training" className="font-semibold text-[#2E75B6] hover:underline">
+                AI training baseline
+              </Link>
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setEditData(undefined);
-              setShowForm(true);
-            }}
-            className="flex items-center gap-2 rounded-xl bg-[#ff5722] px-4 py-2.5 text-sm font-bold text-white shadow hover:bg-[#e64a19]"
-          >
-            <Plus size={16} /> New Valuation
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={exportTrainingCsv}
+              className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-semibold text-[#374151] hover:bg-[#F4F6F8]"
+            >
+              <Download size={16} /> Export training CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditData(undefined);
+                setShowForm(true);
+              }}
+              className="flex items-center gap-2 rounded-xl bg-[#ff5722] px-4 py-2.5 text-sm font-bold text-white shadow hover:bg-[#e64a19]"
+            >
+              <Plus size={16} /> New Valuation
+            </button>
+          </div>
         </div>
       </div>
 
@@ -627,7 +904,7 @@ export default function VehicleValuationPage() {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by client, vehicle, or ID..."
+            placeholder="Search by client, vehicle, VIN, inspection, or ID..."
             className="w-full max-w-md rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
           />
           {loading ? <span className="text-xs text-[#6B7280]">Loading…</span> : null}
@@ -645,6 +922,7 @@ export default function VehicleValuationPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Date</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Client</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Vehicle</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#6B7280]">AI link</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Market Value</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#6B7280]">FSV</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Condition</th>
@@ -655,7 +933,7 @@ export default function VehicleValuationPage() {
               <tbody className="divide-y divide-[#F4F6F8]">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#9CA3AF]">
+                    <td colSpan={10} className="px-4 py-12 text-center text-sm text-[#9CA3AF]">
                       {loading ? 'Loading valuations…' : 'No valuations found. Create your first valuation.'}
                     </td>
                   </tr>
@@ -667,6 +945,33 @@ export default function VehicleValuationPage() {
                       <td className="px-4 py-3 font-semibold text-[#1F2937]">{v.clientName}</td>
                       <td className="max-w-[200px] px-4 py-3 text-xs text-[#374151]">
                         <span className="line-clamp-2">{v.vehicleDescription}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {v.vin ? (
+                            <span className="rounded bg-[#E8F1FB] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#1E3A5F]">
+                              VIN
+                            </span>
+                          ) : null}
+                          {v.inspectionId ? (
+                            <span className="rounded bg-[#FEF3E8] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#D35400]">
+                              INS
+                            </span>
+                          ) : null}
+                          {v.trainingConsent ? (
+                            <span className="rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-[#1A7A4A]">
+                              Train
+                            </span>
+                          ) : null}
+                          {v.featureSnapshot ? (
+                            <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700">
+                              Snap
+                            </span>
+                          ) : null}
+                          {!v.vin && !v.inspectionId && !v.trainingConsent ? (
+                            <span className="text-[10px] text-[#9CA3AF]">—</span>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right font-bold text-[#1A7A4A]">{formatNaira(v.marketValue)}</td>
                       <td className="px-4 py-3 text-right text-xs text-[#374151]">{formatNaira(v.fsv)}</td>
@@ -725,6 +1030,7 @@ export default function VehicleValuationPage() {
           key={editData?.id ?? 'new'}
           initial={editData}
           saving={saving}
+          comps={valuations.filter(v => v.id !== editData?.id)}
           onClose={() => {
             if (saving) return;
             setShowForm(false);
@@ -735,5 +1041,6 @@ export default function VehicleValuationPage() {
       )}
       {printData && <PrintPreviewModal data={printData} onClose={() => setPrintData(undefined)} />}
     </div>
+    </AppLayout>
   );
 }

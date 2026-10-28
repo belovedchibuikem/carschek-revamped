@@ -5,11 +5,22 @@ export type ValuationRecord = {
   date: string;
   clientName: string;
   vehicleDescription: string;
+  /** Optional Phase 0 AI linkage — never required for existing flows */
+  vin?: string | null;
+  plate?: string | null;
+  carId?: string | null;
+  inspectionId?: string | null;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  mileage?: number | null;
   marketValue: number;
   fsv: number;
   conditionValue: number;
   notes: string;
   status: 'draft' | 'final';
+  trainingConsent?: boolean;
+  featureSnapshot?: Record<string, unknown> | null;
   createdAt: string;
 };
 
@@ -21,11 +32,17 @@ export const VALUATION_SEED: ValuationRecord[] = [
     date: 'April 20, 2026',
     clientName: 'KOINS BANK LTD',
     vehicleDescription: 'TOYOTA CAMRY 2004 4T1BE32K34U365910 SGM632AE',
+    vin: '4T1BE32K34U365910',
+    plate: 'SGM632AE',
+    make: 'TOYOTA',
+    model: 'CAMRY',
+    year: 2004,
     marketValue: 4000000,
     fsv: 2800000,
     conditionValue: 2000000,
     notes: '',
     status: 'final',
+    trainingConsent: true,
     createdAt: '2026-04-20',
   },
   {
@@ -33,11 +50,17 @@ export const VALUATION_SEED: ValuationRecord[] = [
     date: 'April 18, 2026',
     clientName: 'FIRST BANK PLC',
     vehicleDescription: 'HONDA ACCORD 2018 1HGCV1F30JA012345 LND789KJ',
+    vin: '1HGCV1F30JA012345',
+    plate: 'LND789KJ',
+    make: 'HONDA',
+    model: 'ACCORD',
+    year: 2018,
     marketValue: 8500000,
     fsv: 6000000,
     conditionValue: 5200000,
     notes: 'Minor scratches on rear bumper',
     status: 'final',
+    trainingConsent: true,
     createdAt: '2026-04-18',
   },
 ];

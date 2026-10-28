@@ -1,11 +1,13 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ArrowLeft, TrendingUp, TrendingDown, ChevronDown, Calculator, Info } from 'lucide-react';
 import {
   brandOptionsByName,
   modelOptionsByName,
   yearOptionsForModelName,
 } from '@/lib/reference/carCascade';
+import { suggestValuation } from '@/lib/ai/valuationAssistant';
+import { PHASE1_DISCLAIMER } from '@/lib/ai/phase1Flags';
 
 interface Props { onBack: () => void; }
 
@@ -24,12 +26,29 @@ export default function PricingGuidanceTool({ onBack }: Props) {
   const [score, setScore] = useState('82');
   const [hasResult, setHasResult] = useState(false);
 
-  const estimatedMin = 4800000;
-  const estimatedMax = 5500000;
-  const estimatedMid = Math.round((estimatedMin + estimatedMax) / 2);
-  const askingPrice = 5200000;
+  const assist = useMemo(() => {
+    return suggestValuation({
+      make,
+      model,
+      year: year ? Number(year) : null,
+      mileage: mileage ? Number(mileage) : null,
+      score: score ? Number(score) : null,
+      comps: COMP_SALES.map(c => ({
+        make: 'Toyota',
+        model: 'Camry',
+        year: c.vehicle.startsWith('2020') ? 2020 : 2019,
+        mileage: c.mileage,
+        marketValue: c.price,
+      })),
+    });
+  }, [make, model, year, mileage, score]);
 
-  const pricePosition = ((askingPrice - estimatedMin) / (estimatedMax - estimatedMin)) * 100;
+  const estimatedMin = assist?.rangeLow ?? 4800000;
+  const estimatedMax = assist?.rangeHigh ?? 5500000;
+  const askingPrice = assist?.suggestedMarketValue ?? 5200000;
+
+  const span = Math.max(1, estimatedMax - estimatedMin);
+  const pricePosition = ((askingPrice - estimatedMin) / span) * 100;
   const isAbove = askingPrice > estimatedMax;
   const isBelow = askingPrice < estimatedMin;
   const isFair = !isAbove && !isBelow;
@@ -133,12 +152,15 @@ export default function PricingGuidanceTool({ onBack }: Props) {
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-heading font-semibold text-[#1F2937]">Estimated Market Value</h3>
-                <span className="text-[10px] bg-blue-50 text-[#ff8a65] border border-blue-200 px-2 py-0.5 rounded-full font-semibold">Based on {COMP_SALES.length} recent sales</span>
+                <span className="text-[10px] bg-blue-50 text-[#ff8a65] border border-blue-200 px-2 py-0.5 rounded-full font-semibold">
+                  Heuristic assist · {assist?.confidence ?? 'medium'} confidence
+                </span>
               </div>
 
               <div className="text-center mb-5">
                 <p className="text-3xl font-heading font-bold text-[#ff5722]">₦{estimatedMin.toLocaleString()} – ₦{estimatedMax.toLocaleString()}</p>
-                <p className="text-sm text-[#6B7280] mt-1">Fair price range for {year} {make} {model}</p>
+                <p className="text-sm text-[#6B7280] mt-1">Suggested range for {year} {make} {model}</p>
+                <p className="mt-2 text-[10px] text-[#6B7280] max-w-md mx-auto">{PHASE1_DISCLAIMER}</p>
               </div>
 
               {/* Number line */}

@@ -901,13 +901,38 @@ export type ValuationRow = {
   date: string;
   clientName: string;
   vehicleDescription: string;
+  vin?: string | null;
+  plate?: string | null;
+  carId?: string | null;
+  inspectionId?: string | null;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  mileage?: number | null;
   marketValue: number;
   fsv: number;
   conditionValue: number;
   notes: string;
   status: 'draft' | 'final';
+  trainingConsent?: boolean;
+  featureSnapshot?: Record<string, unknown> | null;
   createdAt: string;
 };
+
+function optionalStr(data: Record<string, unknown>, key: string): string | null | undefined {
+  if (!(key in data)) return undefined;
+  const v = data[key];
+  if (v == null || v === '') return null;
+  return String(v);
+}
+
+function optionalNum(data: Record<string, unknown>, key: string): number | null | undefined {
+  if (!(key in data)) return undefined;
+  const v = data[key];
+  if (v == null || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
 export const valuationsApi = {
   list: async (): Promise<ValuationRow[]> => {
@@ -935,11 +960,21 @@ export const valuationsApi = {
         date: String(data.date ?? ''),
         clientName: String(data.clientName ?? ''),
         vehicleDescription: String(data.vehicleDescription ?? ''),
+        vin: optionalStr(data, 'vin') ?? null,
+        plate: optionalStr(data, 'plate') ?? null,
+        carId: optionalStr(data, 'carId') ?? null,
+        inspectionId: optionalStr(data, 'inspectionId') ?? null,
+        make: optionalStr(data, 'make') ?? null,
+        model: optionalStr(data, 'model') ?? null,
+        year: optionalNum(data, 'year') ?? null,
+        mileage: optionalNum(data, 'mileage') ?? null,
         marketValue,
         fsv: data.fsv != null ? Number(data.fsv) : Math.round(marketValue * 0.7),
         conditionValue: Number(data.conditionValue) || 0,
         notes: String(data.notes ?? ''),
         status: (data.status as 'draft' | 'final') || 'final',
+        trainingConsent: Boolean(data.trainingConsent),
+        featureSnapshot: (data.featureSnapshot as Record<string, unknown> | null | undefined) ?? null,
         createdAt: new Date().toISOString().slice(0, 10),
       };
       return mockData(upsertLocalValuation(row), 300);
@@ -958,11 +993,25 @@ export const valuationsApi = {
         clientName: data.clientName != null ? String(data.clientName) : prev.clientName,
         vehicleDescription:
           data.vehicleDescription != null ? String(data.vehicleDescription) : prev.vehicleDescription,
+        vin: 'vin' in data ? optionalStr(data, 'vin') ?? null : prev.vin,
+        plate: 'plate' in data ? optionalStr(data, 'plate') ?? null : prev.plate,
+        carId: 'carId' in data ? optionalStr(data, 'carId') ?? null : prev.carId,
+        inspectionId: 'inspectionId' in data ? optionalStr(data, 'inspectionId') ?? null : prev.inspectionId,
+        make: 'make' in data ? optionalStr(data, 'make') ?? null : prev.make,
+        model: 'model' in data ? optionalStr(data, 'model') ?? null : prev.model,
+        year: 'year' in data ? optionalNum(data, 'year') ?? null : prev.year,
+        mileage: 'mileage' in data ? optionalNum(data, 'mileage') ?? null : prev.mileage,
         marketValue,
         fsv: data.fsv != null ? Number(data.fsv) : Math.round(marketValue * 0.7),
         conditionValue: data.conditionValue != null ? Number(data.conditionValue) : prev.conditionValue,
         notes: data.notes != null ? String(data.notes) : prev.notes,
         status: (data.status as 'draft' | 'final') || prev.status,
+        trainingConsent:
+          'trainingConsent' in data ? Boolean(data.trainingConsent) : Boolean(prev.trainingConsent),
+        featureSnapshot:
+          'featureSnapshot' in data
+            ? ((data.featureSnapshot as Record<string, unknown> | null) ?? null)
+            : prev.featureSnapshot,
       };
       return mockData(upsertLocalValuation(row), 300);
     }
@@ -976,6 +1025,200 @@ export const valuationsApi = {
       return;
     }
     await apiRequest<unknown>({ method: 'DELETE', url: `/valuations/${id}` });
+  },
+};
+
+// ── Vehicle outcome events (AI training labels) ──────────────────────────────
+
+export type OutcomeEventRow = {
+  id: string;
+  vin?: string | null;
+  plate?: string | null;
+  carId?: string | null;
+  inspectionId?: string | null;
+  eventType: 'repair' | 'reinspect' | 'customer_report' | 'warranty' | 'tracker_alert' | 'other';
+  systemArea?: 'engine' | 'transmission' | 'suspension' | 'electrical' | 'body' | 'brakes' | 'other' | null;
+  severity?: 'minor' | 'major' | 'critical' | null;
+  daysAfterInspection?: number | null;
+  occurredOn?: string | null;
+  description: string;
+  costAmount?: number | null;
+  source: 'manual' | 'tracker' | 'import' | 'api';
+  trainingConsent: boolean;
+  createdAt: string;
+};
+
+export const outcomesApi = {
+  list: async (): Promise<OutcomeEventRow[]> => {
+    if (USE_API_MOCK) {
+      const { listLocalOutcomes } = await import('@/lib/outcomes/localStore');
+      return mockData(listLocalOutcomes());
+    }
+    return apiRequest<OutcomeEventRow[]>({ method: 'GET', url: '/outcomes' });
+  },
+  create: async (data: Record<string, unknown>): Promise<OutcomeEventRow> => {
+    if (USE_API_MOCK) {
+      const { nextLocalOutcomeId, upsertLocalOutcome } = await import('@/lib/outcomes/localStore');
+      const row: OutcomeEventRow = {
+        id: nextLocalOutcomeId(),
+        vin: optionalStr(data, 'vin') ?? null,
+        plate: optionalStr(data, 'plate') ?? null,
+        carId: optionalStr(data, 'carId') ?? null,
+        inspectionId: optionalStr(data, 'inspectionId') ?? null,
+        eventType: (data.eventType as OutcomeEventRow['eventType']) || 'other',
+        systemArea: (data.systemArea as OutcomeEventRow['systemArea']) || null,
+        severity: (data.severity as OutcomeEventRow['severity']) || null,
+        daysAfterInspection: optionalNum(data, 'daysAfterInspection') ?? null,
+        occurredOn: optionalStr(data, 'occurredOn') ?? null,
+        description: String(data.description ?? ''),
+        costAmount: optionalNum(data, 'costAmount') ?? null,
+        source: (data.source as OutcomeEventRow['source']) || 'manual',
+        trainingConsent: data.trainingConsent !== false,
+        createdAt: new Date().toISOString().slice(0, 10),
+      };
+      return mockData(upsertLocalOutcome(row), 300);
+    }
+    return apiRequest<OutcomeEventRow>({ method: 'POST', url: '/outcomes', data });
+  },
+  update: async (id: string, data: Record<string, unknown>): Promise<OutcomeEventRow> => {
+    if (USE_API_MOCK) {
+      const { getLocalOutcome, upsertLocalOutcome } = await import('@/lib/outcomes/localStore');
+      const prev = getLocalOutcome(id);
+      if (!prev) throw new Error('Outcome not found');
+      const row: OutcomeEventRow = {
+        ...prev,
+        vin: 'vin' in data ? optionalStr(data, 'vin') ?? null : prev.vin,
+        plate: 'plate' in data ? optionalStr(data, 'plate') ?? null : prev.plate,
+        carId: 'carId' in data ? optionalStr(data, 'carId') ?? null : prev.carId,
+        inspectionId: 'inspectionId' in data ? optionalStr(data, 'inspectionId') ?? null : prev.inspectionId,
+        eventType: (data.eventType as OutcomeEventRow['eventType']) || prev.eventType,
+        systemArea:
+          'systemArea' in data
+            ? ((data.systemArea as OutcomeEventRow['systemArea']) ?? null)
+            : prev.systemArea,
+        severity:
+          'severity' in data ? ((data.severity as OutcomeEventRow['severity']) ?? null) : prev.severity,
+        daysAfterInspection:
+          'daysAfterInspection' in data
+            ? optionalNum(data, 'daysAfterInspection') ?? null
+            : prev.daysAfterInspection,
+        occurredOn: 'occurredOn' in data ? optionalStr(data, 'occurredOn') ?? null : prev.occurredOn,
+        description: data.description != null ? String(data.description) : prev.description,
+        costAmount: 'costAmount' in data ? optionalNum(data, 'costAmount') ?? null : prev.costAmount,
+        source: (data.source as OutcomeEventRow['source']) || prev.source,
+        trainingConsent:
+          'trainingConsent' in data ? data.trainingConsent !== false : prev.trainingConsent,
+      };
+      return mockData(upsertLocalOutcome(row), 300);
+    }
+    return apiRequest<OutcomeEventRow>({ method: 'PATCH', url: `/outcomes/${id}`, data });
+  },
+  remove: async (id: string): Promise<void> => {
+    if (USE_API_MOCK) {
+      const { deleteLocalOutcome } = await import('@/lib/outcomes/localStore');
+      deleteLocalOutcome(id);
+      await mockData({ ok: true }, 200);
+      return;
+    }
+    await apiRequest<unknown>({ method: 'DELETE', url: `/outcomes/${id}` });
+  },
+};
+
+export const scannerIngestApi = {
+  list: async (limit = 25): Promise<Array<Record<string, unknown>>> => {
+    if (USE_API_MOCK) {
+      const { listLocalScannerIngest } = await import('@/lib/ai/scannerIngestLocalStore');
+      return mockData(listLocalScannerIngest(limit) as unknown as Array<Record<string, unknown>>);
+    }
+    const res = await apiRequest<{ data: Array<Record<string, unknown>> }>({
+      method: 'GET',
+      url: '/scanner/ingest',
+      params: { limit },
+    });
+    return res.data ?? [];
+  },
+  ingest: async (body: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    if (USE_API_MOCK) {
+      const { addLocalScannerIngest } = await import('@/lib/ai/scannerIngestLocalStore');
+      return mockData(addLocalScannerIngest(body) as unknown as Record<string, unknown>, 200);
+    }
+    return apiRequest<Record<string, unknown>>({ method: 'POST', url: '/scanner/ingest', data: body });
+  },
+};
+
+export type AiBaselineCounts = {
+  inspectionsTotal: number;
+  inspectionsSubmitted: number;
+  featureSnapshots: number;
+  valuationsTotal: number;
+  valuationsWithVin: number;
+  valuationsWithInspection: number;
+  valuationsTrainingConsent: number;
+  valuationsWithSnapshot: number;
+  outcomesTotal: number;
+  outcomesTrainingConsent: number;
+  scannerIngestEvents: number;
+  phase0TablesReady: boolean;
+  generatedAt: string;
+};
+
+export const aiTrainingApi = {
+  baseline: async (): Promise<AiBaselineCounts> => {
+    if (USE_API_MOCK) {
+      const { listLocalValuations } = await import('@/lib/valuations/localStore');
+      const { listLocalOutcomes } = await import('@/lib/outcomes/localStore');
+      const { listLocalScannerIngest } = await import('@/lib/ai/scannerIngestLocalStore');
+      const vals = listLocalValuations();
+      const outs = listLocalOutcomes();
+      const scans = listLocalScannerIngest(100);
+      const withSnap = vals.filter(v => !!v.featureSnapshot).length;
+      return mockData({
+        inspectionsTotal: vals.filter(v => !!v.inspectionId).length,
+        inspectionsSubmitted: vals.filter(v => !!v.inspectionId).length,
+        featureSnapshots: withSnap,
+        valuationsTotal: vals.length,
+        valuationsWithVin: vals.filter(v => !!v.vin).length,
+        valuationsWithInspection: vals.filter(v => !!v.inspectionId).length,
+        valuationsTrainingConsent: vals.filter(v => !!v.trainingConsent).length,
+        valuationsWithSnapshot: withSnap,
+        outcomesTotal: outs.length,
+        outcomesTrainingConsent: outs.filter(o => o.trainingConsent).length,
+        scannerIngestEvents: scans.length,
+        phase0TablesReady: true,
+        generatedAt: new Date().toISOString(),
+      });
+    }
+    return apiRequest<AiBaselineCounts>({ method: 'GET', url: '/ai/baseline' });
+  },
+  featureSnapshot: async (inspectionId: string): Promise<Record<string, unknown> | null> => {
+    const id = inspectionId.trim();
+    if (!id) return null;
+    if (USE_API_MOCK) {
+      // Mock: synthesize a minimal snapshot so valuation attach / Snap badge can be exercised offline.
+      return mockData({
+        id: 0,
+        inspectionId: id,
+        schemaVersion: '1.0',
+        capturedAt: new Date().toISOString(),
+        snapshot: {
+          schemaVersion: '1.0',
+          capturedAt: new Date().toISOString(),
+          inspection: { id, score: null, band: null, defectsCount: 0, criticalDefectsCount: 0 },
+          vehicle: {},
+          sectionFailSummary: {},
+          items: [],
+          mock: true,
+        },
+      });
+    }
+    try {
+      return await apiRequest<Record<string, unknown>>({
+        method: 'GET',
+        url: `/inspections/${encodeURIComponent(id)}/feature-snapshot`,
+      });
+    } catch {
+      return null;
+    }
   },
 };
 

@@ -585,6 +585,62 @@ function HubDamageGallery({ data, variant }: { data: InspectionReportData; varia
   );
 }
 
+// ─── Observed Risks (Phase 1 — assisted, not prediction) ─────────────────────
+
+function riskLevelClass(level: string): string {
+  if (level === 'high') return 'bg-red-50 border-red-200 text-[#C0392B]';
+  if (level === 'elevated') return 'bg-orange-50 border-orange-200 text-[#D35400]';
+  if (level === 'moderate') return 'bg-amber-50 border-amber-200 text-amber-800';
+  return 'bg-green-50 border-green-200 text-[#1A7A4A]';
+}
+
+function ObservedRisksSection({ data, variant }: { data: InspectionReportData; variant: ReportVariant }) {
+  const block = data.observedRisks;
+  if (!block) return null;
+  if (!block.risks.length && !block.summary) return null;
+
+  const classic = variant === 'classic';
+  const h2 = classic ? 'text-sm font-black uppercase tracking-wide text-[#1F2937]' : 'text-base font-bold text-[#1F2937]';
+
+  return (
+    <section className="section-card">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h2 className={h2}>Observed risks (assisted)</h2>
+        <span
+          className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${riskLevelClass(block.overallLevel)}`}
+        >
+          Overall: {block.overallLevel}
+        </span>
+      </div>
+      <p className={`text-[#374151] ${classic ? 'text-[10px]' : 'text-sm'}`}>{block.summary}</p>
+      {block.risks.length > 0 ? (
+        <ul className={`mt-3 space-y-3 ${classic ? 'text-[10px]' : 'text-xs'}`}>
+          {block.risks.map(r => (
+            <li
+              key={r.id}
+              className={`rounded-lg border px-3 py-2 ${classic ? 'border-[#D1D5DB]' : 'border-[#E5E7EB] bg-[#F9FAFB]'}`}
+              style={{ pageBreakInside: 'avoid' }}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${riskLevelClass(r.level)}`}>
+                  {r.level}
+                </span>
+                <span className="font-semibold text-[#1F2937]">{r.title}</span>
+              </div>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[#6B7280]">
+                {r.drivers.map((d, i) => (
+                  <li key={i}>{d}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <p className={`mt-3 text-[#6B7280] ${classic ? 'text-[8px]' : 'text-[11px]'}`}>{block.disclaimer}</p>
+    </section>
+  );
+}
+
 // ─── Repair Costs ────────────────────────────────────────────────────────────
 
 function RepairCostsSection({ data, variant }: { data: InspectionReportData; variant: ReportVariant }) {
@@ -758,6 +814,9 @@ export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBody
 
       {/* ── S25: Damage Pictures ── */}
       <HubDamageGallery data={data} variant={variant} />
+
+      {/* ── Phase 1: Observed risks (additive) ── */}
+      <ObservedRisksSection data={data} variant={variant} />
 
       {/* ── Repair Costs ── */}
       <RepairCostsSection data={data} variant={variant} />

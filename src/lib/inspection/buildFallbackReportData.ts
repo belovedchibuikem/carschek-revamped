@@ -10,6 +10,8 @@ import type {
   SectionLineResult,
 } from '@/lib/inspection/reportTypes';
 import { VEHICLE_PHOTO_SLOTS } from '@/lib/inspection/vehiclePhotoAngles';
+import { PHASE1_OBSERVED_RISKS } from '@/lib/ai/phase1Flags';
+import { buildObservedRisks } from '@/lib/ai/observedRisks';
 
 export type ReportMetaForFallback = {
   id: string;
@@ -459,5 +461,12 @@ export function buildFallbackReportData(report: ReportMetaForFallback): Inspecti
       electrical: scoreNum,
     },
     repairCosts: null,
+    observedRisks: PHASE1_OBSERVED_RISKS
+      ? buildObservedRisks({
+          score: scoreNum,
+          defects,
+          sectionBreakdowns,
+        })
+      : null,
   };
 }

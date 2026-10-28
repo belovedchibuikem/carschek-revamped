@@ -116,6 +116,25 @@ export type RepairCostRow = {
   openEnded?: boolean;
 };
 
+/** Phase 1 — optional assisted observed risks (rules/heuristics, not ML prediction). */
+export type ObservedRiskLevel = 'low' | 'moderate' | 'elevated' | 'high';
+
+export type ObservedRiskItem = {
+  id: string;
+  systemArea: string;
+  level: ObservedRiskLevel;
+  title: string;
+  drivers: string[];
+  basedOn: 'defects' | 'score' | 'section_fail_rate';
+};
+
+export type ObservedRisksBlock = {
+  overallLevel: ObservedRiskLevel;
+  summary: string;
+  risks: ObservedRiskItem[];
+  disclaimer: string;
+};
+
 export type ReportLabelValue = {
   label: string;
   value: string;
@@ -148,4 +167,6 @@ export type InspectionReportData = {
   score: CarschekScore;
   scoreCategories: ScoreCategoryBreakdown;
   repairCosts: RepairCostRow[] | null;
+  /** Phase 1 additive — omit or null to hide section (fallback reports may leave undefined). */
+  observedRisks?: ObservedRisksBlock | null;
 };

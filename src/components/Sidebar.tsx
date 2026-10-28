@@ -9,6 +9,7 @@ import {
   MessageSquare, Tag, ShoppingBag, Handshake, DollarSign, Bell, Settings,
   ChevronLeft, ChevronRight, ChevronDown, LogOut, X, Database, Calendar, BarChart2,
   Activity, Shield, Layers, BookOpen, Smartphone, ArrowRightLeft, FileEdit, TrendingUp, Briefcase, BadgeDollarSign,
+  AlertTriangle, Brain, Cpu,
 } from 'lucide-react';
 
 type NavSubItem = { label: string; path: string; unconfirmedBadge?: boolean };
@@ -77,6 +78,9 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { icon: DollarSign, label: 'Finance', path: '/finance', badge: null },
       { icon: BadgeDollarSign, label: 'Vehicle Valuation', path: '/vehicle-valuation', badge: null },
+      { icon: AlertTriangle, label: 'Vehicle Outcomes', path: '/vehicle-outcomes', badge: null },
+      { icon: Brain, label: 'AI Training', path: '/ai-training', badge: null },
+      { icon: Cpu, label: 'Scanner Ingest', path: '/scanner-ingest', badge: null },
     ],
   },
   {

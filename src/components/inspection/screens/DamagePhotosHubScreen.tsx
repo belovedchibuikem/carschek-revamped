@@ -260,7 +260,7 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
             {ai.isAnalyzing && (
               <div className="mb-3 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900" role="status" aria-live="polite">
                 <Loader2 size={14} className={`shrink-0 ${reducedMotion ? '' : 'animate-spin'}`} aria-hidden />
-                <p>Carschek AI is analysing this photo…</p>
+                <p>Carschek assist is analysing this photo…</p>
               </div>
             )}
 
@@ -272,6 +272,7 @@ export function DamagePhotosHubScreen({ layout, jobId, backHref }: Props) {
                 </div>
                 <p className="mt-1 text-xs font-semibold text-[#E5534B]">{ai.result.defect}</p>
                 <p className="mt-1 text-[11px] text-[#6B7280]">{ai.result.description}</p>
+                <p className="mt-1 text-[10px] text-[#9CA3AF]">Suggestion only — edit name/comment before saving.</p>
               </div>
             )}
 

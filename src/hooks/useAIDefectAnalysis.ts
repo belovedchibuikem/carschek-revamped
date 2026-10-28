@@ -10,6 +10,9 @@ export interface AIDefectResult {
   suggestedSeverity: AIDefectSeverity;
   description: string;
   boundingBox?: { x: number; y: number; width: number; height: number };
+  /** Phase 1 — which backend path produced the suggestion */
+  provider?: 'stub' | 'openai' | 'disabled';
+  requiresHumanConfirm?: boolean;
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
@@ -30,6 +33,8 @@ const MOCK: AIDefectResult = {
   confidence: 0.84,
   suggestedSeverity: 'Major',
   description: 'Visible panel dent approximately 8cm diameter on the right quarter panel',
+  provider: 'stub',
+  requiresHumanConfirm: true,
 };
 
 export function useAIDefectAnalysis() {

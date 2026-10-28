@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://carschek.local/schemas/scanner-data-contract.v1.json",
+  "title": "Carschek Scanner Data Contract",
+  "description": "Required payload shape for scanner / local-server → Carschek ingest (POST /api/v1/scanner/ingest). Negotiate this with hardware vendors before China production.",
+  "version": "1.0",
+  "type": "object",
+  "required": ["payload"],
+  "properties": {
+    "deviceId": { "type": "string", "maxLength": 64 },
+    "vin": { "type": "string", "maxLength": 32 },
+    "source": { "type": "string", "enum": ["local_server", "device", "import"] },
+    "schemaVersion": { "type": "string", "default": "1.0" },
+    "capturedAt": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["deviceId", "capturedAt"],
+      "properties": {
+        "schemaVersion": { "type": "string", "default": "1.0" },
+        "deviceId": { "type": "string" },
+        "vin": { "type": "string" },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "firmwareVersion": { "type": "string" },
+        "ecuList": { "type": "array", "items": { "type": "string" } },
+        "dtcs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code"],
+            "properties": {
+              "code": { "type": "string" },
+              "status": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "freezeFrame": { "type": "object" },
+        "livePids": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pid", "value"],
+            "properties": {
+              "pid": { "type": "string" },
+              "name": { "type": "string" },
+              "value": {},
+              "unit": { "type": "string" }
+            }
+          }
+        },
+        "raw": { "type": "object" }
+      }
+    }
+  },
+  "examples": [
+    {
+      "deviceId": "CK-SCAN-001",
+      "vin": "4T1BE32K34U365910",
+      "source": "local_server",
+      "schemaVersion": "1.0",
+      "capturedAt": "2026-10-28T12:00:00Z",
+      "payload": {
+        "schemaVersion": "1.0",
+        "deviceId": "CK-SCAN-001",
+        "vin": "4T1BE32K34U365910",
+        "capturedAt": "2026-10-28T12:00:00Z",
+        "firmwareVersion": "1.0.0",
+        "ecuList": ["ECM", "ABS", "SRS"],
+        "dtcs": [{ "code": "P0300", "status": "confirmed", "description": "Random/Multiple Cylinder Misfire" }],
+        "livePids": [{ "pid": "0C", "name": "RPM", "value": 820, "unit": "rpm" }]
+      }
+    }
+  ],
+  "nonNegotiables": [
+    "Carschek owns raw + decoded data",
+    "Local / on-prem server or gateway with LAN API",
+    "VIN + DTCs + live PIDs + freeze frame + timestamps + firmware",
+    "Export formats: JSON / MQTT / CSV ingestible by Carschek",
+    "No vendor-cloud-only lock-in without raw export"
+  ]
+}

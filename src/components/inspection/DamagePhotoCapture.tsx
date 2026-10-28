@@ -270,7 +270,13 @@ export function DamagePhotoCapture({
 
       {ai.result && !ai.isAnalyzing && (
         <div className="rounded-xl border border-[#E5E7EB] bg-white p-3 shadow-sm">
-          <p className="text-xs font-bold text-[#1F2937]">🤖 Carschek AI — Analysis Complete</p>
+          <p className="text-xs font-bold text-[#1F2937]">
+            Carschek assist — suggestion only
+            {ai.result.provider ? ` (${ai.result.provider})` : ''}
+          </p>
+          <p className="mt-1 text-[10px] text-[#6B7280]">
+            Confirm before applying. Does not auto-save severity.
+          </p>
           <p className="mt-2 text-sm font-semibold text-[#374151]">&quot;{ai.result.defect}&quot;</p>
           <div className="mt-2">
             <div className="mb-1 flex items-center gap-2">
