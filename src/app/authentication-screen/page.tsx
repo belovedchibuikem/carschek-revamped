@@ -199,7 +199,7 @@ export default function AuthenticationScreen() {
     const role = asWelcomeRole(user.role || welcomeRole);
     setWelcomeRole(role);
     setWelcomeName(user.name || welcomeName);
-    setCarschekSessionCookies(user.role || role);
+    setCarschekSessionCookies(user.role || role, user.email);
     setFailedAttempts(0);
     pendingCredentials.current = null;
     if (opts?.skippedOtp) {

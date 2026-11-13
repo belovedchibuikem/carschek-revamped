@@ -8,7 +8,7 @@ import { STATUS_COLORS } from '@/lib/mockData';
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { EmptyState } from '@/components/shared/TableSkeleton';
-import { crmApi } from '@/lib/api/services';
+import { crmApi, reportsApi } from '@/lib/api/services';
 import { useApiList } from '@/hooks/useApiResource';
 
 const STAGES = ['Lead', 'Hot Lead', 'Qualified', 'Negotiation', 'Offer Sent', 'Closed Won', 'Cold'];
@@ -19,6 +19,8 @@ export default function CRMPage() {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [portalUser, setPortalUser] = useState({ name: '', email: '', phone: '', isDealer: false });
   const [newContact, setNewContact] = useState({ name: '', email: '', phone: '', type: 'Individual', stage: 'Lead' });
   const debouncedSearch = useDebouncedValue(search, 300);
   const [page, setPage] = useState(1);
@@ -98,6 +100,43 @@ export default function CRMPage() {
         </div>
       )}
 
+      {showUserModal && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl">
+            <h2 className="text-base font-bold text-[#1F2937]">Create portal user</h2>
+            <p className="mt-1 text-xs text-[#6B7280]">
+              Creates a customer (or dealer) login. Link them to an inspection report from the report page.
+            </p>
+            <div className="mt-4 space-y-3">
+              <input value={portalUser.name} onChange={e => setPortalUser(p => ({ ...p, name: e.target.value }))} placeholder="Name" className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm" />
+              <input value={portalUser.email} onChange={e => setPortalUser(p => ({ ...p, email: e.target.value }))} placeholder="Email" className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm" />
+              <input value={portalUser.phone} onChange={e => setPortalUser(p => ({ ...p, phone: e.target.value }))} placeholder="Phone" className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm" />
+              <label className="flex items-center gap-2 text-xs text-[#374151]">
+                <input type="checkbox" checked={portalUser.isDealer} onChange={e => setPortalUser(p => ({ ...p, isDealer: e.target.checked }))} />
+                Dealer account
+              </label>
+            </div>
+            <div className="mt-5 flex gap-3">
+              <button type="button" onClick={() => setShowUserModal(false)} className="flex-1 rounded-lg border border-[#E5E7EB] py-2.5 text-sm">Cancel</button>
+              <button
+                type="button"
+                onClick={() => {
+                  void reportsApi.createPortalUser(portalUser).then(res => {
+                    const pwd = (res as { temporaryPassword?: string | null }).temporaryPassword;
+                    toast.success(pwd ? `User created. Temporary password: ${pwd}` : 'User created');
+                    setShowUserModal(false);
+                    setPortalUser({ name: '', email: '', phone: '', isDealer: false });
+                  }).catch(err => toast.error(err instanceof Error ? err.message : 'Could not create user'));
+                }}
+                className="flex-1 rounded-lg bg-[#1E3A5F] py-2.5 text-sm font-bold text-white"
+              >
+                Create user
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -109,6 +148,13 @@ export default function CRMPage() {
               <button onClick={() => setViewMode('table')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-[#1F2937]' : 'text-[#6B7280]'}`}>Table</button>
               <button onClick={() => setViewMode('kanban')} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${viewMode === 'kanban' ? 'bg-white shadow-sm text-[#1F2937]' : 'text-[#6B7280]'}`}>Kanban</button>
             </div>
+            <button
+              type="button"
+              onClick={() => setShowUserModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 border border-[#1E3A5F] text-[#1E3A5F] text-sm font-semibold rounded-lg hover:bg-[#F4F6F8] min-h-[44px]"
+            >
+              <Plus size={16} /> Create user
+            </button>
             <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#ff5722] text-white text-sm font-semibold rounded-lg hover:bg-[#e64a19] transition-all min-h-[44px]">
               <Plus size={16} /> Add Contact
             </button>

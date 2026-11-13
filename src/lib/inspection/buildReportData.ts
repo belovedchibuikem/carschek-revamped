@@ -18,11 +18,9 @@ import type {
   InspectionReportData,
   InspectionSectionSummary,
   ReportSectionBreakdown,
-  RepairCostRow,
   ScoreCategoryBreakdown,
   SectionLineResult,
 } from '@/lib/inspection/reportTypes';
-import { makeDamagePlaceholderDataUrl } from '@/lib/inspection/reportPlaceholders';
 import {
   loadDamagePhotoObjectUrlsForItem,
   loadDamagePhotosForOrder,
@@ -32,8 +30,7 @@ import { PHASE1_OBSERVED_RISKS } from '@/lib/ai/phase1Flags';
 import { buildObservedRisks } from '@/lib/ai/observedRisks';
 import { carsApi, ordersApi, reportsApi } from '@/lib/api/services';
 
-const REPORT_INSPECTOR_NAME = 'Emeka Adeyemi';
-const REPORT_CERT = 'CA-0041';
+const REPORT_CERT = '';
 
 function formatDurationClock(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -108,50 +105,37 @@ function resolveS03FieldValue(
 }
 
 function reportNumberFromId(inspectionId: string): string {
-  const digits = inspectionId.replace(/\D/g, '');
-  const tail = digits.slice(-4).padStart(4, '0');
-  return `CS-2026-${tail || '4521'}`;
+  const id = inspectionId.trim();
+  if (!id) return '';
+  if (/^(CS|RPT|INS|ORD)-/i.test(id)) return id;
+  return id;
 }
 
-function scoreCategoriesFromTotal(total: number): ScoreCategoryBreakdown {
-  const t = Math.max(40, Math.min(100, total));
-  return {
-    body: Math.min(100, t + 4),
-    engine: Math.min(100, t + 1),
-    interior: Math.max(40, t - 6),
-    electrical: Math.min(100, t + 7),
+function scoreCategoriesFromSections(
+  sections: ReportSectionBreakdown[],
+  total: number
+): ScoreCategoryBreakdown {
+  const pick = (needles: string[]): number | null => {
+    const hits = sections.filter(s => needles.some(n => s.name.toLowerCase().includes(n)));
+    const answered = hits.reduce((sum, s) => sum + (s.total > 0 ? s.total : 0), 0);
+    const passed = hits.reduce((sum, s) => sum + s.passed, 0);
+    if (!answered) return null;
+    return Math.round((passed / answered) * 100);
   };
-}
-
-function repairRowsFromDefects(defects: DefectSummary[]): RepairCostRow[] {
-  if (!defects.length) return [];
-  const rows: RepairCostRow[] = defects.map(d => {
-    if (d.severity === 'Critical')
-      return { item: `${d.sectionName} — ${d.itemLabel}`, severity: d.severity, low: 120000, high: 500000, openEnded: true };
-    if (d.severity === 'Major')
-      return { item: `${d.sectionName} — ${d.itemLabel}`, severity: d.severity, low: 25000, high: 60000 };
-    return { item: `${d.sectionName} — ${d.itemLabel}`, severity: d.severity, low: 5000, high: 15000 };
-  });
-  return rows;
+  const orTotal = (value: number | null) => (value == null ? total : value);
+  return {
+    body: orTotal(pick(['body', 'exterior', 'paint', 'panel'])),
+    engine: orTotal(pick(['engine', 'mechanical', 'underbonnet', 'under hood'])),
+    interior: orTotal(pick(['interior', 'cabin'])),
+    electrical: orTotal(pick(['electric', 'battery', 'obd', 'light'])),
+  };
 }
 
 function enrichDefect(
   d: Omit<DefectSummary, 'damagePhotoUrls' | 'aiAnalysis'>,
   dexieDamageUrls: string[]
 ): DefectSummary {
-  const placeholders: string[] = [];
-  if (typeof document !== 'undefined' && dexieDamageUrls.length === 0) {
-    if (d.severity !== 'Minor') placeholders.push(makeDamagePlaceholderDataUrl(0));
-    if (d.severity === 'Critical' || d.severity === 'Major') placeholders.push(makeDamagePlaceholderDataUrl(1));
-  }
-  const damagePhotoUrls = dexieDamageUrls.length > 0 ? dexieDamageUrls : placeholders;
-  const aiAnalysis =
-    dexieDamageUrls.length > 0
-      ? null
-      : d.severity === 'Critical' ?'Structural / safety concern — 89% confidence (demo)'
-        : d.severity === 'Major' ?'Oil seal degradation — 91% confidence (demo)'
-          : null;
-  return { ...d, damagePhotoUrls, aiAnalysis };
+  return { ...d, damagePhotoUrls: dexieDamageUrls, aiAnalysis: null };
 }
 
 /** Offline-first report payload; merges Dexie checklist rows + optional live photo URLs from UI store. */
@@ -165,7 +149,7 @@ export async function buildReportData(
     inspectorName?: string;
   }
 ): Promise<InspectionReportData> {
-  const job = findMockJob(inspectionId);
+  const job = USE_API_MOCK ? findMockJob(inspectionId) : undefined;
   // Admin orders register — keeps superadmin-side reports tallying with the
   // order/report rows when the order is not one of the inspector PWA mock jobs.
   let adminOrder = job ? undefined : ORDERS.find(o => o.id === inspectionId);
@@ -182,17 +166,17 @@ export async function buildReportData(
   let vehicle: InspectionReportData['vehicle'];
   if (job) {
     vehicle = {
-      make: job.vehicleLabel.split(/\s+/)[1] ?? 'Toyota',
-      model: job.vehicleLabel.split(/\s+/).slice(2).join(' ') || 'Camry',
-      trim: inspectionId === 'ORD-1892' ? 'LE' : '',
-      year: parseInt(job.vehicleLabel.split(/\s+/)[0] ?? '', 10) || 2019,
+      make: job.vehicleLabel.split(/\s+/)[1] ?? '—',
+      model: job.vehicleLabel.split(/\s+/).slice(2).join(' ') || '—',
+      trim: '',
+      year: parseInt(job.vehicleLabel.split(/\s+/)[0] ?? '', 10) || 0,
       plate: job.plate,
       vin: job.vin,
-      mileage: inspectionId === 'ORD-1892' ? '137,373 km' : '—',
-      colour: 'Silver',
-      transmission: 'Automatic',
+      mileage: '—',
+      colour: '—',
+      transmission: '—',
       engineNumber: '—',
-      city: 'Lagos',
+      city: '—',
     };
   } else if (adminOrder) {
     // Admin order vehicle labels are "Make Model… Year" (year last).
@@ -204,28 +188,28 @@ export async function buildReportData(
       make: nameTokens[0] ?? '—',
       model: nameTokens.slice(1).join(' ') || '—',
       trim: '',
-      year: year || new Date().getFullYear(),
+      year: year || 0,
       plate: adminOrder.plate,
       vin: '—',
       mileage: '—',
       colour: '—',
       transmission: '—',
       engineNumber: '—',
-      city: adminOrder.zone || 'Lagos',
+      city: adminOrder.zone || '—',
     };
   } else {
     vehicle = {
-      make: 'Toyota',
-      model: 'Camry',
-      trim: 'LE',
-      year: 2019,
-      plate: 'LSD260JE',
-      vin: '4T1BF3EK9BU228086',
-      mileage: '137,373 km',
-      colour: 'Silver',
-      transmission: 'Automatic',
+      make: '—',
+      model: '—',
+      trim: '',
+      year: 0,
+      plate: '—',
+      vin: '—',
+      mileage: '—',
+      colour: '—',
+      transmission: '—',
       engineNumber: '—',
-      city: 'Lagos',
+      city: '—',
     };
   }
 
@@ -346,23 +330,16 @@ export async function buildReportData(
     })
   );
 
-  let scoreNum = opts?.fallbackScore ?? 73;
-  if (db) {
+  let scoreNum: number | null = opts?.fallbackScore ?? null;
+  if (scoreNum == null && db) {
     const row = await db.inspections.where('orderId').equals(inspectionId).first();
     if (row?.score != null) scoreNum = row.score;
   }
-  const passCount = items.filter(i => i.result === 'pass').length;
-  const computed = Math.max(
-    40,
-    Math.min(
-      98,
-      88 -
-        defects.length * 3 -
-        defects.filter(d => d.severity === 'Critical').length * 6 +
-        Math.min(5, Math.floor(passCount / 20))
-    )
-  );
-  if (items.some(i => i.result != null)) scoreNum = computed;
+  if (scoreNum == null) {
+    const answered = items.filter(i => i.result === 'pass' || i.result === 'fail');
+    const passed = answered.filter(i => i.result === 'pass').length;
+    scoreNum = answered.length ? Math.round((passed / answered.length) * 100) : 0;
+  }
 
   const vehiclePhotos = VEHICLE_PHOTO_SLOTS.map(slot => ({
     angleId: slot.id,
@@ -385,11 +362,10 @@ export async function buildReportData(
 
   const reportNumber = reportNumberFromId(inspectionId);
   const qrVerifyUrl = `https://carschek.com/verify/${encodeURIComponent(reportNumber)}`;
-  const inspectorName = opts?.inspectorName ?? adminOrder?.inspectorName ?? REPORT_INSPECTOR_NAME;
+  const inspectorName = (opts?.inspectorName ?? adminOrder?.inspectorName ?? '').trim();
 
   const criticalDefects = defects.filter(d => d.severity === 'Critical');
-  const repairCosts = repairRowsFromDefects(defects);
-  const scoreCategories = scoreCategoriesFromTotal(scoreNum);
+  const scoreCategories = scoreCategoriesFromSections(sectionBreakdowns, scoreNum);
 
   const s03Def = getSectionDef('S03');
   const s03State = await loadChecklistState(inspectionId, 'S03');
@@ -459,11 +435,11 @@ export async function buildReportData(
       inspectionDate,
       inspectionDateLong,
       completedAtTime,
-      durationLabel: formatDurationClock(durationSec || 522),
-      durationHuman: formatDurationHuman(durationSec || 522),
+      durationLabel: durationSec > 0 ? formatDurationClock(durationSec) : '—',
+      durationHuman: durationSec > 0 ? formatDurationHuman(durationSec) : '—',
       score: scoreNum,
       version: 1,
-      zone: adminOrder?.zone ?? 'Lekki',
+      zone: adminOrder?.zone ?? '',
       photoDocSubheading: `Photos captured by ${inspectorName} on ${inspectionDateLong} at ${completedAtTime}`,
       qrVerifyUrl,
     },
@@ -477,11 +453,13 @@ export async function buildReportData(
       signatureDataUrl,
       photoUrl: null,
       initials: inspectorName
-        .split(' ')
-        .map(w => w[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase(),
+        ? inspectorName
+            .split(/\s+/)
+            .map(w => w[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()
+        : '',
     },
     vehiclePhotos,
     sections,
@@ -496,7 +474,7 @@ export async function buildReportData(
       strokeColor: getGaugeStrokeColor(scoreNum),
     },
     scoreCategories,
-    repairCosts: repairCosts.length ? repairCosts : null,
+    repairCosts: null,
     observedRisks: PHASE1_OBSERVED_RISKS
       ? buildObservedRisks({
           score: scoreNum,

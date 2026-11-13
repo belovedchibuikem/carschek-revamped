@@ -468,7 +468,18 @@ export type ReportDetail = (typeof REPORTS)[number] & {
 };
 
 export const reportsApi = {
-  list: () => (USE_API_MOCK ? mockData([...REPORTS]) : apiRequest<typeof REPORTS>({ method: 'GET', url: '/reports' })),
+  list: async () => {
+    if (!USE_API_MOCK) return apiRequest<typeof REPORTS>({ method: 'GET', url: '/reports' });
+    const { getCarschekEmail, getCarschekRole } = await import('@/lib/auth/session');
+    if (getCarschekRole() === 'customer') {
+      const { reportsForLocalUser, searchLocalPortalUsers } = await import('@/lib/reports/assignmentStore');
+      const email = getCarschekEmail()?.trim().toLowerCase();
+      const user = searchLocalPortalUsers('').find(u => u.email.toLowerCase() === email);
+      const ids = new Set(user ? reportsForLocalUser(user.id) : []);
+      return mockData(REPORTS.filter(r => ids.has(r.id)));
+    }
+    return mockData([...REPORTS]);
+  },
   get: (id: string): Promise<ReportDetail> => {
     if (USE_API_MOCK) {
       const base = REPORTS.find(r => r.id === id) ?? REPORTS[0];
@@ -565,6 +576,78 @@ export const reportsApi = {
       });
     }
     return apiRequest<unknown>({ method: 'PATCH', url: `/inspections/${id}/flag`, data });
+  },
+  searchPortalUsers: async (q: string) => {
+    if (USE_API_MOCK) {
+      const { searchLocalPortalUsers } = await import('@/lib/reports/assignmentStore');
+      return mockData(searchLocalPortalUsers(q));
+    }
+    const res = await apiRequest<{ data: Array<Record<string, unknown>> }>({
+      method: 'GET',
+      url: '/portal-users',
+      params: { q },
+    });
+    return res.data ?? [];
+  },
+  createPortalUser: async (data: Record<string, unknown>) => {
+    if (USE_API_MOCK) {
+      const { createLocalPortalUser } = await import('@/lib/reports/assignmentStore');
+      const user = createLocalPortalUser({
+        name: String(data.name ?? ''),
+        email: String(data.email ?? ''),
+        phone: data.phone ? String(data.phone) : null,
+        isDealer: Boolean(data.isDealer),
+      });
+      return mockData({ user, temporaryPassword: 'Portal@2026' }, 200);
+    }
+    return apiRequest<{ user: Record<string, unknown>; temporaryPassword?: string | null }>({
+      method: 'POST',
+      url: '/portal-users',
+      data,
+    });
+  },
+  assignees: async (reportId: string) => {
+    if (USE_API_MOCK) {
+      const { listLocalAssignees } = await import('@/lib/reports/assignmentStore');
+      return mockData(listLocalAssignees(reportId).map(r => ({ user: r.user, assignedAt: r.assignedAt })));
+    }
+    const res = await apiRequest<{ data: Array<{ user: Record<string, unknown>; assignedAt?: string }> }>({
+      method: 'GET',
+      url: `/reports/${reportId}/assignees`,
+    });
+    return res.data ?? [];
+  },
+  assignUser: async (reportId: string, data: Record<string, unknown>) => {
+    if (USE_API_MOCK) {
+      const store = await import('@/lib/reports/assignmentStore');
+      let user = data.userId
+        ? store.searchLocalPortalUsers('').find(u => u.id === data.userId)
+        : undefined;
+      if (!user && data.email) {
+        user = store.createLocalPortalUser({
+          name: String(data.name ?? data.email),
+          email: String(data.email),
+          phone: data.phone ? String(data.phone) : null,
+          isDealer: Boolean(data.isDealer),
+        });
+      }
+      if (!user) throw new Error('User not found');
+      store.assignLocal(reportId, user);
+      return mockData({ user, temporaryPassword: data.userId ? null : 'Portal@2026', inspectionStatus: 'shared' }, 200);
+    }
+    return apiRequest<Record<string, unknown>>({
+      method: 'POST',
+      url: `/reports/${reportId}/assignees`,
+      data,
+    });
+  },
+  unassignUser: async (reportId: string, userId: string) => {
+    if (USE_API_MOCK) {
+      const { unassignLocal } = await import('@/lib/reports/assignmentStore');
+      unassignLocal(reportId, userId);
+      return mockData({ ok: true }, 150);
+    }
+    return apiRequest<unknown>({ method: 'DELETE', url: `/reports/${reportId}/assignees/${userId}` });
   },
 };
 

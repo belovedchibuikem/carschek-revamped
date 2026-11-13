@@ -702,7 +702,7 @@ export type ReportDocumentBodyProps = {
 export function ReportDocumentBody({ data, variant, QRCode }: ReportDocumentBodyProps) {
   const classic = variant === 'classic';
   const v = data.vehicle;
-  const title = `${v.year} ${v.make} ${v.model}${v.trim ? ` ${v.trim}` : ''}`;
+  const title = [v.year || null, v.make, v.model, v.trim].filter(Boolean).join(' ') || 'Vehicle';
   const subtitleParts = [v.plate, v.mileage, v.colour, v.transmission].filter(Boolean);
   const metaLine = `VIN: ${v.vin}  •  ${v.city}`;
   const sc = data.scoreCategories;

@@ -23,6 +23,8 @@ import type { VehicleAngleId } from '@/lib/inspection/vehiclePhotoAngles';
 import { EMPTY_VEHICLE_PHOTO_MAP, useVehiclePhotoStore } from '@/stores/vehiclePhotoStore';
 import { captureElementToPdf } from '@/lib/reportPdf';
 import { reportsApi } from '@/lib/api/services';
+import { AssignReportPanel } from '@/components/reports/AssignReportPanel';
+import { getCarschekRole } from '@/lib/auth/session';
 import { useApiResource } from '@/hooks/useApiResource';
 
 const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => m.QRCodeSVG), { ssr: false });
@@ -41,6 +43,12 @@ export default function ReportViewPage() {
   const [shareAccess, setShareAccess] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [canAssign, setCanAssign] = useState(false);
+
+  useEffect(() => {
+    const role = getCarschekRole();
+    setCanAssign(Boolean(role) && role !== 'customer');
+  }, []);
 
   const orderId = (report?.orderId || '').trim();
   const buildKey = orderId || report?.id || '';
@@ -313,6 +321,8 @@ export default function ReportViewPage() {
             </button>
           </div>
         </div>
+
+        {canAssign ? <AssignReportPanel reportId={report.id} /> : null}
 
         {/* Full report document — same shared renderer as the inspector app */}
         {generateError ? (

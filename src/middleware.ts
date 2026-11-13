@@ -64,6 +64,7 @@ export function middleware(request: NextRequest) {
     '/inspection-reports-qa',
     '/admin-dashboard',
     '/app-navigation',
+    '/my-reports',
   ];
   const isAdminArea = adminPrefixes.some(p => pathname === p || pathname.startsWith(`${p}/`));
   const staffOnly =
@@ -87,6 +88,18 @@ export function middleware(request: NextRequest) {
     !pathname.startsWith('/403')
   ) {
     return NextResponse.redirect(new URL('/inspector/jobs', request.url));
+  }
+
+  // Customers / dealers only see their assigned reports
+  if (role === 'customer') {
+    const allowed =
+      pathname === '/my-reports' ||
+      pathname.startsWith('/my-reports/') ||
+      pathname.startsWith('/reports/') ||
+      pathname.startsWith('/authentication-screen');
+    if (!allowed) {
+      return NextResponse.redirect(new URL('/my-reports', request.url));
+    }
   }
 
   // Finance role: block inspector PWA shell (use admin finance instead)
