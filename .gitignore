@@ -44,3 +44,5 @@ turbo/
 !.env.example
 !.env.production.example
 
+
+*.sql
