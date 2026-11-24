@@ -21,39 +21,6 @@ interface TopbarProps {
   pageTitle?: string;
 }
 
-const SIMULATED_NOTIFICATION_POOL = [
-  {
-    title: 'New booking: Chidi Obi — 2018 Honda Accord, Lagos',
-    description: 'Inspection scheduled for tomorrow 10:00 AM',
-    type: 'order' as const,
-    link: '/orders/ORD-1894',
-  },
-  {
-    title: 'Inspection complete: Emeka A. scored CK-41 at 78/100',
-    description: 'Report submitted and awaiting QA',
-    type: 'report' as const,
-    link: '/reports/RPT-445',
-  },
-  {
-    title: 'Payment received: ₦5,100,000 for deal #D-089',
-    description: 'Funds cleared to escrow',
-    type: 'payment' as const,
-    link: '/finance',
-  },
-  {
-    title: 'New bid on auction CK-38: ₦4,200,000 by AOR Autos',
-    description: 'Auction AUC-001',
-    type: 'auction' as const,
-    link: '/auctions/AUC-001',
-  },
-  {
-    title: 'Report flagged for QA by Inspector Tunde',
-    description: 'RPT-446 needs review',
-    type: 'report' as const,
-    link: '/reports/RPT-446',
-  },
-];
-
 export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: TopbarProps) {
   const router = useRouter();
   const { online, retrySync } = useOnlineStatus();
@@ -97,20 +64,22 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadNotifications = useCallback(() => {
     void notificationsApi
       .list()
       .then(list => {
-        if (!cancelled) setNotifications(list);
+        setNotifications(Array.isArray(list) ? list : []);
       })
       .catch(() => {
-        /* keep empty on failure */
+        /* keep the last API list on failure */
       });
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    loadNotifications();
+    const id = window.setInterval(loadNotifications, 45_000);
+    return () => window.clearInterval(id);
+  }, [loadNotifications]);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,28 +94,6 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
       cancelled = true;
       window.clearInterval(id);
     };
-  }, []);
-
-  /** Simulated real-time notification (spec: ~45s cadence). */
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      const pick = SIMULATED_NOTIFICATION_POOL[Math.floor(Math.random() * SIMULATED_NOTIFICATION_POOL.length)];
-      if (!pick) return;
-      const nid = `N-sim-${Date.now()}`;
-      setNotifications(prev => [
-        {
-          id: nid,
-          type: pick.type,
-          title: pick.title,
-          description: pick.description,
-          time: '2m ago',
-          read: false,
-          link: pick.link,
-        },
-        ...prev,
-      ].slice(0, 24));
-    }, 45000);
-    return () => window.clearInterval(id);
   }, []);
 
   const isDark = mounted && (resolvedTheme === 'dark' || theme === 'dark');
@@ -253,7 +200,10 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
           <div className="relative">
             <button
               onClick={() => {
-                setNotifOpen(o => !o);
+                setNotifOpen(o => {
+                  if (!o) loadNotifications();
+                  return !o;
+                });
                 setUserMenuOpen(false);
               }}
               className="relative min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg hover:bg-[#F4F6F8] dark:hover:bg-slate-800 transition-colors"
@@ -283,6 +233,9 @@ export default function Topbar({ onMenuToggle, mobileSidebarOpen, pageTitle }: T
                     </div>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <p className="px-4 py-8 text-center text-xs text-[#6B7280]">No notifications yet.</p>
+                    ) : null}
                     {notifications.slice(0, 8).map(n => (
                       <Link
                         key={n.id}

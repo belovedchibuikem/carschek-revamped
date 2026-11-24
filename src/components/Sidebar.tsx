@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { isAppointmentUnconfirmed } from '@/lib/appointments/logic';
-import { appointmentsApi } from '@/lib/api/services';
+import { appointmentsApi, ordersApi, reportsApi } from '@/lib/api/services';
 import AppLogo from '@/components/ui/AppLogo';
 import {
   LayoutDashboard, ClipboardList, Users, FileText, Car, Gavel, UserCircle,
@@ -33,10 +33,10 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: 'Operations',
     items: [
-      { icon: ClipboardList, label: 'Inspection Orders', path: '/orders', badge: '12' },
+      { icon: ClipboardList, label: 'Inspection Orders', path: '/orders', badge: null },
       { icon: Smartphone, label: 'Inspector App', path: '/inspector-app', badge: null },
       { icon: Users, label: 'Inspectors', path: '/inspectors', badge: null },
-      { icon: FileText, label: 'Reports', path: '/reports', badge: '5' },
+      { icon: FileText, label: 'Reports', path: '/reports', badge: null },
       {
         icon: Calendar,
         label: 'Appointments',
@@ -115,6 +115,8 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClose }: SidebarProps) {
   const [unconfirmedApt, setUnconfirmedApt] = useState<number | null>(null);
+  const [orderCount, setOrderCount] = useState<number | null>(null);
+  const [reportCount, setReportCount] = useState<number | null>(null);
   /** Submenus (e.g. Appointments) start collapsed; open via chevron only */
   const [expandedBranches, setExpandedBranches] = useState<Record<string, boolean>>({});
 
@@ -125,6 +127,22 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
       .then(appointments => {
         if (cancelled) return;
         setUnconfirmedApt(appointments.filter(isAppointmentUnconfirmed).length);
+      })
+      .catch(() => {});
+    ordersApi
+      .list()
+      .then(orders => {
+        if (cancelled) return;
+        const open = orders.filter(order => order.status !== 'Closed').length;
+        setOrderCount(open);
+      })
+      .catch(() => {});
+    reportsApi
+      .list()
+      .then(reports => {
+        if (cancelled) return;
+        const waiting = reports.filter(report => report.status === 'QA Review').length;
+        setReportCount(waiting);
       })
       .catch(() => {});
     return () => {
@@ -289,6 +307,16 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
               }
 
               const active = isActive(item.path);
+              const liveBadge =
+                item.path === '/orders'
+                  ? orderCount
+                  : item.path === '/reports'
+                    ? reportCount
+                    : item.badge != null
+                      ? Number(item.badge)
+                      : null;
+              const badgeLabel =
+                liveBadge != null && liveBadge > 0 ? (liveBadge > 99 ? '99+' : String(liveBadge)) : null;
               return (
                 <Link
                   key={`nav-${item.path}`}
@@ -307,12 +335,12 @@ export default function Sidebar({ collapsed, onToggle, currentPath, onMobileClos
                   {!collapsed && (
                     <span className="text-sm font-medium flex-1 truncate">{item.label}</span>
                   )}
-                  {!collapsed && item.badge && (
+                  {!collapsed && badgeLabel && (
                     <span className="bg-[#ff8a65] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                      {item.badge}
+                      {badgeLabel}
                     </span>
                   )}
-                  {collapsed && item.badge && (
+                  {collapsed && badgeLabel && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-[#ff8a65] rounded-full" />
                   )}
                   {collapsed && (
