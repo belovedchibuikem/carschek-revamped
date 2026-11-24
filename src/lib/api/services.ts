@@ -1017,7 +1017,54 @@ function optionalNum(data: Record<string, unknown>, key: string): number | null 
   return Number.isFinite(n) ? n : null;
 }
 
+export type VehicleLookupHit = {
+  vin: string | null;
+  plate: string | null;
+  carId: string | null;
+  inspectionId: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  mileage: number | null;
+  vehicleDescription: string;
+};
+
 export const valuationsApi = {
+  /** Cars, inspections, and bookings matched by VIN / chassis, car id, or inspection id. */
+  lookup: async (q: string): Promise<VehicleLookupHit[]> => {
+    const query = q.trim();
+    if (query.replace(/[^a-z0-9]/gi, '').length < 3) return [];
+    if (USE_API_MOCK) {
+      const needle = query.replace(/[^a-z0-9]/gi, '').toUpperCase();
+      const idNeedle = query.replace(/\s/g, '').toUpperCase();
+      const hits: VehicleLookupHit[] = CARS.filter(car => {
+        const vin = car.vin.replace(/[^a-z0-9]/gi, '').toUpperCase();
+        const plate = car.plate.replace(/[^a-z0-9]/gi, '').toUpperCase();
+        return vin.includes(needle) || plate.includes(needle) || car.id.toUpperCase().includes(idNeedle);
+      })
+        .slice(0, 8)
+        .map(car => ({
+          vin: car.vin,
+          plate: car.plate.replace(/[\s-]/g, '').toUpperCase(),
+          carId: car.id,
+          inspectionId: null,
+          make: car.brand.toUpperCase(),
+          model: car.model.toUpperCase(),
+          year: car.year,
+          mileage: car.mileage,
+          vehicleDescription: [car.brand, car.model, String(car.year), car.vin, car.plate.replace(/[\s-]/g, '')]
+            .join(' ')
+            .toUpperCase(),
+        }));
+      return mockData(hits, 150);
+    }
+    const rows = await apiRequest<VehicleLookupHit[]>({
+      method: 'GET',
+      url: '/valuations/lookup',
+      params: { q: query },
+    });
+    return Array.isArray(rows) ? rows : [];
+  },
   list: async (): Promise<ValuationRow[]> => {
     if (USE_API_MOCK) {
       const { listLocalValuations } = await import('@/lib/valuations/localStore');
@@ -1396,6 +1443,44 @@ export const dashboardApi = {
           appointments: { total: APPOINTMENTS_SEED.length, today: 0, pending: 0, confirmed: 0 },
         })
       : apiRequest<Record<string, unknown>>({ method: 'GET', url: '/dashboard/kpis' }),
+  investor: (params: { period?: string; from?: string; to?: string }) =>
+    apiRequest<InvestorDashboard>({ method: 'GET', url: '/dashboard/investor', params }),
+};
+
+export type InvestorDashboard = {
+  period: string;
+  from: string;
+  to: string;
+  bucket: 'day' | 'month';
+  revenue_source: 'invoices' | 'sales' | 'none';
+  metrics: {
+    inspections: number;
+    inspections_change_pct: number | null;
+    gmv: number;
+    gmv_change_pct: number | null;
+    revenue: number;
+    revenue_change_pct: number | null;
+    active_inspectors: number;
+    new_inspectors_quarter: number;
+    nps: number | null;
+    avg_score: number | null;
+  };
+  monthly: { month: string; inspections: number; revenue: number }[];
+  failure_points: { item: string; rate: number }[];
+  heatmap: { makes: string[]; years: string[]; cells: Record<string, Record<string, number>> };
+  zones: { name: string; inspections: number; inspectors: number }[];
+  zones_label: string;
+  state_count: number;
+  forecast: {
+    growth_rate: number | null;
+    points: { month: string; actual: number | null; base: number | null; conservative: number | null; optimistic: number | null }[];
+  };
+  deals: {
+    avg_size: number | null;
+    avg_days_to_sale: number | null;
+    funnel: { stage: string; count: number; pct: number }[];
+    sellers: { type: string; deals: number; avg_price: number; conversion: number }[];
+  };
 };
 
 export type PlatformSettings = {

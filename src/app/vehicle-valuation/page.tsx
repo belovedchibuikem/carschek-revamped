@@ -3,12 +3,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Car, DollarSign, FileText, Printer, Plus, Trash2, X, CheckCircle, Loader2, Download } from 'lucide-react';
+import { Calendar, Car, DollarSign, FileText, Printer, Plus, Trash2, X, CheckCircle, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLayout from '@/components/AppLayout';
 import { captureElementToPdf } from '@/lib/reportPdf';
 import { CARSCHEK_LOGO_PATH } from '@/lib/branding';
-import { aiTrainingApi, valuationsApi, type ValuationRow } from '@/lib/api/services';
+import { aiTrainingApi, valuationsApi, type ValuationRow, type VehicleLookupHit } from '@/lib/api/services';
 import { mergeParsedIntoForm, parseVehicleDescription } from '@/lib/valuations/parseVehicleDescription';
 import { downloadCsv } from '@/lib/ai/exportCsv';
 import { ValuationAssistPanel } from '@/components/valuations/ValuationAssistPanel';
@@ -22,6 +22,50 @@ type ValuationData = ValuationRow;
 
 function formatNaira(amount: number): string {
   return `₦${amount.toLocaleString('en-NG')}`;
+}
+
+function todayIsoDate(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
+/** Date input value. Accepts YYYY-MM-DD and existing long labels such as "November 24, 2026". */
+function toIsoDate(value: string | null | undefined): string {
+  const raw = (value ?? '').trim();
+  if (!raw) return '';
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return '';
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${parsed.getFullYear()}-${month}-${day}`;
+}
+
+function formatValuationDate(value: string | null | undefined): string {
+  const iso = toIsoDate(value);
+  if (!iso) return (value ?? '').trim();
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year, (month ?? 1) - 1, day ?? 1).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+type LookupField = 'vin' | 'carId' | 'inspectionId';
+
+function lookupIsExact(hit: VehicleLookupHit, query: string, field: LookupField): boolean {
+  const compact = query.replace(/\s/g, '').toUpperCase();
+  const alnum = compact.replace(/[^A-Z0-9]/g, '');
+  if (field === 'vin') {
+    const vin = (hit.vin || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+    return alnum.length >= 8 && vin === alnum;
+  }
+  if (field === 'carId') return (hit.carId || '').toUpperCase() === compact && compact.length >= 4;
+  return (hit.inspectionId || '').toUpperCase() === compact && compact.length >= 6;
 }
 
 function numberToWords(num: number): string {
@@ -147,7 +191,7 @@ function ValuationPrintReport({ data }: { data: ValuationData }) {
               backgroundColor: '#ffffff',
             }}
           >
-            {data.date}
+            {formatValuationDate(data.date)}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -227,6 +271,58 @@ function ValuationPrintReport({ data }: { data: ValuationData }) {
   );
 }
 
+function VehicleLookupMenu({
+  busy,
+  miss,
+  hits,
+  onSelect,
+}: {
+  busy: boolean;
+  miss: boolean;
+  hits: VehicleLookupHit[];
+  onSelect: (hit: VehicleLookupHit) => void;
+}) {
+  if (!busy && !miss && hits.length === 0) return null;
+  return (
+    <div className="mt-1 overflow-hidden rounded-lg border border-[#E5E7EB] bg-white shadow-lg">
+      {busy ? <p className="px-3 py-2 text-xs text-[#6B7280]">Searching vehicles…</p> : null}
+      {!busy && miss ? (
+        <p className="px-3 py-2 text-xs text-[#6B7280]">No matching vehicle in the database.</p>
+      ) : null}
+      {hits.length > 0 ? (
+        <ul className="max-h-52 overflow-auto">
+          {hits.map((hit, index) => (
+            <li key={`${hit.carId ?? ''}-${hit.inspectionId ?? ''}-${hit.vin ?? ''}-${index}`}>
+              <button
+                type="button"
+                onMouseDown={event => {
+                  event.preventDefault();
+                  onSelect(hit);
+                }}
+                className="block w-full px-3 py-2 text-left hover:bg-[#FFF3EE]"
+              >
+                <span className="block text-xs font-semibold text-[#1F2937]">
+                  {hit.vehicleDescription || hit.vin || hit.carId || hit.inspectionId}
+                </span>
+                <span className="mt-0.5 block text-[10px] text-[#6B7280]">
+                  {[
+                    hit.vin ? `VIN ${hit.vin}` : null,
+                    hit.carId,
+                    hit.inspectionId,
+                    hit.mileage != null ? `${hit.mileage.toLocaleString()} km` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 // ─── Valuation Form Modal ─────────────────────────────────────────────────────
 
 function ValuationFormModal({
@@ -244,7 +340,7 @@ function ValuationFormModal({
 }) {
   const [form, setForm] = useState<Partial<ValuationData>>(() => {
     const base: Partial<ValuationData> = {
-      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      date: formatValuationDate(todayIsoDate()),
       clientName: '',
       vehicleDescription: '',
       vin: '',
@@ -271,6 +367,72 @@ function ValuationFormModal({
     return base;
   });
   const [snapshotStatus, setSnapshotStatus] = useState<'idle' | 'loading' | 'attached' | 'missing'>('idle');
+  const [lookupField, setLookupField] = useState<LookupField | null>(null);
+  const [lookupHits, setLookupHits] = useState<VehicleLookupHit[]>([]);
+  const [lookupBusy, setLookupBusy] = useState(false);
+  const [lookupMiss, setLookupMiss] = useState(false);
+  const dateRef = useRef<HTMLInputElement>(null);
+  const lookupTyped = useRef(false);
+
+  const applyVehicleHit = (hit: VehicleLookupHit) => {
+    setLookupField(null);
+    setLookupHits([]);
+    setLookupMiss(false);
+    setLookupBusy(false);
+    setForm(prev => ({
+      ...prev,
+      vin: hit.vin || '',
+      plate: hit.plate || '',
+      carId: hit.carId || '',
+      inspectionId: hit.inspectionId || '',
+      make: hit.make || '',
+      model: hit.model || '',
+      year: hit.year ?? null,
+      mileage: hit.mileage ?? null,
+      vehicleDescription: hit.vehicleDescription || prev.vehicleDescription || '',
+    }));
+    if (hit.inspectionId) void attachSnapshotForInspection(hit.inspectionId);
+  };
+
+  useEffect(() => {
+    if (!lookupField) return;
+    const query = String(form[lookupField] ?? '').trim();
+    if (query.replace(/[^a-z0-9]/gi, '').length < 3) {
+      setLookupHits([]);
+      setLookupMiss(false);
+      setLookupBusy(false);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setLookupBusy(true);
+      setLookupMiss(false);
+      void valuationsApi
+        .lookup(query)
+        .then(rows => {
+          if (cancelled) return;
+          setLookupHits(rows);
+          setLookupBusy(false);
+          setLookupMiss(rows.length === 0);
+          const vinComplete = lookupField === 'vin' && query.replace(/[^a-z0-9]/gi, '').length >= 17;
+          const exact = rows.filter(row => lookupIsExact(row, query, lookupField));
+          if (lookupTyped.current && vinComplete && rows.length === 1 && exact.length === 1 && exact[0]) {
+            lookupTyped.current = false;
+            applyVehicleHit(exact[0]);
+          }
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setLookupHits([]);
+          setLookupBusy(false);
+          setLookupMiss(true);
+        });
+    }, 350);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [lookupField, form.vin, form.carId, form.inspectionId]);
 
   const set = (key: keyof ValuationData, value: string | number | boolean | null | Record<string, unknown>) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -309,6 +471,10 @@ function ValuationFormModal({
   };
 
   const handleSave = () => {
+    if (!toIsoDate(form.date)) {
+      toast.error('Please pick a date');
+      return;
+    }
     if (!form.clientName || !form.vehicleDescription || !form.marketValue) {
       toast.error('Please fill in Client Name, Vehicle Description, and Market Value');
       return;
@@ -360,12 +526,33 @@ function ValuationFormModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#374151]">Date <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  value={form.date ?? ''}
-                  onChange={e => set('date', e.target.value)}
-                  className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
-                />
+                <div className="flex gap-2">
+                  <input
+                    ref={dateRef}
+                    type="date"
+                    required
+                    value={toIsoDate(form.date)}
+                    onChange={e => set('date', e.target.value ? formatValuationDate(e.target.value) : '')}
+                    className="min-w-0 flex-1 rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm text-[#1F2937] [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Open calendar"
+                    onClick={() => {
+                      const el = dateRef.current;
+                      if (!el) return;
+                      el.focus();
+                      try {
+                        el.showPicker();
+                      } catch {
+                        el.click();
+                      }
+                    }}
+                    className="flex h-[42px] w-11 shrink-0 items-center justify-center rounded-xl border border-[#E5E7EB] text-[#374151] hover:bg-[#F4F6F8]"
+                  >
+                    <Calendar size={16} />
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#374151]">Client / Bank Name <span className="text-red-500">*</span></label>
@@ -398,16 +585,32 @@ function ValuationFormModal({
             </div>
 
             <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-[#F9FAFB] p-4">
-              <p className="mb-3 text-xs font-semibold text-[#1E3A5F]">AI training linkage (optional)</p>
+              <p className="mb-1 text-xs font-semibold text-[#1E3A5F]">AI training linkage (optional)</p>
+              <p className="mb-3 text-[10px] text-[#6B7280]">
+                Type a VIN, chassis number, car ID, or inspection ID. Select a match to fill the vehicle, including mileage.
+              </p>
               <div className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="relative">
                   <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">VIN</label>
                   <input
                     type="text"
                     value={form.vin ?? ''}
-                    onChange={e => set('vin', e.target.value)}
+                    onChange={e => {
+                      lookupTyped.current = true;
+                      set('vin', e.target.value.toUpperCase());
+                      setLookupField('vin');
+                    }}
+                    onFocus={() => setLookupField('vin')}
+                    onBlur={() => {
+                      window.setTimeout(() => setLookupField(current => (current === 'vin' ? null : current)), 180);
+                    }}
+                    placeholder="Search VIN or chassis"
+                    autoComplete="off"
                     className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                   />
+                  {lookupField === 'vin' ? (
+                    <VehicleLookupMenu busy={lookupBusy} miss={lookupMiss} hits={lookupHits} onSelect={applyVehicleHit} />
+                  ) : null}
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Plate</label>
@@ -418,29 +621,51 @@ function ValuationFormModal({
                     className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                   />
                 </div>
-                <div>
+                <div className="relative">
                   <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Car ID</label>
                   <input
                     type="text"
                     value={form.carId ?? ''}
-                    onChange={e => set('carId', e.target.value)}
+                    onChange={e => {
+                      lookupTyped.current = true;
+                      set('carId', e.target.value.toUpperCase());
+                      setLookupField('carId');
+                    }}
+                    onFocus={() => setLookupField('carId')}
+                    onBlur={() => {
+                      window.setTimeout(() => setLookupField(current => (current === 'carId' ? null : current)), 180);
+                    }}
                     placeholder="CK-…"
+                    autoComplete="off"
                     className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                   />
+                  {lookupField === 'carId' ? (
+                    <VehicleLookupMenu busy={lookupBusy} miss={lookupMiss} hits={lookupHits} onSelect={applyVehicleHit} />
+                  ) : null}
                 </div>
-                <div>
+                <div className="relative">
                   <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">Inspection ID</label>
                   <input
                     type="text"
                     value={form.inspectionId ?? ''}
                     onChange={e => {
-                      set('inspectionId', e.target.value);
+                      lookupTyped.current = true;
+                      set('inspectionId', e.target.value.toUpperCase());
+                      setLookupField('inspectionId');
                       setSnapshotStatus('idle');
                     }}
-                    onBlur={e => void attachSnapshotForInspection(e.target.value)}
+                    onFocus={() => setLookupField('inspectionId')}
+                    onBlur={e => {
+                      window.setTimeout(() => setLookupField(current => (current === 'inspectionId' ? null : current)), 180);
+                      void attachSnapshotForInspection(e.target.value);
+                    }}
                     placeholder="INS-RPT-…"
+                    autoComplete="off"
                     className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                   />
+                  {lookupField === 'inspectionId' ? (
+                    <VehicleLookupMenu busy={lookupBusy} miss={lookupMiss} hits={lookupHits} onSelect={applyVehicleHit} />
+                  ) : null}
                   <p className="mt-0.5 text-[10px] text-[#6B7280]">
                     {snapshotStatus === 'loading'
                       ? 'Fetching feature snapshot…'
@@ -448,7 +673,7 @@ function ValuationFormModal({
                         ? 'Feature snapshot attached'
                         : snapshotStatus === 'missing'
                           ? 'No snapshot found for this inspection'
-                          : 'Blur to attach inspection feature snapshot'}
+                          : 'Select a match, or blur to attach the inspection snapshot'}
                   </p>
                 </div>
                 <div>
@@ -941,7 +1166,7 @@ export default function VehicleValuationPage() {
                   filtered.map(v => (
                     <tr key={v.id} className="hover:bg-[#FAFAFA]">
                       <td className="px-4 py-3 font-mono text-xs font-bold text-[#ff5722]">{v.id}</td>
-                      <td className="px-4 py-3 text-xs text-[#374151]">{v.date}</td>
+                      <td className="px-4 py-3 text-xs text-[#374151]">{formatValuationDate(v.date)}</td>
                       <td className="px-4 py-3 font-semibold text-[#1F2937]">{v.clientName}</td>
                       <td className="max-w-[200px] px-4 py-3 text-xs text-[#374151]">
                         <span className="line-clamp-2">{v.vehicleDescription}</span>
