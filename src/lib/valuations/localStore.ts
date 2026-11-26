@@ -20,6 +20,9 @@ export type ValuationRecord = {
   notes: string;
   status: 'draft' | 'final';
   trainingConsent?: boolean;
+  registered?: boolean;
+  brandNew?: boolean;
+  tokunbo?: boolean;
   featureSnapshot?: Record<string, unknown> | null;
   createdAt: string;
 };

@@ -998,6 +998,9 @@ export type ValuationRow = {
   notes: string;
   status: 'draft' | 'final';
   trainingConsent?: boolean;
+  registered?: boolean;
+  brandNew?: boolean;
+  tokunbo?: boolean;
   featureSnapshot?: Record<string, unknown> | null;
   createdAt: string;
 };
@@ -1104,6 +1107,9 @@ export const valuationsApi = {
         notes: String(data.notes ?? ''),
         status: (data.status as 'draft' | 'final') || 'final',
         trainingConsent: Boolean(data.trainingConsent),
+        registered: Boolean(data.registered),
+        brandNew: Boolean(data.brandNew),
+        tokunbo: Boolean(data.tokunbo),
         featureSnapshot: (data.featureSnapshot as Record<string, unknown> | null | undefined) ?? null,
         createdAt: new Date().toISOString().slice(0, 10),
       };
@@ -1138,6 +1144,9 @@ export const valuationsApi = {
         status: (data.status as 'draft' | 'final') || prev.status,
         trainingConsent:
           'trainingConsent' in data ? Boolean(data.trainingConsent) : Boolean(prev.trainingConsent),
+        registered: 'registered' in data ? Boolean(data.registered) : Boolean(prev.registered),
+        brandNew: 'brandNew' in data ? Boolean(data.brandNew) : Boolean(prev.brandNew),
+        tokunbo: 'tokunbo' in data ? Boolean(data.tokunbo) : Boolean(prev.tokunbo),
         featureSnapshot:
           'featureSnapshot' in data
             ? ((data.featureSnapshot as Record<string, unknown> | null) ?? null)

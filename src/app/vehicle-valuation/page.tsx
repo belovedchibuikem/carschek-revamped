@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Car, DollarSign, FileText, Printer, Plus, Trash2, X, CheckCircle, Loader2, Download } from 'lucide-react';
@@ -20,8 +20,43 @@ type ValuationData = ValuationRow;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatNaira(amount: number): string {
-  return `₦${amount.toLocaleString('en-NG')}`;
+/** Naira glyph and digits share one size and weight so the symbol does not render smaller. */
+function NairaFigure({
+  amount,
+  size = '1em',
+  weight = 700,
+}: {
+  amount: number;
+  size?: number | string;
+  weight?: number;
+}) {
+  const formatted = Math.round(Number(amount) || 0).toLocaleString('en-NG');
+  return (
+    <span
+      style={{
+        fontFamily: '"Segoe UI", "Noto Sans", Arial, Helvetica, sans-serif',
+        fontSize: size,
+        fontWeight: weight,
+        letterSpacing: 0,
+        fontVariantNumeric: 'tabular-nums',
+      }}
+    >
+      ₦{formatted}
+    </span>
+  );
+}
+
+/** Whole naira, with a leading zero removed. Empty means zero so the box does not keep a "0" prefix. */
+function moneyText(value: number | null | undefined): string {
+  const n = Math.round(Number(value) || 0);
+  return n > 0 ? String(n) : '';
+}
+
+function parseMoneyInput(raw: string): number {
+  const digits = raw.replace(/\D/g, '').replace(/^0+/, '');
+  if (!digits) return 0;
+  const n = Number(digits);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function todayIsoDate(): string {
@@ -116,14 +151,14 @@ const tdStyle = (stripe: boolean): React.CSSProperties => ({
 function ValuationPrintReport({ data }: { data: ValuationData }) {
   const fsv = data.fsv > 0 ? data.fsv : calculateFsv(data.marketValue);
 
-  const rows: Array<{ no: string; qty: string; description: string; unitPrice: string; total: string; bold?: boolean }> = [
+  const rows: Array<{ no: string; qty: string; description: string; unitPrice: React.ReactNode; total: React.ReactNode; bold?: boolean }> = [
     { no: '', qty: '1', description: data.vehicleDescription, unitPrice: '', total: '', bold: true },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
-    { no: '', qty: '', description: 'MARKET VALUE', unitPrice: formatNaira(data.marketValue), total: formatNaira(data.marketValue), bold: true },
+    { no: '', qty: '', description: 'MARKET VALUE', unitPrice: <NairaFigure amount={data.marketValue} />, total: <NairaFigure amount={data.marketValue} />, bold: true },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
-    { no: '', qty: '', description: 'FSV', unitPrice: formatNaira(fsv), total: '', bold: true },
+    { no: '', qty: '', description: 'FSV', unitPrice: <NairaFigure amount={fsv} />, total: '', bold: true },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
-    { no: '', qty: '', description: 'CONDITION VALUE', unitPrice: formatNaira(data.conditionValue), total: '', bold: true },
+    { no: '', qty: '', description: 'CONDITION VALUE', unitPrice: <NairaFigure amount={data.conditionValue} />, total: '', bold: true },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
     { no: '', qty: '', description: '', unitPrice: '', total: '' },
@@ -235,14 +270,14 @@ function ValuationPrintReport({ data }: { data: ValuationData }) {
             const stripe = i % 2 === 0;
             const cell = tdStyle(stripe);
             const descWeight = row.bold ? 700 : 400;
-            const moneyWeight = row.unitPrice ? 600 : 400;
+            const moneyWeight = row.unitPrice ? 700 : 400;
             return (
               <tr key={i}>
                 <td style={cell}>{row.no}</td>
                 <td style={{ ...cell, textAlign: 'right' }}>{row.qty}</td>
                 <td style={{ ...cell, fontWeight: descWeight, color: VAL_INK }}>{row.description}</td>
-                <td style={{ ...cell, textAlign: 'right', fontWeight: moneyWeight, color: VAL_INK }}>{row.unitPrice}</td>
-                <td style={{ ...cell, textAlign: 'right', fontWeight: row.total ? 600 : 400, color: VAL_INK }}>{row.total}</td>
+                <td style={{ ...cell, textAlign: 'right', fontWeight: moneyWeight, fontSize: 14, color: VAL_INK }}>{row.unitPrice}</td>
+                <td style={{ ...cell, textAlign: 'right', fontWeight: row.total ? 700 : 400, fontSize: 14, color: VAL_INK }}>{row.total}</td>
               </tr>
             );
           })}
@@ -264,7 +299,9 @@ function ValuationPrintReport({ data }: { data: ValuationData }) {
         </p>
         <div style={{ textAlign: 'right' }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: VAL_INK }}>Total</p>
-          <p style={{ margin: '4px 0 0', fontSize: 22, fontWeight: 900, color: VAL_INK }}>{formatNaira(data.marketValue)}</p>
+          <p style={{ margin: '4px 0 0', color: VAL_INK }}>
+            <NairaFigure amount={data.marketValue} size={22} weight={900} />
+          </p>
         </div>
       </div>
     </div>
@@ -357,6 +394,9 @@ function ValuationFormModal({
       notes: '',
       status: 'draft',
       trainingConsent: false,
+      registered: false,
+      brandNew: false,
+      tokunbo: false,
       featureSnapshot: null,
       ...initial,
     };
@@ -373,6 +413,25 @@ function ValuationFormModal({
   const [lookupMiss, setLookupMiss] = useState(false);
   const dateRef = useRef<HTMLInputElement>(null);
   const lookupTyped = useRef(false);
+  const [clientOpen, setClientOpen] = useState(false);
+
+  const knownClients = useMemo(() => {
+    const seen = new Set<string>();
+    const names: string[] = [];
+    for (const row of comps) {
+      const name = (row.clientName || '').trim();
+      const key = name.toLowerCase();
+      if (!name || seen.has(key)) continue;
+      seen.add(key);
+      names.push(name);
+    }
+    return names.sort((a, b) => a.localeCompare(b));
+  }, [comps]);
+
+  const clientQuery = (form.clientName ?? '').trim().toLowerCase();
+  const clientSuggestions = clientQuery
+    ? knownClients.filter(name => name.toLowerCase().includes(clientQuery) && name.toLowerCase() !== clientQuery).slice(0, 8)
+    : [];
 
   const applyVehicleHit = (hit: VehicleLookupHit) => {
     setLookupField(null);
@@ -499,6 +558,9 @@ function ValuationFormModal({
       notes: form.notes ?? '',
       status: 'final',
       trainingConsent: Boolean(form.trainingConsent),
+      registered: Boolean(form.registered),
+      brandNew: Boolean(form.brandNew),
+      tokunbo: Boolean(form.tokunbo),
       featureSnapshot: form.featureSnapshot ?? null,
       createdAt: initial?.createdAt,
     });
@@ -554,15 +616,42 @@ function ValuationFormModal({
                   </button>
                 </div>
               </div>
-              <div>
+              <div className="relative">
                 <label className="mb-1 block text-xs font-semibold text-[#374151]">Client / Bank Name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={form.clientName ?? ''}
-                  onChange={e => set('clientName', e.target.value)}
+                  onChange={e => {
+                    set('clientName', e.target.value);
+                    setClientOpen(true);
+                  }}
+                  onFocus={() => setClientOpen(true)}
+                  onBlur={() => {
+                    window.setTimeout(() => setClientOpen(false), 180);
+                  }}
                   placeholder="e.g. KOINS BANK LTD"
+                  autoComplete="off"
                   className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                 />
+                {clientOpen && clientSuggestions.length > 0 ? (
+                  <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-[#E5E7EB] bg-white py-1 shadow-lg">
+                    {clientSuggestions.map(name => (
+                      <li key={name}>
+                        <button
+                          type="button"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => {
+                            set('clientName', name);
+                            setClientOpen(false);
+                          }}
+                          className="block w-full px-3 py-2 text-left text-sm font-semibold text-[#1F2937] hover:bg-[#FFF3EE]"
+                        >
+                          {name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             </div>
 
@@ -580,8 +669,44 @@ function ValuationFormModal({
                 className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
               />
               <p className="mt-0.5 text-[10px] text-[#9CA3AF]">
-                Format: MAKE MODEL YEAR VIN PLATE — empty linkage fields auto-fill on blur
+                Format: MAKE MODEL YEAR VIN PLATE. TOKS, BRAND NEW, and REGISTERED are recognised and are not part of the model.
               </p>
+            </div>
+
+            <div className="flex flex-wrap gap-x-5 gap-y-2 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3">
+              <label className="flex items-center gap-2 text-sm font-semibold text-[#1F2937]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.registered)}
+                  onChange={e => set('registered', e.target.checked)}
+                  className="rounded border-[#D1D5DB]"
+                />
+                Registered
+              </label>
+              <label className="flex items-center gap-2 text-sm font-semibold text-[#1F2937]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.brandNew)}
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    setForm(prev => ({ ...prev, brandNew: checked, tokunbo: checked ? false : prev.tokunbo }));
+                  }}
+                  className="rounded border-[#D1D5DB]"
+                />
+                Brand new
+              </label>
+              <label className="flex items-center gap-2 text-sm font-semibold text-[#1F2937]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.tokunbo)}
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    setForm(prev => ({ ...prev, tokunbo: checked, brandNew: checked ? false : prev.brandNew }));
+                  }}
+                  className="rounded border-[#D1D5DB]"
+                />
+                Tokunbo
+              </label>
             </div>
 
             <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-[#F9FAFB] p-4">
@@ -757,39 +882,46 @@ function ValuationFormModal({
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#374151]">Market Value (₦) <span className="text-red-500">*</span></label>
                 <input
-                  type="number"
-                  value={form.marketValue ?? 0}
-                  onChange={e => setMarketValue(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={moneyText(form.marketValue)}
+                  onChange={e => setMarketValue(parseMoneyInput(e.target.value))}
+                  placeholder="0"
+                  className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                 />
                 {(form.marketValue ?? 0) > 0 && (
-                  <p className="mt-0.5 text-[10px] text-[#6B7280]">{formatNaira(Number(form.marketValue))}</p>
+                  <p className="mt-0.5 text-[10px] text-[#6B7280]"><NairaFigure amount={Number(form.marketValue)} size={10} weight={700} /></p>
                 )}
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#374151]">FSV (₦)</label>
                 <input
-                  type="number"
+                  type="text"
                   readOnly
-                  value={form.fsv ?? 0}
-                  className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none"
+                  value={moneyText(form.fsv)}
+                  placeholder="0"
+                  className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 text-sm font-semibold text-[#1F2937] focus:outline-none"
                   aria-describedby="fsv-hint"
                 />
                 <p id="fsv-hint" className="mt-0.5 text-[10px] text-[#6B7280]">
                   Auto-calculated at 70% of market value
-                  {(form.fsv ?? 0) > 0 ? ` · ${formatNaira(Number(form.fsv))}` : ''}
+                  {(form.fsv ?? 0) > 0 ? <> · <NairaFigure amount={Number(form.fsv)} size={10} weight={700} /></> : null}
                 </p>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#374151]">Condition Value (₦)</label>
                 <input
-                  type="number"
-                  value={form.conditionValue ?? 0}
-                  onChange={e => set('conditionValue', Number(e.target.value))}
-                  className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={moneyText(form.conditionValue)}
+                  onChange={e => set('conditionValue', parseMoneyInput(e.target.value))}
+                  placeholder="0"
+                  className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
                 />
                 {(form.conditionValue ?? 0) > 0 && (
-                  <p className="mt-0.5 text-[10px] text-[#6B7280]">{formatNaira(Number(form.conditionValue))}</p>
+                  <p className="mt-0.5 text-[10px] text-[#6B7280]"><NairaFigure amount={Number(form.conditionValue)} size={10} weight={700} /></p>
                 )}
               </div>
             </div>
@@ -912,6 +1044,8 @@ export default function VehicleValuationPage() {
   const [editData, setEditData] = useState<ValuationData | undefined>();
   const [printData, setPrintData] = useState<ValuationData | undefined>();
   const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -932,6 +1066,9 @@ export default function VehicleValuationPage() {
 
   const q = search.toLowerCase().trim();
   const filtered = valuations.filter(v => {
+    const iso = toIsoDate(v.date);
+    if (dateFrom && (!iso || iso < dateFrom)) return false;
+    if (dateTo && (!iso || iso > dateTo)) return false;
     if (!q) return true;
     return (
       v.clientName.toLowerCase().includes(q) ||
@@ -964,6 +1101,9 @@ export default function VehicleValuationPage() {
         'marketValue',
         'fsv',
         'conditionValue',
+        'registered',
+        'brandNew',
+        'tokunbo',
         'status',
         'trainingConsent',
         'hasFeatureSnapshot',
@@ -985,6 +1125,9 @@ export default function VehicleValuationPage() {
         v.marketValue,
         v.fsv,
         v.conditionValue,
+        v.registered ? '1' : '0',
+        v.brandNew ? '1' : '0',
+        v.tokunbo ? '1' : '0',
         v.status,
         v.trainingConsent ? '1' : '0',
         v.featureSnapshot ? '1' : '0',
@@ -1017,6 +1160,9 @@ export default function VehicleValuationPage() {
         notes: data.notes,
         status: data.status,
         trainingConsent: Boolean(data.trainingConsent),
+        registered: Boolean(data.registered),
+        brandNew: Boolean(data.brandNew),
+        tokunbo: Boolean(data.tokunbo),
         featureSnapshot: data.featureSnapshot ?? null,
       };
       if (data.id) {
@@ -1049,6 +1195,7 @@ export default function VehicleValuationPage() {
 
   const now = new Date();
   const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const thisMonthCount = valuations.filter(v => toIsoDate(v.date).startsWith(monthPrefix)).length;
   const totalMarketValue = valuations.reduce((a, v) => a + (Number(v.marketValue) || 0), 0);
 
   return (
@@ -1095,10 +1242,11 @@ export default function VehicleValuationPage() {
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
             { label: 'Total Valuations', value: String(valuations.length), icon: FileText, color: '#ff5722' },
-            { label: 'Total Market Value', value: formatNaira(totalMarketValue), icon: DollarSign, color: '#1A7A4A' },
+            { label: 'Total Market Value', value: <NairaFigure amount={totalMarketValue} size={18} weight={700} />, icon: DollarSign, color: '#1A7A4A' },
             {
               label: 'This Month',
-              value: String(valuations.filter(v => (v.createdAt || '').startsWith(monthPrefix)).length),
+              hint: 'By valuation date',
+              value: String(thisMonthCount),
               icon: Car,
               color: '#2563EB',
             },
@@ -1120,11 +1268,12 @@ export default function VehicleValuationPage() {
                 </div>
               </div>
               <p className="mt-2 text-lg font-bold text-[#1F2937]">{kpi.value}</p>
+              {'hint' in kpi && kpi.hint ? <p className="mt-0.5 text-[10px] text-[#9CA3AF]">{kpi.hint}</p> : null}
             </div>
           ))}
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="mb-4 flex flex-wrap items-end gap-3">
           <input
             type="text"
             value={search}
@@ -1132,6 +1281,36 @@ export default function VehicleValuationPage() {
             placeholder="Search by client, vehicle, VIN, inspection, or ID..."
             className="w-full max-w-md rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
           />
+          <label className="flex flex-col gap-1 text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">
+            From
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className="rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-[#1F2937] [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">
+            To
+            <input
+              type="date"
+              value={dateTo}
+              onChange={e => setDateTo(e.target.value)}
+              className="rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-[#1F2937] [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-[#ff8a65]/30"
+            />
+          </label>
+          {dateFrom || dateTo ? (
+            <button
+              type="button"
+              onClick={() => {
+                setDateFrom('');
+                setDateTo('');
+              }}
+              className="rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[#F4F6F8]"
+            >
+              Clear dates
+            </button>
+          ) : null}
           {loading ? <span className="text-xs text-[#6B7280]">Loading…</span> : null}
         </div>
 
@@ -1198,9 +1377,9 @@ export default function VehicleValuationPage() {
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right font-bold text-[#1A7A4A]">{formatNaira(v.marketValue)}</td>
-                      <td className="px-4 py-3 text-right text-xs text-[#374151]">{formatNaira(v.fsv)}</td>
-                      <td className="px-4 py-3 text-right text-xs text-[#374151]">{formatNaira(v.conditionValue)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-[#1A7A4A]"><NairaFigure amount={v.marketValue} size={14} weight={700} /></td>
+                      <td className="px-4 py-3 text-right text-xs text-[#374151]"><NairaFigure amount={v.fsv} size={12} weight={700} /></td>
+                      <td className="px-4 py-3 text-right text-xs text-[#374151]"><NairaFigure amount={v.conditionValue} size={12} weight={700} /></td>
                       <td className="px-4 py-3 text-center">
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
